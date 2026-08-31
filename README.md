@@ -38,7 +38,7 @@ TrainGrid is not a replacement for Strava, Hevy, GPS/activity tracking, workout 
 Requires Node.js 20+.
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/i-am-tj/traingrid.git
 cd traingrid
 npm install
 npm run dev
@@ -53,7 +53,7 @@ npm run build
 npm start
 ```
 
-The app needs a **Node server with a writable disk**. It is not meant for a read-only static host.
+The app needs a **Node server with a writable disk**. It is not meant for a read-only static host, and it is **not deployed on Vercel**: serverless instances do not provide durable `data/` writes. Host it yourself if you need it on a network.
 
 To try the planner from a phone on the same network:
 
