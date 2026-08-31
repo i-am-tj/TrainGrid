@@ -6,8 +6,8 @@ Phase 3 checks that the planner matches Phase 1 behaviour, not implementation tr
 
 | Layer | Tool | What it covers |
 | --- | --- | --- |
-| Unit | Vitest | ISO weeks, times, workout Markdown, template vs scheduled session, duplicate week, backup parse, names/slugs |
-| End-to-end | Playwright | Five critical user journeys, empty states, template delete, live-link body, mobile width |
+| Unit | Vitest | ISO weeks, times, workout Markdown, equipment/YouTube metadata, template vs scheduled session, duplicate week, backup parse, names/slugs |
+| End-to-end | Playwright | Critical journeys, plyometrics filter, equipment + Watch demo |
 | Manual | Browser | Desktop density, keyboard focus, contrast (already improved in this phase) |
 
 E2E runs against a throwaway directory (`e2e/.data` via `TRAINGRID_DATA_DIR`) so it does not overwrite `data/`.
@@ -27,7 +27,8 @@ E2E runs against a throwaway directory (`e2e/.data` via `TRAINGRID_DATA_DIR`) so
 11. Validation — Vitest names/times; server sanitizes names; HTML `required` / `maxLength`
 12. Dates — Vitest local calendar dates, no UTC day shift in helpers
 13. Mobile — Playwright 390×844, no horizontal overflow, day nav
-14. Absence of tracking — E2E asserts no Start Workout / log weight / complete set
+15. Equipment / YouTube — Vitest parse/serialize; E2E Watch demo + Barbell tag
+16. Categories — Plyometrics present, Mobility absent
 
 ## Out of scope for automation
 

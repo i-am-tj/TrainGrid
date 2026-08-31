@@ -31,7 +31,8 @@ export function WeekStrip({
           <Link
             key={day}
             href={`/week/${weekId}?day=${day}`}
-            className={`flex-1 rounded-md py-2 text-center text-xs ${
+            scroll={false}
+            className={`flex min-h-10 flex-1 items-center justify-center rounded-md py-2 text-center text-xs ${
               selected
                 ? "bg-stone-900 text-white"
                 : isToday

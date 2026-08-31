@@ -3,21 +3,21 @@ import type { SessionType } from "@/lib/domain";
 export const TYPE_SHORT: Record<SessionType, string> = {
   running: "Run",
   strength: "Lift",
-  mobility: "Mobility",
+  plyometrics: "Plyo",
   other: "Other",
 };
 
 export const TYPE_BAR: Record<SessionType, string> = {
   running: "border-l-sky-600",
   strength: "border-l-amber-600",
-  mobility: "border-l-emerald-600",
+  plyometrics: "border-l-emerald-600",
   other: "border-l-stone-500",
 };
 
 export const TYPE_TINT: Record<SessionType, string> = {
   running: "bg-sky-50",
   strength: "bg-amber-50",
-  mobility: "bg-emerald-50",
+  plyometrics: "bg-emerald-50",
   other: "bg-stone-50",
 };
 

@@ -4,7 +4,20 @@ Identifiers use local timezone for weeks. A week is Monday–Sunday, written as 
 
 Days on a scheduled session are ISO weekdays: `1` = Monday … `7` = Sunday.
 
-Session types: `running` | `strength` | `mobility` | `other`.
+Session types: `running` | `strength` | `plyometrics` | `other`.
+
+Session category is not equipment. A strength session can include a kettlebell exercise.
+
+Workout items are `##` sections. Optional metadata lines:
+
+```text
+Equipment: Dumbbell, Bench
+Video: https://www.youtube.com/watch?v=…
+```
+
+Unknown equipment tokens are ignored. Non-YouTube URLs are ignored. Older files without these lines still load.
+
+Library filtering by equipment is not implemented; filter by session type only.
 
 Times are `HH:mm` on 30-minute steps, or JSON `null` for untimed.
 
@@ -26,7 +39,11 @@ description: Squat-pattern lower body.
 
 ## Back Squat
 
-3 × 6–8
+4 × 5–6
+Rest: 2–3 min
+
+Equipment: Barbell
+Video: https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
 ## Romanian Deadlift
 

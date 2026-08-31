@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SESSION_TYPES, type SessionTemplate } from "@/lib/domain";
+import { SESSION_TYPES, SESSION_TYPE_LABELS, type SessionTemplate } from "@/lib/domain";
 import { deleteTemplateAction, upsertTemplateAction } from "@/lib/actions";
 import { parseWorkoutItems } from "@/lib/workout-items";
 import { WorkoutItemEditor } from "./WorkoutItemEditor";
@@ -49,7 +49,7 @@ export function TemplateEditor({
           >
             {SESSION_TYPES.map((t) => (
               <option key={t} value={t}>
-                {t}
+                {SESSION_TYPE_LABELS[t]}
               </option>
             ))}
           </select>

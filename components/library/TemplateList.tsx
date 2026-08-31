@@ -1,14 +1,15 @@
 import Link from "next/link";
 import type { SessionTemplate, SessionType } from "@/lib/domain";
+import { SESSION_TYPE_LABELS } from "@/lib/domain";
 import { TYPE_SHORT } from "@/lib/ui";
 import { btnPrimary, btnSecondary } from "@/lib/ui";
 
 const FILTERS: Array<{ id: "all" | SessionType; label: string }> = [
   { id: "all", label: "All" },
-  { id: "running", label: "Running" },
-  { id: "strength", label: "Strength" },
-  { id: "mobility", label: "Mobility" },
-  { id: "other", label: "Other" },
+  { id: "running", label: SESSION_TYPE_LABELS.running },
+  { id: "strength", label: SESSION_TYPE_LABELS.strength },
+  { id: "plyometrics", label: SESSION_TYPE_LABELS.plyometrics },
+  { id: "other", label: SESSION_TYPE_LABELS.other },
 ];
 
 export function TemplateList({
@@ -21,7 +22,7 @@ export function TemplateList({
   const visible =
     filter === "all" ? templates : templates.filter((t) => t.type === filter);
 
-  const groups: SessionType[] = ["running", "strength", "mobility", "other"];
+  const groups: SessionType[] = ["running", "strength", "plyometrics", "other"];
 
   return (
     <div>
@@ -30,11 +31,9 @@ export function TemplateList({
           <Link
             key={f.id}
             href={f.id === "all" ? "/library" : `/library?type=${f.id}`}
-            className={
-              filter === f.id
-                ? "rounded-md bg-stone-900 px-3 py-1.5 text-sm font-medium text-white"
-                : btnSecondary
-            }
+            scroll={false}
+            className={filter === f.id ? btnPrimary : btnSecondary}
+            aria-current={filter === f.id ? "page" : undefined}
           >
             {f.label}
           </Link>

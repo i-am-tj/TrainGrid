@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MarkdownBody } from "@/components/MarkdownBody";
+import { WorkoutItemsView } from "@/components/session/WorkoutItemsView";
 import { getSession } from "@/lib/schedule";
 import { listTemplates } from "@/lib/templates";
 import { resolveSession, templatesById } from "@/lib/resolve-session";
@@ -65,7 +65,7 @@ export default async function SessionPage({
       ) : null}
 
       <div className="mt-6 border-t border-line pt-4">
-        <MarkdownBody markdown={resolved.body} />
+        <WorkoutItemsView markdown={resolved.body} />
       </div>
 
       <div className="mt-8 flex flex-wrap gap-2">

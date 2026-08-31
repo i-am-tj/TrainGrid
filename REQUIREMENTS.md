@@ -24,8 +24,9 @@ Use these terms only. Do not introduce synonyms in product or implementation doc
 | --- | --- |
 | **Session template** | A reusable definition of a training session: `id`, `name`, `type`, and Markdown body. Stored as a file in the library. |
 | **Scheduled session** | A session placed on a particular week, day, and optional start time. Always has its own `id` and `name`. May link to a session template for workout text, or hold a body snapshot / ad-hoc body. |
-| **Workout item** | A piece of instructional content inside a session template or scheduled-session body. In MVP this is a Markdown section (typically a `##` heading plus following text), not a separate structured entity. |
-| **Session type** | A filter label: `running`, `strength`, `mobility`, `other`. |
+| **Workout item** | A piece of instructional content inside a session template or scheduled-session body. Markdown `##` section plus optional equipment tags and an optional YouTube URL. |
+| **Session type** | A filter label: `running`, `strength`, `plyometrics`, `other`. Distinct from equipment. |
+| **Equipment** | Optional tags on a workout item (barbell, dumbbell, bodyweight, …). Not a session category. |
 | **Week** | Monday–Sunday, identified by ISO week (`YYYY-Www`). |
 | **Time slot** | One hour row on the planner (`00:00`–`23:00`). |
 | **Untimed session** | A scheduled session with a day but **no start time**. Only these belong in the untimed lane. |

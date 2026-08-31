@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { ScheduledSession, SessionTemplate } from "@/lib/domain";
-import { SESSION_TYPES } from "@/lib/domain";
+import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
 import {
   deleteScheduledSessionAction,
   updateScheduledSession,
@@ -105,7 +105,7 @@ export function EditSessionForm({
           >
             {SESSION_TYPES.map((t) => (
               <option key={t} value={t}>
-                {t}
+                {SESSION_TYPE_LABELS[t]}
               </option>
             ))}
           </select>

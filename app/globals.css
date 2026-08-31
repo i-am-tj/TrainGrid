@@ -26,11 +26,15 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-a {
-  color: inherit;
-}
+@layer base {
+  /* Keep unstyled links matching surrounding text; utilities like text-white must win. */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-:focus-visible {
-  outline: 2px solid #1c1917;
-  outline-offset: 2px;
+  :focus-visible {
+    outline: 2px solid #1c1917;
+    outline-offset: 2px;
+  }
 }

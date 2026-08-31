@@ -65,13 +65,14 @@ traingrid/
 ## Domain / data model
 
 ```ts
-type SessionType = "running" | "strength" | "mobility" | "other";
+type SessionType = "running" | "strength" | "plyometrics" | "other";
 
 type SessionTemplate = {
   id: string;          // filename slug, immutable after create
   name: string;
   type: SessionType;
   body: string;        // Markdown; workout items are ## sections
+                       // plus optional Equipment: / Video: lines
 };
 
 type ScheduledSession = {
@@ -87,6 +88,8 @@ type ScheduledSession = {
   bodySnapshot: string | null;    // non-null = this session owns body
 };
 ```
+
+**Session type vs equipment:** `SessionType` is the library category (running / strength / plyometrics / other). Equipment tags live on workout items. Library equipment filtering is a follow-up; type filters are enough for now.
 
 **Resolved session** (view model for UI):
 

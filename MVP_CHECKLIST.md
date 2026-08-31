@@ -38,7 +38,7 @@ Phase 3 verification (31 Aug 2026): statuses are **PASS** / **FAIL** / **NOT APP
 
 ## Library
 
-- [x] List session templates; filter by `running` / `strength` / `mobility` / `other` — **PASS**
+- [x] List session templates; filter by `running` / `strength` / `plyometrics` / `other` — **PASS**
 - [x] Create / read / update / delete session template — **PASS**
 - [x] Workout items are edited as Markdown sections in the template body — **PASS**
 - [x] Schedule from library opens add form with that template — **PASS**

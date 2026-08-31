@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { IsoDay, SessionTemplate, SessionType } from "@/lib/domain";
-import { SESSION_TYPES } from "@/lib/domain";
+import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
 import { createScheduledSession } from "@/lib/actions";
 import { datesOfWeek, formatLongDay, TIME_OPTIONS } from "@/lib/week";
 import { WorkoutItemEditor } from "@/components/library/WorkoutItemEditor";
@@ -168,7 +168,7 @@ export function AddSessionForm({
         >
           {SESSION_TYPES.map((t) => (
             <option key={t} value={t}>
-              {t}
+              {SESSION_TYPE_LABELS[t]}
             </option>
           ))}
         </select>

@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { compareSessions, sanitizeName } from "./domain";
+import { compareSessions, isSessionType, sanitizeName, SESSION_TYPES } from "./domain";
 import { slugify, uniqueId } from "./slug";
+
+describe("session types", () => {
+  it("uses plyometrics instead of mobility", () => {
+    expect(SESSION_TYPES).toEqual(["running", "strength", "plyometrics", "other"]);
+    expect(isSessionType("plyometrics")).toBe(true);
+    expect(isSessionType("other")).toBe(true);
+    expect(isSessionType("mobility")).toBe(false);
+  });
+});
 
 describe("names", () => {
   it("rejects blank names and trims", () => {

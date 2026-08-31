@@ -143,3 +143,26 @@ test("invalid import does not wipe existing data", async ({ page }) => {
   await expect(page.getByText("That file is not valid JSON.")).toBeVisible();
   await expect(page.getByRole("link", { name: /Keep Me/ })).toBeVisible();
 });
+
+test("workout item equipment and YouTube persist on the session", async ({ page }) => {
+  await page.goto("/library/new");
+  await page.getByLabel("Name").fill("Lower A");
+  await page.getByLabel("Type").selectOption("strength");
+  await addWorkoutItem(page, 0, "Back Squat", "4 × 5–6");
+  await page.getByRole("button", { name: "Barbell", exact: true }).click();
+  await page.getByLabel("YouTube URL (optional)").fill(
+    "https://youtu.be/dQw4w9WgXcQ",
+  );
+  await saveTemplate(page);
+  await scheduleTemplate(page, "Lower A", "1", "08:00");
+  await page.getByRole("link", { name: "Lower A, 08:00" }).click();
+  await expect(page.getByRole("heading", { name: "Back Squat" })).toBeVisible();
+  await expect(page.getByText("Barbell", { exact: true })).toBeVisible();
+  const demo = page.getByRole("link", { name: /Watch demo/ });
+  await expect(demo).toBeVisible();
+  await expect(demo).toHaveAttribute(
+    "href",
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  );
+  await expect(page.getByRole("link", { name: /Watch demo/ })).toHaveCount(1);
+});

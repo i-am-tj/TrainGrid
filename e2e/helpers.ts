@@ -3,7 +3,7 @@ import path from "path";
 import { e2eDataDir } from "../playwright.config";
 
 export async function resetData() {
-  await rm(e2eDataDir, { recursive: true, force: true });
+  await rm(e2eDataDir, { recursive: true, force: true, maxRetries: 8, retryDelay: 50 });
   await mkdir(path.join(e2eDataDir, "templates"), { recursive: true });
   await writeFile(
     path.join(e2eDataDir, "schedule.json"),

@@ -159,7 +159,7 @@ Notes: Track if windy
 ```text
 Library                    [New template]
 
-[ All ] [ Running ] [ Strength ] [ Mobility ] [ Other ]
+[ All ] [ Running ] [ Strength ] [ Plyometrics ] [ Other ]
 
 Lower A          strength          [Schedule]
 Upper A          strength          [Schedule]
@@ -173,18 +173,18 @@ VO2max           running           [Schedule]
 
 ```text
 Name: [ Lower A ]
-Type: [ strength ▾ ]
-ID:   lower-a     (immutable after create; slug from name on create)
+Type: [ Strength ▾ ]
 
-Body (Markdown) — this is workout-item CRUD:
+Body (workout-item CRUD):
 
 ## Back Squat
-3 × 6–8
-…
+4 × 5–6
+Equipment: [ Barbell ]
+YouTube URL (optional)
 ```
 
 - Create / read / update / delete the session template here.
-- Adding a workout item: add a Markdown section. Removing one: delete that section. No extra item UI.
+- Workout items support optional equipment tags and an optional YouTube URL.
 
 ### Delete session template
 

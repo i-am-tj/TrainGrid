@@ -29,7 +29,7 @@ import {
   saveTemplate,
 } from "@/lib/templates";
 import { isValidTime, isValidWeekId } from "@/lib/week";
-import { serializeWorkoutItems } from "@/lib/workout-items";
+import { serializeWorkoutItems, parseEquipmentValues } from "@/lib/workout-items";
 
 function revalidateAll() {
   revalidatePath("/", "layout");
@@ -71,10 +71,14 @@ function parseDuration(form: FormData): number | null {
 function parseItemsFromForm(form: FormData): string {
   const titles = form.getAll("itemTitle").map((v) => String(v));
   const bodies = form.getAll("itemBody").map((v) => String(v));
+  const equipment = form.getAll("itemEquipment").map((v) => String(v));
+  const videos = form.getAll("itemVideo").map((v) => String(v));
   const items = titles.map((title, i) => ({
     id: `item-${i}`,
     title,
     body: bodies[i] ?? "",
+    equipment: parseEquipmentValues(equipment[i] ?? ""),
+    videoUrl: videos[i]?.trim() ? videos[i]! : null,
   }));
   return serializeWorkoutItems(items);
 }

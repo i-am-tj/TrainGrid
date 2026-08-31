@@ -18,6 +18,13 @@ test("planner shows seven days Monday to Sunday", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Week of");
 });
 
+test("library filters use plyometrics not mobility", async ({ page }) => {
+  await page.goto("/library");
+  await expect(page.getByRole("link", { name: "Plyometrics" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Other" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Mobility" })).toHaveCount(0);
+});
+
 test("empty states offer a way to add", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("No sessions this week.")).toBeVisible();

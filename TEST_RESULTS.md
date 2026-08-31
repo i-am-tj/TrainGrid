@@ -1,13 +1,13 @@
 # Test results
 
-Date: 31 Aug 2026
+Date: 31 Aug 2026 (library enhancement)
 
 ## Summary
 
 | Suite | Result |
 | --- | --- |
-| Vitest (`npm test`) | **30 passed** (6 files) |
-| Playwright (`npx playwright test`) | **11 passed** |
+| Vitest (`npm test`) | **38 passed** (7 files) |
+| Playwright (`npx playwright test`) | **13 passed** |
 | MVP checklist | All implementation items **PASS** (see `MVP_CHECKLIST.md`) |
 
 ## Tests executed
