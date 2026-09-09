@@ -2,7 +2,7 @@
 
 Low-fidelity behaviour only. No visual design system.
 
-Canonical terms: **session template**, **scheduled session**, **workout item**. See `REQUIREMENTS.md`.
+Canonical terms: **session template**, **scheduled session**, **workout item**. See `docs/REQUIREMENTS.md`.
 
 ## Information architecture
 
@@ -251,7 +251,7 @@ Desktop vs mobile is **layout only**; same data and routes.
 
 | Surface | Copy / action |
 | --- | --- |
-| Empty week | “No sessions this week.” Add session · Duplicate week |
+| Empty week | Local: “No sessions this week.” + Add. Published: friendly visitor note on the planner only (link to @i-am-tj; clone & deploy your own) — no banner on Library |
 | Empty day (mobile) | “Nothing planned.” Add session |
 | Empty library | “No templates yet.” New template |
 | Missing scheduled session | “Session not found.” Link to planner |

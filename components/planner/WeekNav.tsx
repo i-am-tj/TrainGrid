@@ -20,11 +20,11 @@ export function WeekNav({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
         <Link href={`/week/${prev}`} className={btnSecondary} aria-label="Previous week">
           ←
         </Link>
-        <h1 className="text-lg font-semibold">{formatWeekLabel(weekId)}</h1>
+        <h1 className="truncate text-base font-semibold sm:text-lg">{formatWeekLabel(weekId)}</h1>
         <Link href={`/week/${next}`} className={btnSecondary} aria-label="Next week">
           →
         </Link>

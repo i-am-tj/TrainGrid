@@ -10,6 +10,7 @@ import { listTemplates } from "@/lib/templates";
 import { resolveSessions } from "@/lib/resolve-session";
 import { addWeeks, formatWeekLabel, isValidWeekId, nearbyWeekIds, todayParts } from "@/lib/week";
 import { isPublishedReadonly } from "@/lib/runtime";
+import { PublishedNotice } from "@/components/PublishedNotice";
 
 export default async function WeekPage({
   params,
@@ -63,6 +64,7 @@ export default async function WeekPage({
         todayDay={today.day}
         readonly={readonly}
       />
+      <PublishedNotice emptyWeek={weekSessions.length === 0} />
       {readonly ? null : (
         <DuplicateWeekForm
           sourceWeekId={rawWeekId}

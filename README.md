@@ -1,228 +1,108 @@
-# 🏃 TrainGrid
+# TrainGrid
 
-**TrainGrid** is a lightweight training planner built for runners, lifters, and hybrid athletes who want one simple place to organise their week.
+Plan the week. Show up. Don’t overthink it.
 
-Plan your runs, strength sessions, plyometrics, warm-ups, and cooldowns in a **7-day time-slot-based calendar**, save reusable workout templates, and open any session whenever you need to see exactly what you're supposed to do.
+**TrainGrid** is a personal training planner — a Monday–Sunday calendar, reusable session templates, and a straight answer to “what am I doing today?”  
+It is **not** a workout logger. Keep Strava / Hevy for that.
 
-No workout tracking. No GPS. No analytics overload.
+<br />
 
-**Strava and Hevy already do that. TrainGrid does the planning.**
+<p align="center">
+  <img src="docs/images/planner.png" alt="TrainGrid planner on mobile" width="280" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/images/planner-desktop.png" alt="TrainGrid planner on desktop" width="520" />
+</p>
 
----
+<p align="center"><em>Published view — peek, don’t edit. Clone it if you want your own.</em></p>
 
-## ✨ Why TrainGrid?
+<p align="center">
+  <img src="docs/images/library.png" alt="TrainGrid template library" width="420" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/images/session-detail.png" alt="Lower A session template detail" width="420" />
+</p>
 
-Most fitness apps are great at recording what you already did.
-
-Planning what you're going to do is often a different story — especially when reusable routines, calendars, and scheduling features sit behind premium subscriptions.
-
-TrainGrid keeps things simple:
-
-- 📅 Plan your entire training week
-- 🏃 Schedule running sessions
-- 🏋️ Schedule strength workouts
-- ⚡ Plan plyometric sessions
-- 🔥 Reuse warm-up and cooldown templates
-- 🏷️ Tag exercises with equipment
-- ▶ Attach an optional YouTube demo to an exercise
-- 🔁 Reuse saved session templates
-- 🕒 Organise sessions by time
-- 📋 Open any workout and see the full plan
-- 📆 Duplicate a training week instead of rebuilding it
+<p align="center"><em>Library of running, strength, and plyometrics templates — open one and see the work.</em></p>
 
 ---
 
-## 🗓️ What It Looks Like
+## Why this exists
+
+Most “fitness apps” want accounts, feeds, and streak guilt. TrainGrid is the opposite:
+
+- Your plan lives in **files** you own (`data/`)
+- You edit **locally**, publish by **pushing to Git**
+- A hosted site (Vercel, etc.) is a **read-only showcase** of whatever you’ve committed
+
+The default schedule is empty on purpose. Visitors see a friendly hello — not a shared spreadsheet.
 
 ```text
-MONDAY
-07:00  🏃 Speed / Power
-18:00  🏋️ Lower B
-
-TUESDAY
-07:00  🏃 Easy Run
-18:00  🏋️ Upper A
-
-WEDNESDAY
-07:00  🏃 VO2max
-18:00  🏋️ Lower A
-
-THURSDAY
-        Recovery Run
-
-FRIDAY
-07:00  🏃 Tempo / Threshold
-18:00  🏋️ Upper B
-
-SATURDAY
-07:00  🏃 Long Run
-
-SUNDAY
-        Rest
+npm run dev  →  plan the week  →  commit data/  →  push  →  live site updates
 ```
 
-Open a session and TrainGrid simply tells you what to do — including optional equipment tags and a **Watch demo** link when you have saved a YouTube URL.
-
-Then track the actual run in Strava or your lifting session in Hevy.
-
----
-
-## 🎯 The Idea
-
-TrainGrid is intentionally focused on one thing:
-
-> **Plan the week. Open the session. Train.**
-
-It is not trying to become another fitness ecosystem.
+| Where | What you get |
+| --- | --- |
+| Local | Full editor — add sessions, tweak templates, duplicate weeks |
+| Hosted | Read-only published plan — clone the repo to make yours |
 
 ---
 
-## 🚫 What TrainGrid Doesn't Do
+## What’s in the box
 
-TrainGrid does **not** try to replace:
+- **7-day planner** with timed + untimed sessions
+- Seed templates for **running**, **strength**, **plyometrics**, warm-ups & cooldowns
+- Optional **equipment** tags and **YouTube** demo links
+- Duplicate a week, export JSON (local)
+- Published mode that politely tells guests to deploy their own copy
 
-- Strava
-- Hevy
-- Garmin Connect
-- Apple Health
-- GPS tracking
-- Heart-rate tracking
-- Set and rep logging
-- PR tracking
-- Training analytics
-- Nutrition tracking
-- YouTube search or the YouTube API
-
-Those tools already exist and do those jobs well.
+More detail: [docs/](docs/README.md)
 
 ---
 
-## 🧩 Core Concepts
+## Get your own copy
 
-### 📚 Session Templates
-
-Library categories:
-
-```text
-🏃 Running
-🏋️ Strength
-⚡ Plyometrics
-🔥 Other (warm-up & cooldown)
-```
-
-### 📆 Scheduled Sessions
-
-Drop a template onto a specific day and time. Each scheduled session is independent.
-
-### 📝 Workout Items
-
-Markdown `##` sections plus optional **equipment** tags and an optional **YouTube URL**. Session category is not the same as equipment.
-
----
-
-## 🛠️ Tech Stack
-
-- [Next.js](https://nextjs.org/) 16 with the App Router
-- React 19 and TypeScript
-- Tailwind CSS v4
-- `gray-matter` for Markdown templates with frontmatter
-- `react-markdown` for session content
-- Vitest and Playwright
-
----
-
-## 🚀 Getting Started
-
-Requires Node.js 20+.
+Needs **Node.js 20+**.
 
 ```bash
-git clone https://github.com/i-am-tj/traingrid.git
-cd traingrid
+git clone https://github.com/i-am-tj/TrainGrid.git
+cd TrainGrid
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000) — that’s your writable planner.
 
 ```bash
-npm run build
-npm start
+npm run build && npm start   # production locally
+npm test                     # Vitest
+npm run test:e2e             # Playwright
 ```
 
-The app needs a **Node server with a writable disk**. It is not deployed on Vercel: serverless instances do not provide durable `data/` writes.
-
-```bash
-npm run dev -- --hostname 0.0.0.0
-```
-
-Then `http://<your-lan-ip>:3000`. There is no login; keep it on a trusted network.
-
----
-
-## 💾 Local Persistence + Publish Workflow
-
-| Path | Purpose |
-| --- | --- |
-| `data/templates/*.md` | Session templates (tracked in Git) |
-| `data/schedule.json` | Your published training schedule (tracked in Git) |
-| `data/schedule.example.json` | Empty calendar example |
-
-**Edit locally → publish with Git.**
-
-1. Run `npm run dev` on your machine (writable).
-2. Change templates and the schedule as needed.
-3. Commit `data/` (and any app changes).
-4. Push to GitHub.
-
-A hosted site (for example on Vercel) is **read-only**: it shows the plan from the repo. There is no live editing on the published site. Update the plan here, then push again.
-
-On Vercel, `VERCEL=1` turns on read-only mode automatically. Override with `TRAINGRID_READONLY=true|false` if needed.
-
-Workout items may include:
-
-```text
-Equipment: Dumbbell, Bench
-Video: https://www.youtube.com/watch?v=…
-```
-
-Tests use `TRAINGRID_DATA_DIR` (`e2e/.data`) so they do not overwrite your planner files.
-
----
-
-## 📁 Project Structure
+Deploy the same repo to Vercel (or similar) when you want a public, read-only view of your committed `data/`.
 
 ```text
 traingrid/
-├── app/
+├── app/                 # Next.js routes
 ├── components/
 ├── lib/
-├── data/templates/
+├── data/
+│   ├── templates/       # session templates (Markdown)
+│   └── schedule.json    # your published week(s) — empty by default
 ├── e2e/
-├── REQUIREMENTS.md
-├── UX_SPEC.md
-├── TECHNICAL_DESIGN.md
-├── DATA_FORMAT.md
-└── README.md
+└── docs/
 ```
 
 ---
 
-## 👨‍💻 Development
+## Say hello
 
-| Command | Purpose |
+Built by **Tanuj Chakraborty**.
+
+If you have questions, suggestions, or need a hand — reach out anytime:
+
+| | |
 | --- | --- |
-| `npm run dev` | Development server |
-| `npm run build` | Production build |
-| `npm start` | Serve production build |
-| `npm run lint` | ESLint |
-| `npm test` | Vitest |
-| `npm run test:watch` | Vitest watch |
-| `npm run test:e2e` | Playwright (stop other `next dev` first) |
+| **Email** | [tanuj.chakraborty21@gmail.com](mailto:tanuj.chakraborty21@gmail.com) |
+| **GitHub** | [github.com/i-am-tj](https://github.com/i-am-tj) |
+| **LinkedIn** | [linkedin.com/in/i-am-tj](https://www.linkedin.com/in/i-am-tj) |
 
----
-
-## ✅ Status
-
-**MVP complete**, plus a richer training library (plyometrics, warm-up/cooldown, equipment tags, optional YouTube references).
-
-TrainGrid remains **local-first and planning-focused**.
+Thanks for stopping by — ciao ✨

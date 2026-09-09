@@ -29,6 +29,7 @@ E2E runs against a throwaway directory (`e2e/.data` via `TRAINGRID_DATA_DIR`) so
 13. Mobile — Playwright 390×844, no horizontal overflow, day nav
 15. Equipment / YouTube — Vitest parse/serialize; E2E Watch demo + Barbell tag
 16. Categories — Plyometrics present, Mobility absent
+17. Published read-only — Vitest `isPublishedReadonly`; planner shows a friendly visitor note (clone/deploy your own); Library has no banner
 
 ## Out of scope for automation
 
@@ -36,3 +37,4 @@ E2E runs against a throwaway directory (`e2e/.data` via `TRAINGRID_DATA_DIR`) so
 - Every timezone in CI (dates are local `Date` components)
 - Visual regression screenshots
 - Concurrent two-process file writes
+- Live write behaviour on Vercel (by design: publish via Git only)
