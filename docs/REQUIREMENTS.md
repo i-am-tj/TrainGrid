@@ -75,7 +75,8 @@ Use these terms only. Do not introduce synonyms in product or implementation doc
 
 ### Persistence
 
-- FR-S1. Runtime data is stored as local files: Markdown session templates plus one JSON schedule. This assumes a **local writable** Next.js process, not a read-only hosted bundle.
+- FR-S1. Runtime data is stored as local files: Markdown session templates plus one JSON schedule. Editing assumes a **local writable** Next.js process.
+- FR-S1a. Publishing is **Git-based**: commit `data/` and push. Hosted deployments (for example Vercel) are **read-only** and show only committed `data/schedule.json`. The default schedule file is empty until the owner publishes sessions. Visitors who want their own planner must clone/fork and run or deploy their own instance.
 - FR-S2. No account, login, multi-user support, database, or cloud sync.
 - FR-S3. There is no separate import/export feature in MVP. Backup is copying or committing the `data/` folder.
 

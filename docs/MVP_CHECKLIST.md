@@ -54,7 +54,9 @@ Phase 3 verification (31 Aug 2026): statuses are **PASS** / **FAIL** / **NOT APP
 ## Quality bar
 
 - [x] TypeScript app (Next.js + Tailwind as designed) — **PASS**
-- [x] Local writable `data/` files; no database or auth — **PASS**
+- [x] Local writable `data/` files for editing; hosted sites are read-only published views; no database or auth — **PASS**
+- [x] Default `data/schedule.json` is empty until the owner publishes sessions via Git — **PASS**
+- [x] Published planner shows a friendly visitor note (clone/deploy your own); Library has no banner — **PASS**
 - [x] No tracker features, integrations, analytics, AI plans, or subscriptions — **PASS**
 - [x] User can plan a week, duplicate it, and on a phone-sized viewport read what to do today — **PASS**
 
@@ -64,7 +66,8 @@ Phase 3 verification (31 Aug 2026): statuses are **PASS** / **FAIL** / **NOT APP
 - RRULE / recurring sessions — **NOT APPLICABLE**
 - Variable-height duration blocks / overlap lanes — **NOT APPLICABLE**
 - Cloud sync / login — **NOT APPLICABLE**
-- Import/export UI — **PASS** (Phase 2 added it; tested in Phase 3)
+- Live editing on Vercel — **NOT APPLICABLE** (publish via Git instead)
+- Import/export UI — **PASS** (local only; hidden on published sites)
 - Search, ICS, notifications — **NOT APPLICABLE**
 - 15-minute grid — **NOT APPLICABLE**
 - Structured set/rep or interval objects — **NOT APPLICABLE**

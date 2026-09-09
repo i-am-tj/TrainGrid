@@ -8,7 +8,7 @@ Date: 31 Aug 2026 (library enhancement)
 | --- | --- |
 | Vitest (`npm test`) | **38 passed** (7 files) |
 | Playwright (`npx playwright test`) | **13 passed** |
-| MVP checklist | All implementation items **PASS** (see `MVP_CHECKLIST.md`) |
+| MVP checklist | All implementation items **PASS** (see `docs/MVP_CHECKLIST.md`) |
 
 ## Tests executed
 
@@ -49,6 +49,12 @@ Date: 31 Aug 2026 (library enhancement)
 | Duplicate-week / backup logic was only inside Server Actions | Extracted `duplicateWeekSessions` and `parseBackupJson` for tests |
 | Weak focus and small hit targets | `min-h-10` + `:focus-visible` ring |
 | Unhandled action errors could surface raw exceptions | `app/error.tsx` with a safe message |
+
+## Published / hosted behaviour
+
+- Default `data/schedule.json` is empty; hosted planners show a friendly visitor note (clone/deploy your own). Library has no banner.
+- Visitors should clone/fork and deploy their own TrainGrid rather than expecting a shared writable planner.
+- `isPublishedReadonly()` covers `VERCEL=1` and `TRAINGRID_READONLY`.
 
 ## Known limitations
 

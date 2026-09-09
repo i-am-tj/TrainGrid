@@ -26,7 +26,7 @@ Not recommended for MVP:
 
 Node.js `fs/promises` via Server Actions. No database.
 
-**Deployment constraint:** this architecture is valid for a **local (or self-hosted) Node process with a writable disk**. It is **not** valid on a read-only host that only serves a bundled app (typical static/CDN or serverless without a volume). Do not implement “edit Markdown at runtime” on such a host. Do not add a database to work around that; keep the app local-first.
+**Deployment constraint:** editing requires a **local (or self-hosted) Node process with a writable disk**. Hosted platforms such as Vercel can serve a **read-only published view** of committed `data/` files. They must not accept live writes. The default published schedule is empty; owners add sessions locally and push to publish. Third parties should deploy their own TrainGrid instance rather than editing someone else’s hosted site. Do not add a database for this workflow.
 
 ---
 

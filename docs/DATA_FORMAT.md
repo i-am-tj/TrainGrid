@@ -64,9 +64,9 @@ Workout item CRUD in the UI rewrites this Markdown. There is no separate item ta
 
 ## Schedule
 
-Path: `data/schedule.json` (tracked in Git; published plan). Empty example: `data/schedule.example.json`.
+Path: `data/schedule.json` (tracked in Git; published plan). Default content is `{ "sessions": [] }`. Empty example: `data/schedule.example.json`.
 
-Hosted deployments are read-only. Edit the schedule locally and push to publish.
+Hosted deployments are **read-only**. The planner is empty until the owner commits sessions and redeploys. Edit locally, then push to publish. Other people should clone and deploy their own copy.
 
 ```json
 {
