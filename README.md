@@ -159,13 +159,24 @@ Then `http://<your-lan-ip>:3000`. There is no login; keep it on a trusted networ
 
 ---
 
-## 💾 Local Persistence
+## 💾 Local Persistence + Publish Workflow
 
 | Path | Purpose |
 | --- | --- |
-| `data/templates/*.md` | Session templates (seed examples are in the repo) |
-| `data/schedule.json` | Scheduled sessions (**not** committed) |
+| `data/templates/*.md` | Session templates (tracked in Git) |
+| `data/schedule.json` | Your published training schedule (tracked in Git) |
 | `data/schedule.example.json` | Empty calendar example |
+
+**Edit locally → publish with Git.**
+
+1. Run `npm run dev` on your machine (writable).
+2. Change templates and the schedule as needed.
+3. Commit `data/` (and any app changes).
+4. Push to GitHub.
+
+A hosted site (for example on Vercel) is **read-only**: it shows the plan from the repo. There is no live editing on the published site. Update the plan here, then push again.
+
+On Vercel, `VERCEL=1` turns on read-only mode automatically. Override with `TRAINGRID_READONLY=true|false` if needed.
 
 Workout items may include:
 

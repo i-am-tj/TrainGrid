@@ -25,6 +25,44 @@ test("library filters use plyometrics not mobility", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Mobility" })).toHaveCount(0);
 });
 
+test("library template opens read-only details then edit", async ({ page }) => {
+  await page.goto("/library/new");
+  await page.getByLabel("Name").fill("Lower A");
+  await page.getByLabel("Type").selectOption("strength");
+  await addWorkoutItem(page, 0, "Back Squat", "3 × 6–8");
+  await saveTemplate(page);
+
+  await page.goto("/library");
+  await page.getByRole("link", { name: /Lower A/ }).click();
+  await expect(page).toHaveURL(/\/library\/lower-a$/);
+  await expect(page.getByRole("heading", { name: "Lower A" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Back Squat" })).toBeVisible();
+  await expect(page.getByText("3 × 6–8")).toBeVisible();
+  await expect(page.getByRole("textbox", { name: /^Workout item/ })).toHaveCount(0);
+  await expect(page.getByRole("textbox", { name: /^Details/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Add workout item" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Delete template" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Edit template" }).click();
+  await expect(page).toHaveURL(/\/library\/lower-a\/edit$/);
+  await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add workout item" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Delete template" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: /^Workout item 1/ })).toHaveValue(
+    "Back Squat",
+  );
+
+  await page.getByRole("link", { name: "Cancel" }).click();
+  await expect(page).toHaveURL(/\/library\/lower-a$/);
+  await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Edit template" }).click();
+  await page.getByRole("link", { name: "Back to library" }).click();
+  await expect(page).toHaveURL(/\/library$/);
+  await expect(page.getByRole("link", { name: "Lower A" })).toBeVisible();
+});
+
 test("empty states offer a way to add", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("No sessions this week.")).toBeVisible();
@@ -43,7 +81,7 @@ test("deleting a template keeps the scheduled session", async ({ page }) => {
   await saveTemplate(page);
   await scheduleTemplate(page, "Lower A", "1", "08:00");
 
-  await page.goto("/library/lower-a");
+  await page.goto("/library/lower-a/edit");
   await page.getByRole("button", { name: "Delete template" }).click();
   await expect(page.getByText("No templates yet.")).toBeVisible();
 
@@ -63,13 +101,12 @@ test("editing a template body updates a live-linked session only", async ({ page
   await saveTemplate(page);
   await scheduleTemplate(page, "Lower A", "1", "08:00");
 
-  await page.goto("/library/lower-a");
+  await page.goto("/library/lower-a/edit");
   await page.getByRole("textbox", { name: /^Details/ }).first().fill("4 × 5–6");
   await page.getByRole("button", { name: "Save" }).click();
-  await page.goto("/library/lower-a");
-  await expect(page.getByRole("textbox", { name: /^Details/ }).first()).toHaveValue(
-    "4 × 5–6",
-  );
+  await page.waitForURL(/\/library\/lower-a$/);
+  await expect(page.getByRole("textbox", { name: /^Details/ })).toHaveCount(0);
+  await expect(page.getByText("4 × 5–6")).toBeVisible();
 
   await page.goto("/");
   await page.getByRole("link", { name: "Lower A, 08:00" }).click();

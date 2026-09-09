@@ -6,6 +6,7 @@ import { listTemplates } from "@/lib/templates";
 import { resolveSession, templatesById } from "@/lib/resolve-session";
 import { datesOfWeek, formatLongDay } from "@/lib/week";
 import { btnSecondary, TYPE_SHORT } from "@/lib/ui";
+import { isPublishedReadonly } from "@/lib/runtime";
 
 export default async function SessionPage({
   params,
@@ -22,6 +23,7 @@ export default async function SessionPage({
   const template = session.templateId
     ? templates.find((t) => t.id === session.templateId)
     : null;
+  const readonly = isPublishedReadonly();
 
   return (
     <div className="mx-auto max-w-xl px-3 py-4 sm:px-4">
@@ -69,15 +71,19 @@ export default async function SessionPage({
       </div>
 
       <div className="mt-8 flex flex-wrap gap-2">
-        <Link href={`/session/${session.id}/edit`} className={btnSecondary}>
-          Edit
-        </Link>
-        <Link
-          href={`/session/${session.id}/customize`}
-          className={btnSecondary}
-        >
-          Customize content
-        </Link>
+        {readonly ? null : (
+          <>
+            <Link href={`/session/${session.id}/edit`} className={btnSecondary}>
+              Edit
+            </Link>
+            <Link
+              href={`/session/${session.id}/customize`}
+              className={btnSecondary}
+            >
+              Customize content
+            </Link>
+          </>
+        )}
         {liveLinked && template ? (
           <Link href={`/library/${template.id}`} className={btnSecondary}>
             Open template

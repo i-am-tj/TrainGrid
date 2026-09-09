@@ -166,7 +166,7 @@ Upper A          strength          [Schedule]
 VO2max           running           [Schedule]
 ```
 
-- Click row → session template editor.
+- Click row → read-only template detail. **Edit** opens the template editor.
 - **Schedule** opens the add-session form with that template selected (current week, user picks day/time).
 
 ### Session template editor

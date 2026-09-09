@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ImportExport } from "@/components/ImportExport";
+import { isPublishedReadonly } from "@/lib/runtime";
 
 export function AppHeader() {
+  const readonly = isPublishedReadonly();
+
   return (
     <header className="border-b border-line bg-card">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-3 sm:px-4">
@@ -21,7 +24,13 @@ export function AppHeader() {
           >
             Library
           </Link>
-          <ImportExport />
+          {readonly ? (
+            <span className="rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-950">
+              Published · read-only
+            </span>
+          ) : (
+            <ImportExport />
+          )}
         </nav>
       </div>
     </header>

@@ -32,7 +32,11 @@ export async function saveTemplate(page: import("@playwright/test").Page) {
   if (creating) {
     await page.waitForURL((url) => {
       const path = new URL(url).pathname;
-      return /^\/library\/[a-z0-9-]+$/.test(path) && path !== "/library/new";
+      return (
+        /^\/library\/[a-z0-9-]+$/.test(path) &&
+        path !== "/library/new" &&
+        !path.endsWith("/edit")
+      );
     });
   }
 }

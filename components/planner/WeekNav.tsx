@@ -7,10 +7,12 @@ export function WeekNav({
   weekId,
   todayWeekId,
   todayDay,
+  readonly = false,
 }: {
   weekId: string;
   todayWeekId: string;
   todayDay: IsoDay;
+  readonly?: boolean;
 }) {
   const prev = addWeeks(weekId, -1);
   const next = addWeeks(weekId, 1);
@@ -31,9 +33,11 @@ export function WeekNav({
         <Link href={todayHref} className={btnSecondary}>
           Today
         </Link>
-        <Link href={`/week/${weekId}/add`} className={btnSecondary}>
-          Add session
-        </Link>
+        {readonly ? null : (
+          <Link href={`/week/${weekId}/add`} className={btnSecondary}>
+            Add session
+          </Link>
+        )}
       </div>
     </div>
   );

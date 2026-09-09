@@ -54,6 +54,3 @@ next-env.d.ts
 
 # local agent workspace (not for GitHub)
 .agent/
-
-# personal runtime schedule (seed templates stay tracked)
-/data/schedule.json

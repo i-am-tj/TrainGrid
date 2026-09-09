@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { AddSessionForm } from "@/components/session/AddSessionForm";
 import type { IsoDay } from "@/lib/domain";
 import { listTemplates } from "@/lib/templates";
+import { isPublishedReadonly } from "@/lib/runtime";
 import { isValidWeekId, todayParts } from "@/lib/week";
 
 export default async function AddSessionPage({
@@ -19,6 +20,10 @@ export default async function AddSessionPage({
   const { weekId: rawWeekId } = await params;
   const query = await searchParams;
   const today = todayParts();
+
+  if (isPublishedReadonly()) {
+    redirect(rawWeekId === "current" ? "/" : `/week/${rawWeekId}`);
+  }
 
   if (rawWeekId === "current") {
     const q = new URLSearchParams();

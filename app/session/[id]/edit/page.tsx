@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { EditSessionForm } from "@/components/session/EditSessionForm";
 import { getSession } from "@/lib/schedule";
 import { listTemplates } from "@/lib/templates";
+import { isPublishedReadonly } from "@/lib/runtime";
 
 export default async function EditSessionPage({
   params,
@@ -9,6 +10,7 @@ export default async function EditSessionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  if (isPublishedReadonly()) redirect(`/session/${id}`);
   const session = await getSession(id);
   if (!session) notFound();
   const templates = await listTemplates();

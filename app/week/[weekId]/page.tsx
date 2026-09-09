@@ -9,6 +9,7 @@ import { listSessions } from "@/lib/schedule";
 import { listTemplates } from "@/lib/templates";
 import { resolveSessions } from "@/lib/resolve-session";
 import { addWeeks, formatWeekLabel, isValidWeekId, nearbyWeekIds, todayParts } from "@/lib/week";
+import { isPublishedReadonly } from "@/lib/runtime";
 
 export default async function WeekPage({
   params,
@@ -20,6 +21,7 @@ export default async function WeekPage({
   const { weekId: rawWeekId } = await params;
   const query = await searchParams;
   const today = todayParts();
+  const readonly = isPublishedReadonly();
 
   if (rawWeekId === "current") {
     redirect(`/week/${today.weekId}?day=${query.day ?? today.day}`);
@@ -59,27 +61,40 @@ export default async function WeekPage({
         weekId={rawWeekId}
         todayWeekId={today.weekId}
         todayDay={today.day}
+        readonly={readonly}
       />
-      <DuplicateWeekForm
-        sourceWeekId={rawWeekId}
-        sourceCount={weekSessions.length}
-        defaultDestWeekId={addWeeks(rawWeekId, 1)}
-        options={duplicateOptions}
-      />
+      {readonly ? null : (
+        <DuplicateWeekForm
+          sourceWeekId={rawWeekId}
+          sourceCount={weekSessions.length}
+          defaultDestWeekId={addWeeks(rawWeekId, 1)}
+          options={duplicateOptions}
+        />
+      )}
 
       {weekSessions.length === 0 ? (
         <p className="mt-3 hidden text-sm text-stone-600 md:block">
-          No sessions this week.{" "}
-          <Link href={`/week/${rawWeekId}/add`} className="underline">
-            Add session
-          </Link>
+          No sessions this week.
+          {readonly ? null : (
+            <>
+              {" "}
+              <Link href={`/week/${rawWeekId}/add`} className="underline">
+                Add session
+              </Link>
+            </>
+          )}
         </p>
       ) : null}
 
       <div className="hidden md:block">
-        <WeekGrid weekId={rawWeekId} sessions={weekSessions} />
+        <WeekGrid weekId={rawWeekId} sessions={weekSessions} readonly={readonly} />
       </div>
-      <DayAgenda weekId={rawWeekId} day={day} sessions={weekSessions} />
+      <DayAgenda
+        weekId={rawWeekId}
+        day={day}
+        sessions={weekSessions}
+        readonly={readonly}
+      />
     </div>
   );
 }

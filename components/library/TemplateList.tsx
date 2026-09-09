@@ -3,6 +3,7 @@ import type { SessionTemplate, SessionType } from "@/lib/domain";
 import { SESSION_TYPE_LABELS } from "@/lib/domain";
 import { TYPE_SHORT } from "@/lib/ui";
 import { btnPrimary, btnSecondary } from "@/lib/ui";
+import { isPublishedReadonly } from "@/lib/runtime";
 
 const FILTERS: Array<{ id: "all" | SessionType; label: string }> = [
   { id: "all", label: "All" },
@@ -19,6 +20,7 @@ export function TemplateList({
   templates: SessionTemplate[];
   filter: "all" | SessionType;
 }) {
+  const readonly = isPublishedReadonly();
   const visible =
     filter === "all" ? templates : templates.filter((t) => t.type === filter);
 
@@ -67,12 +69,14 @@ export function TemplateList({
                           {t.description ? ` · ${t.description}` : ""}
                         </div>
                       </Link>
-                      <Link
-                        href={`/week/current/add?template=${t.id}`}
-                        className={btnSecondary}
-                      >
-                        Schedule
-                      </Link>
+                      {readonly ? null : (
+                        <Link
+                          href={`/week/current/add?template=${t.id}`}
+                          className={btnSecondary}
+                        >
+                          Schedule
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -82,11 +86,13 @@ export function TemplateList({
         </div>
       )}
 
-      <div className="mt-6">
-        <Link href="/library/new" className={btnPrimary}>
-          New template
-        </Link>
-      </div>
+      {readonly ? null : (
+        <div className="mt-6">
+          <Link href="/library/new" className={btnPrimary}>
+            New template
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

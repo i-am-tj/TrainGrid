@@ -30,9 +30,18 @@ import {
 } from "@/lib/templates";
 import { isValidTime, isValidWeekId } from "@/lib/week";
 import { serializeWorkoutItems, parseEquipmentValues } from "@/lib/workout-items";
+import { isPublishedReadonly } from "@/lib/runtime";
 
 function revalidateAll() {
   revalidatePath("/", "layout");
+}
+
+function assertWritable() {
+  if (isPublishedReadonly()) {
+    throw new Error(
+      "This published TrainGrid site is read-only. Edit locally, then commit and push data/ to publish.",
+    );
+  }
 }
 
 function parseIsoDay(value: FormDataEntryValue | null): IsoDay {
@@ -84,6 +93,7 @@ function parseItemsFromForm(form: FormData): string {
 }
 
 export async function createScheduledSession(formData: FormData) {
+  assertWritable();
   const weekId = String(formData.get("weekId") ?? "");
   if (!isValidWeekId(weekId)) throw new Error("Invalid week");
   const name = sanitizeName(String(formData.get("name") ?? ""));
@@ -119,6 +129,7 @@ export async function createScheduledSession(formData: FormData) {
 }
 
 export async function updateScheduledSession(formData: FormData) {
+  assertWritable();
   const id = String(formData.get("id") ?? "");
   const existing = (await listSessions()).find((s) => s.id === id);
   if (!existing) throw new Error("Session not found");
@@ -158,6 +169,7 @@ export async function updateScheduledSession(formData: FormData) {
 }
 
 export async function customizeScheduledSession(formData: FormData) {
+  assertWritable();
   const id = String(formData.get("id") ?? "");
   const existing = (await listSessions()).find((s) => s.id === id);
   if (!existing) throw new Error("Session not found");
@@ -174,6 +186,7 @@ export async function customizeScheduledSession(formData: FormData) {
 }
 
 export async function deleteScheduledSessionAction(formData: FormData) {
+  assertWritable();
   const id = String(formData.get("id") ?? "");
   const weekId = String(formData.get("weekId") ?? "");
   const day = String(formData.get("day") ?? "1");
@@ -183,6 +196,7 @@ export async function deleteScheduledSessionAction(formData: FormData) {
 }
 
 export async function duplicateWeekAction(formData: FormData) {
+  assertWritable();
   const sourceWeekId = String(formData.get("sourceWeekId") ?? "");
   const destWeekId = String(formData.get("destWeekId") ?? "");
   if (!isValidWeekId(sourceWeekId) || !isValidWeekId(destWeekId)) {
@@ -205,6 +219,7 @@ export async function duplicateWeekAction(formData: FormData) {
 }
 
 export async function upsertTemplateAction(formData: FormData) {
+  assertWritable();
   const existingId = String(formData.get("id") ?? "").trim();
   const name = sanitizeName(String(formData.get("name") ?? ""));
   if (!name) throw new Error("Name is required");
@@ -222,6 +237,7 @@ export async function upsertTemplateAction(formData: FormData) {
 }
 
 export async function deleteTemplateAction(formData: FormData) {
+  assertWritable();
   const id = String(formData.get("id") ?? "");
   const template = await getTemplate(id);
   const file = await readSchedule();
@@ -248,6 +264,12 @@ export async function importBackupAction(
   _prev: { error: string } | null,
   formData: FormData,
 ): Promise<{ error: string } | null> {
+  if (isPublishedReadonly()) {
+    return {
+      error:
+        "This published TrainGrid site is read-only. Edit locally, then commit and push data/ to publish.",
+    };
+  }
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return { error: "Choose a backup file." };

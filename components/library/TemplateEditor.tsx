@@ -73,6 +73,11 @@ export function TemplateEditor({
           <button type="submit" className={btnPrimary}>
             Save
           </button>
+          {template ? (
+            <Link href={`/library/${template.id}`} className={btnSecondary}>
+              Cancel
+            </Link>
+          ) : null}
           <Link href="/library" className={btnSecondary}>
             Back to library
           </Link>

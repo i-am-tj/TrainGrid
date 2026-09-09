@@ -21,9 +21,11 @@ const UNTIMED = 52;
 export function WeekGrid({
   weekId,
   sessions,
+  readonly = false,
 }: {
   weekId: string;
   sessions: ResolvedSession[];
+  readonly?: boolean;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const dates = datesOfWeek(weekId);
@@ -80,12 +82,14 @@ export function WeekGrid({
               }`}
               style={{ minHeight: UNTIMED }}
             >
-              <Link
-                href={`/week/${weekId}/add?day=${day}&untimed=1`}
-                className="mb-1 block text-[10px] text-stone-400 hover:text-stone-700"
-              >
-                + untimed
-              </Link>
+              {readonly ? null : (
+                <Link
+                  href={`/week/${weekId}/add?day=${day}&untimed=1`}
+                  className="mb-1 block text-[10px] text-stone-400 hover:text-stone-700"
+                >
+                  + untimed
+                </Link>
+              )}
               <div className="flex flex-col gap-1">
                 {untimed.map((s) => (
                   <SessionCard key={s.id} session={s} />
@@ -103,6 +107,7 @@ export function WeekGrid({
             dates={dates}
             sessions={sessions}
             now={now}
+            readonly={readonly}
           />
         ))}
       </div>
@@ -116,12 +121,14 @@ function HourRow({
   dates,
   sessions,
   now,
+  readonly = false,
 }: {
   hour: number;
   weekId: string;
   dates: Date[];
   sessions: ResolvedSession[];
   now: Date;
+  readonly?: boolean;
 }) {
   return (
     <>
@@ -154,13 +161,15 @@ function HourRow({
                 <SessionCard key={s.id} session={s} />
               ))}
             </div>
-            <Link
-              href={`/week/${weekId}/add?day=${day}&time=${time}`}
-              className="mt-0.5 block min-h-[1.25rem] text-[10px] text-transparent hover:text-stone-500"
-              aria-label={`Add session ${formatShortDate(date)} ${time}`}
-            >
-              +
-            </Link>
+            {readonly ? null : (
+              <Link
+                href={`/week/${weekId}/add?day=${day}&time=${time}`}
+                className="mt-0.5 block min-h-[1.25rem] text-[10px] text-transparent hover:text-stone-500"
+                aria-label={`Add session ${formatShortDate(date)} ${time}`}
+              >
+                +
+              </Link>
+            )}
           </div>
         );
       })}

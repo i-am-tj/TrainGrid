@@ -53,10 +53,12 @@ export function DayAgenda({
   weekId,
   day,
   sessions,
+  readonly = false,
 }: {
   weekId: string;
   day: IsoDay;
   sessions: ResolvedSession[];
+  readonly?: boolean;
 }) {
   const dates = datesOfWeek(weekId);
   const date = dates[day - 1]!;
@@ -132,12 +134,14 @@ export function DayAgenda({
           </p>
         ) : null}
 
-        <Link
-          href={`/week/${weekId}/add?day=${day}`}
-          className="block rounded-md bg-stone-900 px-3 py-3 text-center text-sm font-medium text-white"
-        >
-          + Add
-        </Link>
+        {readonly ? null : (
+          <Link
+            href={`/week/${weekId}/add?day=${day}`}
+            className="block rounded-md bg-stone-900 px-3 py-3 text-center text-sm font-medium text-white"
+          >
+            + Add
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CustomizeForm } from "@/components/session/CustomizeForm";
 import { getSession } from "@/lib/schedule";
 import { listTemplates } from "@/lib/templates";
 import { resolveSession, templatesById } from "@/lib/resolve-session";
+import { isPublishedReadonly } from "@/lib/runtime";
 
 export default async function CustomizeSessionPage({
   params,
@@ -10,6 +11,7 @@ export default async function CustomizeSessionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  if (isPublishedReadonly()) redirect(`/session/${id}`);
   const session = await getSession(id);
   if (!session) notFound();
   const templates = await listTemplates();

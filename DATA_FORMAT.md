@@ -64,7 +64,9 @@ Workout item CRUD in the UI rewrites this Markdown. There is no separate item ta
 
 ## Schedule
 
-Path: `data/schedule.json` (local runtime; gitignored). Empty example: `data/schedule.example.json`.
+Path: `data/schedule.json` (tracked in Git; published plan). Empty example: `data/schedule.example.json`.
+
+Hosted deployments are read-only. Edit the schedule locally and push to publish.
 
 ```json
 {
