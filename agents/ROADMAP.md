@@ -29,7 +29,7 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
 | 9 | Route protection | `epic-1/09-route-protection` | 13 | Confirm on production that a signed-out browser is sent to `/login` | MERGED (production check to be confirmed) |
 | 8b | Revoke accepted members (keep data) | `epic-1/08b-revoke-members` | 11, 27 (extension) | Revoke and restore a test member on production | MERGED (production check to be confirmed) |
 | 10 | User-scoped data layer + validation | `epic-1/10-data-layer` | 24 | — | DONE |
-| 11 | Template migration foundation | `epic-1/11-template-seed` | 15 (templates) | Review and merge; then seed production with `supabase db push --remote --include-seed` | IN REVIEW |
+| 11 | Template migration foundation | `epic-1/11-template-seed` | 15 (templates) | Review and merge (production already seeded 2026-11-12) | IN REVIEW |
 | 12 | Planner migration files → Supabase | `epic-1/12-planner-migration` | 14, 15, 16, 17 | — | TODO |
 | 13 | Cross-user authorization tests | `epic-1/13-authz-tests` | 28 | — | TODO |
 | 14 | Environment / secrets hardening | `epic-1/14-secrets-hardening` | 20, 22, 23 | Vercel env vars; GitHub security settings | TODO |

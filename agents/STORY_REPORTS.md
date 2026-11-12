@@ -313,9 +313,10 @@ Tests:                 Lint pass. Unit 148/148 (29 new: converter, every templat
                        own fixtures because GLOBAL routines now exist locally). Integration
                        23/23. E2E 37/37. Build pass. Seed applied twice more locally: same
                        96 item ids.
-                       Production seed: NOT APPLIED.
+                       Production seed: applied by Tanuj 2026-11-12
+                       (supabase db push --remote --include-seed); row counts not yet checked.
 Deployment impact:     None visible: the app still reads data/templates until step 12.
-                       Production needs `supabase db push --remote --include-seed`.
+                       Seed applied to production before merge; inert until step 12.
 Status:                IN REVIEW
 ```
 
