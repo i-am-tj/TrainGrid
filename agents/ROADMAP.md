@@ -27,7 +27,7 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
 | 7b | Sign-out UX, account chooser, function region | `epic-1/07b-signout-ux` | 26 (follow-up) | — | DONE |
 | 8 | Admin invitation flow | `epic-1/08-admin-invitations` | 11, 12, 27 | — | DONE |
 | 9 | Route protection | `epic-1/09-route-protection` | 13 | Confirm on production that a signed-out browser is sent to `/login` | MERGED (production check to be confirmed) |
-| 8b | Revoke accepted members (keep data) | `epic-1/08b-revoke-members` | 11, 27 (extension) | Merge (migration already applied to production 2026-11-12); then revoke and restore a test member on production | IN REVIEW |
+| 8b | Revoke accepted members (keep data) | `epic-1/08b-revoke-members` | 11, 27 (extension) | Revoke and restore a test member on production | MERGED (production check to be confirmed) |
 | 10 | User-scoped data layer + validation | `epic-1/10-data-layer` | 24 | — | DONE |
 | 11 | Template migration foundation | `epic-1/11-template-seed` | 15 (templates) | Review and merge; then seed production with `supabase db push --remote --include-seed` | IN REVIEW |
 | 12 | Planner migration files → Supabase | `epic-1/12-planner-migration` | 14, 15, 16, 17 | — | TODO |

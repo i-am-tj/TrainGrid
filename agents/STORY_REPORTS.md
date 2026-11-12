@@ -271,7 +271,8 @@ Tests:                 Lint pass. Unit 119/119 (4 new). Database 174/174 (33 new
 Deployment impact:     Migration applied to production by Tanuj 2026-11-12 (before merge;
                        inert for the code already deployed). Admin page gains a Revoke
                        access button for accepted non-admin members once merged.
-Status:                IN REVIEW
+Status:                MERGED to main 2026-11-12 (29bf41d). Revoke and restore with real
+                       accounts not yet checked on production.
 ```
 
 ### Step 10 — User-scoped data layer + validation (story 24)
@@ -302,8 +303,8 @@ Status:                DONE — merged to main 2026-11-12 (e8f5396)
 ```
 Story:                 15 migrate away from runtime files (templates → GLOBAL routines)
 Branch:                epic-1/11-template-seed
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/14
+Commit:                8d3cc79
 Schema impact:         None. Adds supabase/seed.sql (generated): 18 GLOBAL routines, 96 items.
 RLS impact:            None. Seeded routines are GLOBAL: readable by members, writable by none.
 Secrets/config impact: None. New dev dependency tsx; new script seed:generate.
