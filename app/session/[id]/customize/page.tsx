@@ -1,33 +1,22 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { CustomizeForm } from "@/components/session/CustomizeForm";
-import { getSession } from "@/lib/schedule";
-import { listTemplates } from "@/lib/templates";
-import { resolveSession, templatesById } from "@/lib/resolve-session";
-import { isPublishedReadonly } from "@/lib/runtime";
-import { requireMember } from "@/lib/auth/session";
+import { memberData } from "@/lib/data/server";
+import { getSession } from "@/lib/data/sessions";
 
-export default async function CustomizeSessionPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  await requireMember();
+export default async function CustomizeSessionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { db, userId } = await memberData();
   const { id } = await params;
-  if (isPublishedReadonly()) redirect(`/session/${id}`);
-  const session = await getSession(id);
+  const session = await getSession(db, userId, id);
   if (!session) notFound();
-  const templates = await listTemplates();
-  const resolved = resolveSession(session, templatesById(templates));
 
   return (
     <div className="mx-auto max-w-xl px-3 py-4 sm:px-4">
       <h1 className="text-xl font-semibold">Customize content</h1>
       <p className="mt-1 text-sm text-stone-600">
-        Saves a copy on this scheduled session. Later template edits will not
-        change it. The template file is left unchanged.
+        Changes the workout of this session only. Its routine and other sessions are not affected.
       </p>
       <div className="mt-6">
-        <CustomizeForm id={session.id} body={resolved.body} />
+        <CustomizeForm id={session.id} items={session.items} />
       </div>
     </div>
   );

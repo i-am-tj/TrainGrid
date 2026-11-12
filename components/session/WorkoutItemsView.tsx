@@ -1,23 +1,41 @@
 import { EQUIPMENT_LABELS } from "@/lib/domain";
-import { parseWorkoutItems } from "@/lib/workout-items";
-import { MarkdownBody } from "@/components/MarkdownBody";
+import type { PlannedItem } from "@/lib/data/model";
 
-export function WorkoutItemsView({ markdown }: { markdown: string }) {
-  const items = parseWorkoutItems(markdown);
+/** Read-only view of planned workout items. Plain text; no Markdown. */
+export function WorkoutItemsView({ items }: { items: PlannedItem[] }) {
   if (items.length === 0) {
-    return <MarkdownBody markdown={markdown} />;
+    return <p className="text-sm text-stone-600">No workout items.</p>;
   }
 
   return (
     <div className="space-y-6">
       {items.map((item) => (
         <section key={item.id}>
-          {item.title ? (
-            <h2 className="text-base font-semibold text-stone-900">{item.title}</h2>
+          <h2 className="text-base font-semibold text-stone-900">{item.name}</h2>
+          {item.instruction ? (
+            <p className="mt-1 whitespace-pre-line text-sm text-stone-800">{item.instruction}</p>
           ) : null}
-          {item.body ? <MarkdownBody markdown={item.body} /> : null}
+          {item.rest || item.target ? (
+            <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-700">
+              {item.rest ? (
+                <div className="flex gap-1">
+                  <dt className="font-medium">Rest:</dt>
+                  <dd>{item.rest}</dd>
+                </div>
+              ) : null}
+              {item.target ? (
+                <div className="flex gap-1">
+                  <dt className="font-medium">Target:</dt>
+                  <dd>{item.target}</dd>
+                </div>
+              ) : null}
+            </dl>
+          ) : null}
+          {item.notes ? (
+            <p className="mt-2 whitespace-pre-line text-sm text-stone-600">{item.notes}</p>
+          ) : null}
           {item.equipment.length > 0 ? (
-            <ul className="mt-2 flex flex-wrap gap-1.5">
+            <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Equipment">
               {item.equipment.map((tag) => (
                 <li
                   key={tag}

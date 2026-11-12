@@ -50,15 +50,8 @@ export function isEquipmentType(value: string): value is EquipmentType {
 
 export type IsoDay = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-export type SessionTemplate = {
-  id: string;
-  name: string;
-  type: SessionType;
-  description: string;
-  body: string;
-};
-
-export type ScheduledSession = {
+/** A scheduled session as the planner grid shows it. */
+export type PlannerSession = {
   id: string;
   name: string;
   type: SessionType;
@@ -66,52 +59,13 @@ export type ScheduledSession = {
   day: IsoDay;
   time: string | null;
   durationMinutes: number | null;
-  notes: string;
-  templateId: string | null;
-  bodySnapshot: string | null;
-};
-
-export type SessionSource = "template" | "snapshot" | "adhoc";
-
-export type ResolvedSession = ScheduledSession & {
-  body: string;
-  source: SessionSource;
-};
-
-export type WorkoutItem = {
-  id: string;
-  title: string;
-  body: string;
-  equipment: EquipmentType[];
-  videoUrl: string | null;
-};
-
-export type ScheduleFile = {
-  sessions: ScheduledSession[];
-};
-
-export type BackupFile = {
-  version: 1;
-  exportedAt: string;
-  templates: SessionTemplate[];
-  sessions: ScheduledSession[];
 };
 
 export function isSessionType(value: string): value is SessionType {
   return (SESSION_TYPES as readonly string[]).includes(value);
 }
 
-export const MAX_NAME_LENGTH = 200;
-
-export function sanitizeName(raw: string): string | null {
-  const name = raw.replace(/\s+/g, " ").trim().slice(0, MAX_NAME_LENGTH);
-  return name.length > 0 ? name : null;
-}
-
-export function compareSessions(
-  a: ScheduledSession,
-  b: ScheduledSession,
-): number {
+export function compareSessions(a: PlannerSession, b: PlannerSession): number {
   if (a.time === null && b.time !== null) return -1;
   if (a.time !== null && b.time === null) return 1;
   if (a.time && b.time && a.time !== b.time) return a.time.localeCompare(b.time);

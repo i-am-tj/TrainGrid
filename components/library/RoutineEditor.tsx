@@ -1,23 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { SESSION_TYPES, SESSION_TYPE_LABELS, type SessionTemplate } from "@/lib/domain";
-import { deleteTemplateAction, upsertTemplateAction } from "@/lib/actions";
-import { parseWorkoutItems } from "@/lib/workout-items";
-import { WorkoutItemEditor } from "./WorkoutItemEditor";
+import { deleteRoutineAction, upsertRoutineAction } from "@/lib/actions";
+import type { Routine } from "@/lib/data/model";
+import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
 import { btnDanger, btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
+import { WorkoutItemEditor } from "./WorkoutItemEditor";
 
-export function TemplateEditor({
-  template,
-}: {
-  template: SessionTemplate | null;
-}) {
-  const initial = template ? parseWorkoutItems(template.body) : [];
-
+/** Creates or edits one of the member's own routines. */
+export function RoutineEditor({ routine }: { routine: Routine | null }) {
   return (
     <div className="space-y-6">
-      <form action={upsertTemplateAction} className="space-y-4">
-        {template ? <input type="hidden" name="id" value={template.id} /> : null}
+      <form action={upsertRoutineAction} className="space-y-4">
+        {routine ? <input type="hidden" name="id" value={routine.id} /> : null}
 
         <label className="block text-sm font-medium">
           Name
@@ -26,27 +21,13 @@ export function TemplateEditor({
             required
             maxLength={200}
             className={fieldClass}
-            defaultValue={template?.name ?? ""}
+            defaultValue={routine?.name ?? ""}
           />
         </label>
 
-        {template ? (
-          <p className="text-xs text-stone-500">
-            ID: <code>{template.id}</code> (immutable)
-          </p>
-        ) : (
-          <p className="text-xs text-stone-500">
-            ID is generated from the name when you save.
-          </p>
-        )}
-
         <label className="block text-sm font-medium">
           Type
-          <select
-            name="type"
-            className={fieldClass}
-            defaultValue={template?.type ?? "strength"}
-          >
+          <select name="type" className={fieldClass} defaultValue={routine?.category ?? "strength"}>
             {SESSION_TYPES.map((t) => (
               <option key={t} value={t}>
                 {SESSION_TYPE_LABELS[t]}
@@ -56,25 +37,26 @@ export function TemplateEditor({
         </label>
 
         <label className="block text-sm font-medium">
-          Description / notes
+          Description
           <textarea
             name="description"
+            maxLength={2000}
             className={`${fieldClass} min-h-16`}
-            defaultValue={template?.description ?? ""}
+            defaultValue={routine?.description ?? ""}
           />
         </label>
 
         <div>
           <h2 className="mb-2 text-sm font-medium">Workout items</h2>
-          <WorkoutItemEditor initial={initial} />
+          <WorkoutItemEditor initial={routine?.items ?? []} />
         </div>
 
         <div className="flex flex-wrap gap-2">
           <button type="submit" className={btnPrimary}>
             Save
           </button>
-          {template ? (
-            <Link href={`/library/${template.id}`} className={btnSecondary}>
+          {routine ? (
+            <Link href={`/library/${routine.id}`} className={btnSecondary}>
               Cancel
             </Link>
           ) : null}
@@ -84,22 +66,22 @@ export function TemplateEditor({
         </div>
       </form>
 
-      {template ? (
+      {routine ? (
         <form
-          action={deleteTemplateAction}
+          action={deleteRoutineAction}
           onSubmit={(e) => {
             if (
               !confirm(
-                "Delete this template? Scheduled sessions stay on the planner with a snapshot of the current workout text.",
+                "Delete this routine? Sessions already on your calendar keep their own copy of the workout.",
               )
             ) {
               e.preventDefault();
             }
           }}
         >
-          <input type="hidden" name="id" value={template.id} />
+          <input type="hidden" name="id" value={routine.id} />
           <button type="submit" className={btnDanger}>
-            Delete template
+            Delete routine
           </button>
         </form>
       ) : null}

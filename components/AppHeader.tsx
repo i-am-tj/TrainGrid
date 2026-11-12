@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { ImportExport } from "@/components/ImportExport";
 import { isAdminViewer, parseAdminUserIds } from "@/lib/admin/access";
 import { getViewer } from "@/lib/auth/session";
-import { isPublishedReadonly } from "@/lib/runtime";
 
 export async function AppHeader() {
-  const readonly = isPublishedReadonly();
   const viewer = await getViewer();
   const isMember = viewer.status === "member";
   // Only decides whether to show a link. The admin page and its actions
@@ -36,14 +33,14 @@ export async function AppHeader() {
               </Link>
             </>
           ) : null}
-          {!isMember ? null : readonly ? (
-            <span className="rounded-md bg-amber-50 px-1.5 py-1 text-[11px] font-medium text-amber-950 sm:px-2 sm:text-xs">
-              <span className="sm:hidden">Published</span>
-              <span className="hidden sm:inline">Published · read-only</span>
-            </span>
-          ) : (
-            <ImportExport />
-          )}
+          {isMember ? (
+            <a
+              href="/api/export"
+              className="rounded-md px-1.5 py-1 text-stone-700 hover:bg-stone-100 sm:px-2"
+            >
+              Export
+            </a>
+          ) : null}
           {isAdmin ? (
             <Link
               href="/admin/invitations"

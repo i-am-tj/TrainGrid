@@ -87,27 +87,29 @@ manual, on production, and are recorded with date and outcome.
 | S2 | No credentials in Git history | secret scan of full history | — |
 | S3 | `.env.example` contains placeholders only | review | PASS 2026-11-12 |
 | S4 | RLS enabled on every table in `public`; member-facing tables have policies scoped to `authenticated`; `invitations` has none | Database | PASS 2026-11-12 (local, 5 tables) |
-| S5 | No filesystem writes in production code paths | search for `fs` writes outside `scripts/` | — |
+| S5 | No filesystem writes in production code paths | search for `fs` writes outside `scripts/` | PASS 2026-11-12 (no fs reads or writes in app/, components/, lib/ outside seed tooling and tests) |
 
 ### Approved model decisions
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
 | D1 | Scheduling a routine stores a full snapshot; no session renders from its routine (D-03) | Integration + E2E | PASS 2026-11-12 (integration, local) |
-| D2 | Editing the source routine leaves the scheduled session unchanged (D-03) | E2E | PASS 2026-11-12 (integration, local); E2E in step 12 |
+| D2 | Editing the source routine leaves the scheduled session unchanged (D-03) | E2E | PASS 2026-11-12 (integration, local); E2E PASS 2026-11-12 |
 | D3 | Deleting the source routine keeps the session and nulls `source_routine_id` (D-03) | Database schema | PASS 2026-11-12 (database and integration, local) |
-| D4 | Editing one scheduled session does not change its duplicates or the routine (D-03) | E2E | PASS 2026-11-12 (integration, local); E2E in step 12 |
-| D5 | Duplicate Week copies snapshots with new session and item ids (D-03, D-04B) | Unit + E2E | PASS 2026-11-12 (unit and integration, local); E2E in step 12 |
-| D6 | Items save and load through structured fields; text such as `Rest: 2 min` typed into notes stays in notes (D-04) | Unit + E2E | PASS 2026-11-12 (unit and integration, local); E2E in step 12 |
+| D4 | Editing one scheduled session does not change its duplicates or the routine (D-03) | E2E | PASS 2026-11-12 (integration, local); E2E PASS 2026-11-12 |
+| D5 | Duplicate Week copies snapshots with new session and item ids (D-03, D-04B) | Unit + E2E | PASS 2026-11-12 (unit and integration, local); E2E PASS 2026-11-12 |
+| D6 | Items save and load through structured fields; text such as `Rest: 2 min` typed into notes stays in notes (D-04) | Unit + E2E | PASS 2026-11-12 (unit and integration, local); E2E PASS 2026-11-12 |
 | D7 | Schema has no performed-workout columns (D-04A) | Database schema | PASS 2026-11-12 (local) |
 | D8 | Seeded GLOBAL routines preserve order, equipment and video links of every template file (D-04, D-05) | Seed unit test + database | PASS 2026-11-12 (unit: all 18 files; database: 18 routines, 96 items, re-seeding idempotent). No template has a video link today |
-| D9 | Member can create, edit and delete a PERSONAL routine and cannot edit a GLOBAL one (D-05) | RLS + E2E | PASS 2026-11-12 (integration, local); E2E in step 12 |
+| D9 | Member can create, edit and delete a PERSONAL routine and cannot edit a GLOBAL one (D-05) | RLS + E2E | PASS 2026-11-12 (integration, local); E2E PASS 2026-11-12 |
 | D10 | Export contains only the signed-in user's routines, items and sessions; no GLOBAL routines, invitations or auth data (D-06) | Integration | PASS 2026-11-12 (integration, local) |
 | D11 | Export requires authentication (D-06) | Integration | PASS 2026-11-12 (E2E, local, step 9: export answers 401 when not a member) |
-| D12 | No import UI and no import endpoint or action exists (D-06) | E2E + code search | — |
+| D12 | No import UI and no import endpoint or action exists (D-06) | E2E + code search | PASS 2026-11-12 (E2E: no import control; code: import action removed) |
 
 ### Planner regression
 
-The existing Playwright journeys (schedule, reschedule, delete, untimed and timed sessions,
-several sessions per day, Duplicate Week, session detail, mobile and desktop layouts) are ported
-to run as a signed-in user and must pass unchanged in behaviour.
+The Playwright journeys (schedule, reschedule, delete, untimed and timed sessions, several
+sessions per day, Duplicate Week, session detail, mobile and desktop layouts) run as a fresh
+signed-in member against the local database. PASS 2026-11-12 (step 12: 40/40, run twice).
+Changed on purpose: live-linked templates (D-03), hosted import (D-06) and "Replace template"
+(D-65) are gone, and their tests were replaced by the snapshot, export and isolation tests.

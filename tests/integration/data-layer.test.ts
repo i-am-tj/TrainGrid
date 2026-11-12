@@ -3,6 +3,7 @@ import { exportUserData } from "@/lib/data/export";
 import { DataError } from "@/lib/data/model";
 import {
   deletePersonalRoutine,
+  findGlobalRoutineIdBySlug,
   getRoutine,
   listRoutines,
   savePersonalRoutine,
@@ -159,6 +160,32 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
         "invalid",
       );
       await rejects(savePersonalRoutine(a.db, "not-a-uuid", { name: "x", category: "other" }), "invalid");
+    });
+  });
+
+  describe("legacy slug links", () => {
+    it("resolve a seeded GLOBAL routine's slug for a member", async () => {
+      const slug = (await service().from("routines").select("slug").eq("id", globalId).single()).data!.slug!;
+      expect(await findGlobalRoutineIdBySlug(a.db, slug)).toBe(globalId);
+    });
+
+    it("never resolve to a personal routine, and reject odd input", async () => {
+      const mine = await savePersonalRoutine(a.db, null, { name: "lower-a", category: "other" });
+      expect(await findGlobalRoutineIdBySlug(a.db, "it-no-such-routine")).toBeNull();
+      expect(await findGlobalRoutineIdBySlug(a.db, mine)).toBeNull();
+      expect(await findGlobalRoutineIdBySlug(a.db, "Lower A")).toBeNull();
+      expect(await findGlobalRoutineIdBySlug(a.db, "a,b")).toBeNull();
+      expect(await findGlobalRoutineIdBySlug(a.db, "%")).toBeNull();
+      expect(await findGlobalRoutineIdBySlug(a.db, "x".repeat(101))).toBeNull();
+      expect(await findGlobalRoutineIdBySlug(a.db, null)).toBeNull();
+      // A personal routine can never carry a slug at all.
+      const planted = await a.db.from("routines").update({ slug: "planted" } as never).eq("id", mine);
+      expect(planted.error?.code).toBe("42501");
+    });
+
+    it("resolve nothing for a signed-in user who is not a member", async () => {
+      const slug = (await service().from("routines").select("slug").eq("id", globalId).single()).data!.slug!;
+      expect(await findGlobalRoutineIdBySlug(outsider.db, slug)).toBeNull();
     });
   });
 

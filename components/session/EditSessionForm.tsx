@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { ScheduledSession, SessionTemplate } from "@/lib/domain";
+import type { ScheduledSessionRecord } from "@/lib/data/model";
 import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
 import {
   deleteScheduledSessionAction,
@@ -11,15 +11,9 @@ import {
 import { datesOfWeek, formatLongDay, isValidWeekId, TIME_OPTIONS } from "@/lib/week";
 import { btnDanger, btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
 
-export function EditSessionForm({
-  session,
-  templates,
-}: {
-  session: ScheduledSession;
-  templates: SessionTemplate[];
-}) {
+export function EditSessionForm({ session }: { session: ScheduledSessionRecord }) {
   const [weekId, setWeekId] = useState(session.weekId);
-  const [untimed, setUntimed] = useState(session.time === null);
+  const [untimed, setUntimed] = useState(session.startTime === null);
   const dates = isValidWeekId(weekId) ? datesOfWeek(weekId) : datesOfWeek(session.weekId);
 
   return (
@@ -54,7 +48,7 @@ export function EditSessionForm({
             <select
               name="time"
               className={fieldClass}
-              defaultValue={session.time ?? "07:00"}
+              defaultValue={session.startTime ?? "07:00"}
             >
               {TIME_OPTIONS.map((t) => (
                 <option key={t} value={t}>
@@ -80,6 +74,7 @@ export function EditSessionForm({
             name="durationMinutes"
             type="number"
             min={1}
+            max={1440}
             className={fieldClass}
             defaultValue={session.durationMinutes ?? ""}
           />
@@ -101,7 +96,7 @@ export function EditSessionForm({
           <select
             name="type"
             className={fieldClass}
-            defaultValue={session.type}
+            defaultValue={session.category}
           >
             {SESSION_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -120,18 +115,6 @@ export function EditSessionForm({
           />
         </label>
 
-        <label className="block text-sm font-medium">
-          Replace template (optional)
-          <select name="replaceTemplateId" className={fieldClass} defaultValue="">
-            <option value="">Keep current link</option>
-            {templates.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <div className="flex flex-wrap gap-2">
           <button type="submit" className={btnPrimary}>
             Save
@@ -145,7 +128,7 @@ export function EditSessionForm({
       <form
         action={deleteScheduledSessionAction}
         onSubmit={(e) => {
-          if (!confirm("Remove from this week? The session template will be kept.")) {
+          if (!confirm("Remove this session from the week? Its routine is kept.")) {
             e.preventDefault();
           }
         }}

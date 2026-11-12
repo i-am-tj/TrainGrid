@@ -1,69 +1,54 @@
+import { readFileSync } from "fs";
 import { expect, test } from "@playwright/test";
-import { addWorkoutItem, resetData, saveTemplate, scheduleTemplate } from "./helpers";
 import { signInAsNewLocalMember } from "./local-supabase";
+import { createRoutine, fillItem, scheduleRoutine } from "./planner-helpers";
 
-// The planner is private: every test runs as a signed-in member.
+// Every test runs as a brand-new member, so each starts with an empty calendar.
 test.beforeEach(async ({ context, baseURL }) => {
-  await resetData();
   await signInAsNewLocalMember(context, baseURL!);
 });
 
-test("Journey 1 — first training plan", async ({ page }) => {
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Lower A");
-  await page.getByLabel("Type").selectOption("strength");
-  await addWorkoutItem(page, 0, "Back Squat", "3 × 6–8");
-  await addWorkoutItem(page, 1, "Romanian Deadlift", "3 × 8–10");
-  await addWorkoutItem(page, 2, "Bulgarian Split Squat", "3 × 10 / leg");
-  await saveTemplate(page);
-  await expect(page.getByRole("heading", { name: "Lower A" })).toBeVisible();
+test("Journey 1 — first training plan from a personal routine", async ({ page }) => {
+  await createRoutine(page, "My Lower", "strength", [
+    ["Back Squat", "3 × 6–8", { rest: "2 min", target: "RPE 7–8" }],
+    ["Romanian Deadlift", "3 × 8–10"],
+    ["Bulgarian Split Squat", "3 × 10 / leg"],
+  ]);
 
-  await scheduleTemplate(page, "Lower A", "1", "08:00");
-  await expect(page.getByRole("link", { name: "Lower A, 08:00" })).toBeVisible();
-  await page.getByRole("link", { name: "Lower A, 08:00" }).click();
-  await expect(page.getByRole("heading", { name: "Lower A" })).toBeVisible();
+  await scheduleRoutine(page, "My Lower", "1", "08:00");
+  await page.getByRole("link", { name: "My Lower, 08:00" }).click();
+  await expect(page.getByRole("heading", { name: "My Lower" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Back Squat" })).toBeVisible();
   await expect(page.getByText("3 × 6–8")).toBeVisible();
+  await expect(page.getByText("RPE 7–8")).toBeVisible();
+  await expect(page.getByText(/Copied from/)).toBeVisible();
   await expect(page.getByRole("button", { name: /start workout|log weight|complete set/i })).toHaveCount(0);
 });
 
-test("Journey 2 — running session", async ({ page }) => {
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("VO2 — 6 × 200m");
-  await page.getByLabel("Type").selectOption("running");
-  await addWorkoutItem(page, 0, "Warm-up", "1 km easy");
-  await addWorkoutItem(page, 1, "Main", "6 × 200m hard\n200m walk/jog recovery");
-  await addWorkoutItem(page, 2, "Cooldown", "1 km easy");
-  await saveTemplate(page);
-
-  await scheduleTemplate(page, "VO2", "3", "07:00");
-  await expect(page.getByRole("link", { name: /VO2/ })).toBeVisible();
-  await page.getByRole("link", { name: /VO2/ }).click();
-  await expect(page.getByText("1 km easy").first()).toBeVisible();
+test("Journey 2 — a GLOBAL routine on the calendar, with notes", async ({ page }) => {
+  await scheduleRoutine(page, "VO2max", "3", "07:00");
+  await page.getByRole("link", { name: "VO2max, 07:00" }).click();
+  await expect(page.locator("section").first()).toBeVisible();
   await page.getByRole("link", { name: "Edit" }).click();
   await page.getByLabel("Notes").fill("Track if windy");
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByText("Track if windy")).toBeVisible();
 });
 
-test("Journey 3 — multi-session day", async ({ page }) => {
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Speed Run");
-  await page.getByLabel("Type").selectOption("running");
-  await addWorkoutItem(page, 0, "Main", "Strides");
-  await saveTemplate(page);
+test("Journey 3 — multi-session day, timed and untimed, then reschedule", async ({ page }) => {
+  await scheduleRoutine(page, "Speed / Power", "1", "07:00");
+  await scheduleRoutine(page, "Lower B", "1", "08:30");
 
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Lower B");
-  await page.getByLabel("Type").selectOption("strength");
-  await addWorkoutItem(page, 0, "Deadlift", "3 × 4–6");
-  await saveTemplate(page);
+  await page.goto("/week/current/add?day=1&untimed=1");
+  await page.getByRole("radio", { name: "Blank" }).check();
+  await page.getByLabel("Name", { exact: true }).fill("Mobility");
+  await fillItem(page, 0, "Hip openers", "10 min");
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.waitForURL(/\/week\//);
 
-  await scheduleTemplate(page, "Speed Run", "1", "07:00");
-  await scheduleTemplate(page, "Lower B", "1", "08:30");
-
-  await expect(page.getByRole("link", { name: "Speed Run, 07:00" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Speed / Power, 07:00" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Lower B, 08:30" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Mobility, no time" }).first()).toBeVisible();
 
   await page.getByRole("link", { name: "Lower B, 08:30" }).click();
   await page.getByRole("link", { name: "Edit" }).click();
@@ -72,26 +57,35 @@ test("Journey 3 — multi-session day", async ({ page }) => {
   await page.getByRole("button", { name: "Save" }).click();
 
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Speed Run, 07:00" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Speed / Power, 07:00" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Lower B, 08:30" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Lower B, 18:00" })).toBeVisible();
 });
 
-test("Journey 4 — duplicate week", async ({ page }) => {
-  page.on("dialog", (dialog) => dialog.accept());
+test("rescheduling to a week that does not exist is refused", async ({ page }) => {
+  await scheduleRoutine(page, "Easy Run", "2", "07:00");
+  await page.getByRole("link", { name: "Easy Run, 07:00" }).click();
+  await page.waitForURL(/\/session\/[0-9a-f-]{36}$/);
+  const sessionUrl = page.url();
+  await page.getByRole("link", { name: "Edit" }).click();
+  await page.getByLabel("Week (YYYY-Www)").fill("2026-W60");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("heading", { name: "Could not complete that action" })).toBeVisible();
 
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Easy Run");
-  await page.getByLabel("Type").selectOption("running");
-  await addWorkoutItem(page, 0, "Main", "Easy");
-  await saveTemplate(page);
-  await scheduleTemplate(page, "Easy Run", "2", "07:00");
+  await page.goto(sessionUrl);
+  await expect(page.getByText(/· 07:00/)).toBeVisible();
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Easy Run, 07:00" })).toBeVisible();
+});
+
+test("Journey 4 — duplicate week copies independent sessions", async ({ page }) => {
+  page.on("dialog", (dialog) => dialog.accept());
+  await scheduleRoutine(page, "Easy Run", "2", "07:00");
 
   const heading = await page.getByRole("heading", { level: 1 }).innerText();
   await page.getByRole("button", { name: "Duplicate week" }).click();
   await expect(page.getByRole("link", { name: "Easy Run, 07:00" })).toBeVisible();
-  const copiedHeading = await page.getByRole("heading", { level: 1 }).innerText();
-  expect(copiedHeading).not.toBe(heading);
+  expect(await page.getByRole("heading", { level: 1 }).innerText()).not.toBe(heading);
 
   await page.getByRole("link", { name: "Easy Run, 07:00" }).click();
   await page.getByRole("link", { name: "Edit" }).click();
@@ -104,68 +98,94 @@ test("Journey 4 — duplicate week", async ({ page }) => {
   await expect(page.getByText("Copied week only")).toHaveCount(0);
 });
 
-test("Journey 5 — export and import restore", async ({ page }) => {
+test("D2, D3: editing or deleting a routine never changes a scheduled session", async ({ page }) => {
   page.on("dialog", (dialog) => dialog.accept());
+  const routineUrl = await createRoutine(page, "My Tempo", "running", [["Tempo", "20 min"]]);
+  await scheduleRoutine(page, "My Tempo", "4", "07:00");
 
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Tempo Run");
-  await page.getByLabel("Type").selectOption("running");
-  await addWorkoutItem(page, 0, "Tempo", "20 min");
-  await saveTemplate(page);
-  await scheduleTemplate(page, "Tempo Run", "5", "07:00");
+  await page.goto(`${routineUrl}/edit`);
+  await page.getByRole("textbox", { name: "Instruction" }).first().fill("40 min");
+  await page.getByRole("button", { name: "Save" }).click();
+  await page.waitForURL(/\/library\/[0-9a-f-]{36}$/);
+
+  await page.goto("/");
+  await page.getByRole("link", { name: "My Tempo, 07:00" }).click();
+  await page.waitForURL(/\/session\/[0-9a-f-]{36}$/);
+  await expect(page.getByText("20 min", { exact: true })).toBeVisible();
+  await expect(page.getByText("40 min")).toHaveCount(0);
+  const sessionUrl = page.url();
+
+  await page.goto(`${routineUrl}/edit`);
+  await page.getByRole("button", { name: "Delete routine" }).click();
+  await page.waitForURL(/\/library$/);
+
+  await page.goto(sessionUrl);
+  await expect(page.getByText("20 min", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Not linked to a routine/)).toBeVisible();
+});
+
+test("D4: customising one session leaves its routine alone", async ({ page }) => {
+  await scheduleRoutine(page, "Lower A", "5", "06:00");
+  await page.getByRole("link", { name: "Lower A, 06:00" }).click();
+  await page.getByRole("link", { name: "Customize content" }).click();
+  await page.getByRole("textbox", { name: "Instruction" }).first().fill("5 × 3 heavy");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByText("5 × 3 heavy")).toBeVisible();
+
+  await page.goto("/library");
+  await page.getByRole("link", { name: /^Lower A/ }).click();
+  await expect(page.getByText("4 × 5–6")).toBeVisible();
+  await expect(page.getByText("5 × 3 heavy")).toHaveCount(0);
+});
+
+test("equipment and YouTube persist on a scheduled session", async ({ page }) => {
+  await createRoutine(page, "My Video Lift", "strength", [
+    ["Back Squat", "4 × 5–6", { equipment: ["Barbell"], video: "https://youtu.be/dQw4w9WgXcQ" }],
+  ]);
+  await scheduleRoutine(page, "My Video Lift", "1", "08:00");
+  await page.getByRole("link", { name: "My Video Lift, 08:00" }).click();
+  await expect(page.getByRole("heading", { name: "Back Squat" })).toBeVisible();
+  await expect(page.getByLabel("Equipment").getByText("Barbell")).toBeVisible();
+  const demo = page.getByRole("link", { name: /Watch demo/ });
+  await expect(demo).toHaveAttribute("href", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+});
+
+test("D10, D12: export holds only my data; there is no import", async ({ page }) => {
+  await createRoutine(page, "My Export Routine", "other", [["Step", "Do it"]]);
+  await scheduleRoutine(page, "Lower A", "2", "07:00");
+
+  await expect(page.getByLabel("Import")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /import/i })).toHaveCount(0);
 
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: "Export" }).click();
   const download = await downloadPromise;
-  const filePath = test.info().outputPath("backup.json");
-  await download.saveAs(filePath);
+  const path = test.info().outputPath("export.json");
+  await download.saveAs(path);
+  const data = JSON.parse(readFileSync(path, "utf8"));
 
-  await resetData();
-  await page.goto("/library");
-  await expect(page.getByText("No templates yet.")).toBeVisible();
-
-  await page.getByLabel("Import").setInputFiles(filePath);
-  await expect(page).toHaveURL(/\/week\//);
-  await expect(page.getByRole("link", { name: /Tempo Run/ })).toBeVisible();
-  await page.goto("/library");
-  await expect(page.getByRole("link", { name: /Tempo Run/ })).toBeVisible();
+  expect(data).toMatchObject({ format: "traingrid-export", version: 2 });
+  expect(data.routines.map((r: { name: string }) => r.name)).toEqual(["My Export Routine"]);
+  expect(data.sessions.map((s: { name: string }) => s.name)).toEqual(["Lower A"]);
+  expect(JSON.stringify(data)).not.toMatch(/invitation|revoked_at|@example\.test/);
 });
 
-test("invalid import does not wipe existing data", async ({ page }) => {
-  page.on("dialog", (dialog) => dialog.accept());
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Keep Me");
-  await saveTemplate(page);
-  await page.goto("/library");
+test("another member cannot open my session", async ({ page, browser, baseURL }) => {
+  await scheduleRoutine(page, "Upper A", "3", "09:00");
+  await page.getByRole("link", { name: "Upper A, 09:00" }).click();
+  await page.waitForURL(/\/session\/[0-9a-f-]{36}$/);
+  const sessionUrl = page.url();
 
-  await page.getByLabel("Import").setInputFiles({
-    name: "bad.json",
-    mimeType: "application/json",
-    buffer: Buffer.from("{not-json"),
-  });
-  await expect(page.getByText("That file is not valid JSON.")).toBeVisible();
-  await expect(page.getByRole("link", { name: /Keep Me/ })).toBeVisible();
-});
-
-test("workout item equipment and YouTube persist on the session", async ({ page }) => {
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Lower A");
-  await page.getByLabel("Type").selectOption("strength");
-  await addWorkoutItem(page, 0, "Back Squat", "4 × 5–6");
-  await page.getByRole("button", { name: "Barbell", exact: true }).click();
-  await page.getByLabel("YouTube URL (optional)").fill(
-    "https://youtu.be/dQw4w9WgXcQ",
-  );
-  await saveTemplate(page);
-  await scheduleTemplate(page, "Lower A", "1", "08:00");
-  await page.getByRole("link", { name: "Lower A, 08:00" }).click();
-  await expect(page.getByRole("heading", { name: "Back Squat" })).toBeVisible();
-  await expect(page.getByText("Barbell", { exact: true })).toBeVisible();
-  const demo = page.getByRole("link", { name: /Watch demo/ });
-  await expect(demo).toBeVisible();
-  await expect(demo).toHaveAttribute(
-    "href",
-    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  );
-  await expect(page.getByRole("link", { name: /Watch demo/ })).toHaveCount(1);
+  const other = await browser.newContext({ baseURL });
+  try {
+    await signInAsNewLocalMember(other, baseURL!);
+    const otherPage = await other.newPage();
+    const response = await otherPage.goto(sessionUrl);
+    expect(response?.status()).toBe(404);
+    await expect(otherPage.getByText("Upper A")).toHaveCount(0);
+    await otherPage.goto("/");
+    await expect(otherPage.getByRole("link", { name: "Upper A, 09:00" })).toHaveCount(0);
+  } finally {
+    await other.close();
+  }
 });

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { IsoDay, ResolvedSession } from "@/lib/domain";
+import type { IsoDay, PlannerSession } from "@/lib/domain";
 import { compareSessions } from "@/lib/domain";
 import {
   addWeeks,
@@ -53,12 +53,10 @@ export function DayAgenda({
   weekId,
   day,
   sessions,
-  readonly = false,
 }: {
   weekId: string;
   day: IsoDay;
-  sessions: ResolvedSession[];
-  readonly?: boolean;
+  sessions: PlannerSession[];
 }) {
   const dates = datesOfWeek(weekId);
   const date = dates[day - 1]!;
@@ -134,14 +132,12 @@ export function DayAgenda({
           </p>
         ) : null}
 
-        {readonly ? null : (
-          <Link
-            href={`/week/${weekId}/add?day=${day}`}
-            className="block rounded-md bg-stone-900 px-3 py-3 text-center text-sm font-medium text-white"
-          >
-            + Add
-          </Link>
-        )}
+        <Link
+          href={`/week/${weekId}/add?day=${day}`}
+          className="block rounded-md bg-stone-900 px-3 py-3 text-center text-sm font-medium text-white"
+        >
+          + Add
+        </Link>
       </div>
     </div>
   );

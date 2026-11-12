@@ -317,6 +317,36 @@ Tests:                 Lint pass. Unit 148/148 (29 new: converter, every templat
                        (supabase db push --remote --include-seed); row counts not yet checked.
 Deployment impact:     None visible: the app still reads data/templates until step 12.
                        Seed applied to production before merge; inert until step 12.
+Status:                DONE — merged to main 2026-11-12 (02a32eb). Production seeded.
+```
+
+### Step 12 — Planner migration files → Supabase (stories 14, 15, 16, 17)
+
+```
+Story:                 14 remove read-only mode; 15 no runtime files; 16 legacy data import;
+                       17 preserve planner functionality
+Branch:                epic-1/12-planner-migration
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/15
+Commit:                14c51b3
+Schema impact:         None.
+RLS impact:            None. All reads and writes now go through the member's own client.
+Secrets/config impact: None new. TRAINGRID_READONLY and TRAINGRID_DATA_DIR no longer exist.
+                       New script import:legacy (local; secret key from the environment).
+Tests:                 Lint pass. Type-check pass. Unit 131/131 (148 before: 25 tests of
+                       deleted file-era code removed, 8 legacy-import tests added). Database
+                       186/186. Integration 26/26 (3 new: legacy slug lookup). E2E 43/43,
+                       twice (suite rewritten for the database; 3 new: legacy links, legacy
+                       link needs sign-in, non-existent week refused). Build pass. Secret
+                       key absent from bundle. No runtime fs access. Schema lint: 1 known
+                       warning (D-61).
+Review fixes:          Legacy slug links restored (D-71); non-existent weeks refused (D-72);
+                       misleading category casts replaced by one documented helper.
+Production deps:       Verified 2026-11-12 (read-only CLI): all 5 migrations applied; seed
+                       recorded as applied and up to date. Seeded row counts not inspected.
+                       Production app behaviour: NOT VERIFIED (not deployed).
+Deployment impact:     The cut-over. Members' planner and library read and write Supabase.
+                       The published/read-only notice, import and the file-backed code are
+                       gone. Migrations and seed are already on production.
 Status:                IN REVIEW
 ```
 

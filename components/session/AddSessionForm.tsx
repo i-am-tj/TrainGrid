@@ -1,49 +1,49 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { IsoDay, SessionTemplate, SessionType } from "@/lib/domain";
-import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
-import { createScheduledSession } from "@/lib/actions";
-import { datesOfWeek, formatLongDay, TIME_OPTIONS } from "@/lib/week";
-import { WorkoutItemEditor } from "@/components/library/WorkoutItemEditor";
-import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { WorkoutItemEditor } from "@/components/library/WorkoutItemEditor";
+import { createScheduledSession } from "@/lib/actions";
+import type { RoutineSummary } from "@/lib/data/model";
+import type { IsoDay, SessionType } from "@/lib/domain";
+import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
+import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
+import { datesOfWeek, formatLongDay, TIME_OPTIONS } from "@/lib/week";
 
 export function AddSessionForm({
   weekId,
-  templates,
+  routines,
   initialDay,
   initialTime,
-  initialTemplateId,
+  initialRoutineId,
 }: {
   weekId: string;
-  templates: SessionTemplate[];
+  routines: RoutineSummary[];
   initialDay: IsoDay;
   initialTime: string | null;
-  initialTemplateId: string | null;
+  initialRoutineId: string | null;
 }) {
   const dates = datesOfWeek(weekId);
-  const [from, setFrom] = useState<"template" | "blank">(
-    initialTemplateId || templates.length ? "template" : "blank",
+  const [from, setFrom] = useState<"routine" | "blank">(
+    initialRoutineId || routines.length ? "routine" : "blank",
   );
-  const [templateId, setTemplateId] = useState(
-    initialTemplateId ?? templates[0]?.id ?? "",
-  );
+  const [routineId, setRoutineId] = useState(initialRoutineId ?? routines[0]?.id ?? "");
   const selected = useMemo(
-    () => templates.find((t) => t.id === templateId) ?? null,
-    [templates, templateId],
+    () => routines.find((r) => r.id === routineId) ?? null,
+    [routines, routineId],
   );
   const [name, setName] = useState(selected?.name ?? "");
-  const [type, setType] = useState<SessionType>(selected?.type ?? "other");
+  const [type, setType] = useState<SessionType>(selected?.category ?? "other");
   const [untimed, setUntimed] = useState(initialTime === null);
+
+  const shared = routines.filter((r) => r.scope === "GLOBAL");
+  const mine = routines.filter((r) => r.isOwn);
 
   return (
     <form action={createScheduledSession} className="space-y-4">
       <input type="hidden" name="weekId" value={weekId} />
       <input type="hidden" name="from" value={from} />
-      {from === "template" ? (
-        <input type="hidden" name="templateId" value={templateId} />
-      ) : null}
+      {from === "routine" ? <input type="hidden" name="routineId" value={routineId} /> : null}
 
       <label className="block text-sm font-medium">
         Day
@@ -59,11 +59,7 @@ export function AddSessionForm({
       <div className="flex flex-wrap items-end gap-3">
         <label className="block text-sm font-medium">
           Time
-          <select
-            name="time"
-            className={fieldClass}
-            defaultValue={initialTime ?? "07:00"}
-          >
+          <select name="time" className={fieldClass} defaultValue={initialTime ?? "07:00"}>
             {TIME_OPTIONS.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -73,11 +69,7 @@ export function AddSessionForm({
         </label>
         <label className="flex min-h-10 items-center gap-2 text-sm">
           <input type="hidden" name="untimed" value={untimed ? "true" : "false"} />
-          <input
-            type="checkbox"
-            checked={untimed}
-            onChange={(e) => setUntimed(e.target.checked)}
-          />
+          <input type="checkbox" checked={untimed} onChange={(e) => setUntimed(e.target.checked)} />
           No start time
         </label>
       </div>
@@ -88,6 +80,7 @@ export function AddSessionForm({
           name="durationMinutes"
           type="number"
           min={1}
+          max={1440}
           className={fieldClass}
           placeholder="e.g. 60"
         />
@@ -99,17 +92,17 @@ export function AddSessionForm({
           <input
             type="radio"
             name="fromChoice"
-            checked={from === "template"}
+            checked={from === "routine"}
             onChange={() => {
-              setFrom("template");
+              setFrom("routine");
               if (selected) {
                 setName(selected.name);
-                setType(selected.type);
+                setType(selected.category);
               }
             }}
-            disabled={templates.length === 0}
+            disabled={routines.length === 0}
           />{" "}
-          Template
+          Routine
         </label>
         <label className="text-sm">
           <input
@@ -122,26 +115,37 @@ export function AddSessionForm({
         </label>
       </fieldset>
 
-      {from === "template" ? (
+      {from === "routine" ? (
         <label className="block text-sm font-medium">
-          Template
+          Routine
           <select
             className={fieldClass}
-            value={templateId}
+            value={routineId}
             onChange={(e) => {
-              const next = templates.find((t) => t.id === e.target.value);
-              setTemplateId(e.target.value);
+              const next = routines.find((r) => r.id === e.target.value);
+              setRoutineId(e.target.value);
               if (next) {
                 setName(next.name);
-                setType(next.type);
+                setType(next.category);
               }
             }}
           >
-            {templates.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
+            {mine.length > 0 ? (
+              <optgroup label="My routines">
+                {mine.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </optgroup>
+            ) : null}
+            <optgroup label="TrainGrid library">
+              {shared.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </label>
       ) : null}
@@ -158,25 +162,27 @@ export function AddSessionForm({
         />
       </label>
 
-      <label className="block text-sm font-medium">
-        Type
-        <select
-          name="type"
-          className={fieldClass}
-          value={type}
-          onChange={(e) => setType(e.target.value as SessionType)}
-        >
-          {SESSION_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {SESSION_TYPE_LABELS[t]}
-            </option>
-          ))}
-        </select>
-      </label>
+      {from === "blank" ? (
+        <label className="block text-sm font-medium">
+          Type
+          <select
+            name="type"
+            className={fieldClass}
+            value={type}
+            onChange={(e) => setType(e.target.value as SessionType)}
+          >
+            {SESSION_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {SESSION_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
 
       <label className="block text-sm font-medium">
         Notes
-        <textarea name="notes" className={`${fieldClass} min-h-16`} />
+        <textarea name="notes" maxLength={4000} className={`${fieldClass} min-h-16`} />
       </label>
 
       {from === "blank" ? (

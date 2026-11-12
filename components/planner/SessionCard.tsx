@@ -1,12 +1,12 @@
 import Link from "next/link";
-import type { ResolvedSession } from "@/lib/domain";
+import type { PlannerSession } from "@/lib/domain";
 import { TYPE_BAR, TYPE_SHORT, TYPE_TINT } from "@/lib/ui";
 
 export function SessionCard({
   session,
   showTime,
 }: {
-  session: ResolvedSession;
+  session: PlannerSession;
   showTime?: boolean;
 }) {
   const timeLabel =
