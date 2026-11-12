@@ -196,7 +196,33 @@ Tests:                 Lint pass. Unit 69/69 pass. E2E 23/23 pass. Build pass. D
                        NOT VERIFIED until deployed.
 Deployment impact:     Functions move from iad1 to syd1. Header shows Sign out for signed-in
                        users. Providers show an account chooser on each sign-in.
-Status:                IN REVIEW
+Status:                MERGED to main 2026-11-12 (d91cf17). Sign-out speed and the GitHub
+                       account chooser not yet confirmed on production.
+```
+
+### Step 8 — Admin invitation flow (stories 11, 12, 27; completes 21)
+
+```
+Story:                 11 admin invitation management; 12 invitation delivery (manual link);
+                       27 admin security; 21 protect Supabase secrets
+Branch:                epic-1/08-admin-invitations
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/10
+Commit:                cfc081b
+Schema impact:         None.
+RLS impact:            None. invitations stays closed to members; admin operations use the
+                       secret key only after a server-side admin check.
+Secrets/config impact: First use of SUPABASE_SECRET_KEY and TRAINGRID_ADMIN_USER_IDS. Both
+                       must be added to Vercel Production. New dependency: zod.
+Tests:                 Lint pass. Unit 82/82 pass (13 new). Database 121/121 pass.
+                       E2E 27/27 pass (4 new: anonymous 404, member 404, non-member 404,
+                       admin invite / duplicate / invalid / revoke). Build pass. Secret key
+                       absent from the client bundle.
+                       Not tested: invoking the server actions directly as a non-admin
+                       (covered by the unit-tested guard and code structure only).
+                       Production invite and revoke: NOT VERIFIED.
+Deployment impact:     Adds /admin/invitations and an Invitations header link for admins.
+                       Without the two variables the page is a 404 for everyone.
+Status:                IN REVIEW — production check pending
 ```
 
 ## Epic completion report

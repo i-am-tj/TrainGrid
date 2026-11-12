@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ImportExport } from "@/components/ImportExport";
+import { isAdminViewer, parseAdminUserIds } from "@/lib/admin/access";
 import { getViewer } from "@/lib/auth/session";
 import { isPublishedReadonly } from "@/lib/runtime";
 
 export async function AppHeader() {
   const readonly = isPublishedReadonly();
   const viewer = await getViewer();
+  // Only decides whether to show a link. The admin page and its actions
+  // check again themselves.
+  const isAdmin = isAdminViewer(viewer, parseAdminUserIds(process.env.TRAINGRID_ADMIN_USER_IDS));
 
   return (
     <header className="border-b border-line bg-card">
@@ -35,6 +39,14 @@ export async function AppHeader() {
           ) : (
             <ImportExport />
           )}
+          {isAdmin ? (
+            <Link
+              href="/admin/invitations"
+              className="rounded-md px-1.5 py-1 text-stone-700 hover:bg-stone-100 sm:px-2"
+            >
+              Invitations
+            </Link>
+          ) : null}
           {viewer.status !== "anonymous" ? (
             <SignOutButton className="rounded-md px-1.5 py-1 text-stone-700 hover:bg-stone-100 disabled:opacity-60 sm:px-2" />
           ) : null}

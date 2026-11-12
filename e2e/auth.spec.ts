@@ -1,6 +1,11 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
-import { createServerClient } from "@supabase/ssr";
-import { createClient } from "@supabase/supabase-js";
+import {
+  hasLocalSecretKey,
+  makeLocalMember,
+  signInAsNewLocalUser,
+  supabaseState,
+  supabaseUrl,
+} from "./local-supabase";
 
 /**
  * Sign-in page and session tests.
@@ -12,61 +17,6 @@ import { createClient } from "@supabase/supabase-js";
  * Tests that need Supabase skip themselves when it is not configured or the
  * local stack is not running (npm run supabase:start).
  */
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
-
-async function supabaseState(baseURL: string): Promise<"ok" | "unconfigured" | "unreachable"> {
-  const response = await fetch(`${baseURL}/api/health`);
-  const body = (await response.json()) as { supabase: "ok" | "unconfigured" | "unreachable" };
-  return body.supabase;
-}
-
-/** Creates a throwaway user in the local stack and signs the browser in as them. */
-async function signInAsNewLocalUser(context: BrowserContext, baseURL: string) {
-  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!publishableKey) throw new Error("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is not set");
-  if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(supabaseUrl)) {
-    throw new Error("Refusing to create test users outside the local Supabase stack");
-  }
-
-  const jar = new Map<string, string>();
-  const supabase = createServerClient(supabaseUrl, publishableKey, {
-    cookies: {
-      getAll: () => [...jar].map(([name, value]) => ({ name, value })),
-      setAll: (cookies) => cookies.forEach(({ name, value }) => jar.set(name, value)),
-    },
-  });
-
-  const email = `e2e-${crypto.randomUUID()}@example.test`;
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password: `local-${crypto.randomUUID()}`,
-  });
-  if (error || !data.session) throw new Error(`Local sign-up failed: ${error?.message}`);
-
-  await context.addCookies(
-    [...jar].map(([name, value]) => ({ name, value, url: baseURL })),
-  );
-  return { email, userId: data.session.user.id };
-}
-
-/**
- * Makes a local test user a member by creating their profile directly.
- * Real members are only ever provisioned by accept_invitation(); that path is
- * covered by the database tests, since it needs a Google or GitHub identity.
- */
-async function makeLocalMember(userId: string) {
-  const secretKey = process.env.SUPABASE_SECRET_KEY;
-  if (!secretKey) throw new Error("SUPABASE_SECRET_KEY is not set");
-  if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(supabaseUrl)) {
-    throw new Error("Refusing to use the secret key outside the local Supabase stack");
-  }
-  const admin = createClient(supabaseUrl, secretKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { error } = await admin.from("profiles").insert({ id: userId, display_name: "E2E Member" });
-  if (error) throw new Error(`Could not create local profile: ${error.message}`);
-}
 
 test("login page offers only the configured OAuth providers", async ({ page, baseURL }) => {
   test.skip((await supabaseState(baseURL!)) === "unconfigured", "Supabase is not configured");
@@ -196,7 +146,7 @@ test("a signed-in user who is not a member is told it is invite-only and can sig
 
 test("a member sees their email and can sign out", async ({ page, context, baseURL }) => {
   test.skip((await supabaseState(baseURL!)) !== "ok", "Local Supabase stack is not running");
-  test.skip(!process.env.SUPABASE_SECRET_KEY, "SUPABASE_SECRET_KEY is not set for the local stack");
+  test.skip(!hasLocalSecretKey(), "SUPABASE_SECRET_KEY is not set for the local stack");
 
   const { email, userId } = await signInAsNewLocalUser(context, baseURL!);
   await makeLocalMember(userId);
