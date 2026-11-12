@@ -98,8 +98,8 @@ GitHub ──push──▶ Vercel (Next.js 16)
 | `workout_items` | via `routine_id` | `name, instruction, rest, target, notes, equipment[], video_url, sort_order`; policies follow the parent routine |
 | `scheduled_sessions` | `user_id` (not null) | `date, start_time, name, category, duration_minutes, notes, source_routine_id, snapshot jsonb` |
 
-Implemented in `supabase/migrations/20261112000000_core_schema.sql` (step 2), except
-`invitations`, which arrives in step 7.
+Implemented in `supabase/migrations/20261112000000_core_schema.sql` (step 2) with policies in
+`20261112010000_rls_policies.sql` (step 3), except `invitations`, which arrives in step 7.
 
 Rules fixed by the approved decisions (see [DECISIONS.md](DECISIONS.md)):
 
