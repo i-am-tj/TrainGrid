@@ -2,12 +2,14 @@ import { TemplateList } from "@/components/library/TemplateList";
 import { isSessionType, type SessionType } from "@/lib/domain";
 import { isPublishedReadonly } from "@/lib/runtime";
 import { listTemplates } from "@/lib/templates";
+import { requireMember } from "@/lib/auth/session";
 
 export default async function LibraryPage({
   searchParams,
 }: {
   searchParams: Promise<{ type?: string }>;
 }) {
+  await requireMember();
   const { type } = await searchParams;
   const filter: "all" | SessionType =
     type && isSessionType(type) ? type : "all";

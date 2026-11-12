@@ -16,7 +16,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 10 | Invitation model | 7 | Agent | DONE |
 | 11 | Admin invitation management | 8 | Agent | IN REVIEW (production check pending) |
 | 12 | Invitation email delivery | 8 | Agent | IN REVIEW (manual link, per D-08) |
-| 13 | Protect application routes | 9 | Agent | TODO |
+| 13 | Protect application routes | 9 | Agent | IN REVIEW (production check pending) |
 | 14 | Remove hosted read-only architecture | 12 | Agent | TODO |
 | 15 | Migrate away from runtime files | 11, 12 | Agent | TODO |
 | 16 | Migrate existing personal data safely | 12 | Agent | TODO |

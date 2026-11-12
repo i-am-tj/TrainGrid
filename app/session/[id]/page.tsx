@@ -7,12 +7,14 @@ import { resolveSession, templatesById } from "@/lib/resolve-session";
 import { datesOfWeek, formatLongDay } from "@/lib/week";
 import { btnSecondary, TYPE_SHORT } from "@/lib/ui";
 import { isPublishedReadonly } from "@/lib/runtime";
+import { requireMember } from "@/lib/auth/session";
 
 export default async function SessionPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireMember();
   const { id } = await params;
   const session = await getSession(id);
   if (!session) notFound();

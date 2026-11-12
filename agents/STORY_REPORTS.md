@@ -225,6 +225,28 @@ Deployment impact:     Adds /admin/invitations and an Invitations header link fo
 Status:                IN REVIEW — production check pending
 ```
 
+### Step 9 — Route protection (story 13)
+
+```
+Story:                 13 protect application routes
+Branch:                epic-1/09-route-protection (stacked on epic-1/08-admin-invitations)
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None. A deployment without Supabase variables now serves only the
+                       login page and the health check.
+Tests:                 Lint pass. Unit 87/87 pass (5 new). Database 121/121 pass.
+                       E2E 36/36 pass (9 new; the 14 planner tests now sign in as a member).
+                       Build pass with and without Supabase variables. Unconfigured
+                       deployment checked by hand: pages redirect, export 401.
+                       Production: NOT VERIFIED.
+Deployment impact:     The production site stops being public. Anonymous visitors are sent
+                       to /login. Members see the existing file-backed, read-only planner
+                       until step 12. The E2E suite now needs the local Supabase stack.
+Status:                IN REVIEW — production check pending
+```
+
 ## Epic completion report
 
 Filled in at step 15. Until then every line is unverified.

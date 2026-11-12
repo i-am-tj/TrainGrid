@@ -30,6 +30,7 @@ import {
 } from "@/lib/templates";
 import { isValidTime, isValidWeekId } from "@/lib/week";
 import { serializeWorkoutItems, parseEquipmentValues } from "@/lib/workout-items";
+import { requireMember } from "@/lib/auth/session";
 import { isPublishedReadonly } from "@/lib/runtime";
 
 function revalidateAll() {
@@ -93,6 +94,7 @@ function parseItemsFromForm(form: FormData): string {
 }
 
 export async function createScheduledSession(formData: FormData) {
+  await requireMember();
   assertWritable();
   const weekId = String(formData.get("weekId") ?? "");
   if (!isValidWeekId(weekId)) throw new Error("Invalid week");
@@ -129,6 +131,7 @@ export async function createScheduledSession(formData: FormData) {
 }
 
 export async function updateScheduledSession(formData: FormData) {
+  await requireMember();
   assertWritable();
   const id = String(formData.get("id") ?? "");
   const existing = (await listSessions()).find((s) => s.id === id);
@@ -169,6 +172,7 @@ export async function updateScheduledSession(formData: FormData) {
 }
 
 export async function customizeScheduledSession(formData: FormData) {
+  await requireMember();
   assertWritable();
   const id = String(formData.get("id") ?? "");
   const existing = (await listSessions()).find((s) => s.id === id);
@@ -186,6 +190,7 @@ export async function customizeScheduledSession(formData: FormData) {
 }
 
 export async function deleteScheduledSessionAction(formData: FormData) {
+  await requireMember();
   assertWritable();
   const id = String(formData.get("id") ?? "");
   const weekId = String(formData.get("weekId") ?? "");
@@ -196,6 +201,7 @@ export async function deleteScheduledSessionAction(formData: FormData) {
 }
 
 export async function duplicateWeekAction(formData: FormData) {
+  await requireMember();
   assertWritable();
   const sourceWeekId = String(formData.get("sourceWeekId") ?? "");
   const destWeekId = String(formData.get("destWeekId") ?? "");
@@ -219,6 +225,7 @@ export async function duplicateWeekAction(formData: FormData) {
 }
 
 export async function upsertTemplateAction(formData: FormData) {
+  await requireMember();
   assertWritable();
   const existingId = String(formData.get("id") ?? "").trim();
   const name = sanitizeName(String(formData.get("name") ?? ""));
@@ -237,6 +244,7 @@ export async function upsertTemplateAction(formData: FormData) {
 }
 
 export async function deleteTemplateAction(formData: FormData) {
+  await requireMember();
   assertWritable();
   const id = String(formData.get("id") ?? "");
   const template = await getTemplate(id);
@@ -264,6 +272,7 @@ export async function importBackupAction(
   _prev: { error: string } | null,
   formData: FormData,
 ): Promise<{ error: string } | null> {
+  await requireMember();
   if (isPublishedReadonly()) {
     return {
       error:
@@ -286,6 +295,7 @@ export async function importBackupAction(
 }
 
 export async function exportBackupPayload(): Promise<BackupFile> {
+  await requireMember();
   const templates = await listTemplates();
   const { sessions } = await readSchedule();
   return {

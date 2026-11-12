@@ -4,6 +4,7 @@ import type { IsoDay } from "@/lib/domain";
 import { listTemplates } from "@/lib/templates";
 import { isPublishedReadonly } from "@/lib/runtime";
 import { isValidWeekId, todayParts } from "@/lib/week";
+import { requireMember } from "@/lib/auth/session";
 
 export default async function AddSessionPage({
   params,
@@ -17,6 +18,7 @@ export default async function AddSessionPage({
     untimed?: string;
   }>;
 }) {
+  await requireMember();
   const { weekId: rawWeekId } = await params;
   const query = await searchParams;
   const today = todayParts();

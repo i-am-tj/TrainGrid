@@ -79,8 +79,7 @@ environment only:
 Redeploy, then open `https://train-grid.vercel.app/api/health`. `{"supabase":"ok"}` confirms the
 deployment reaches the project.
 
-Until these are set, the deployed site behaves exactly as before: the session proxy passes
-requests through untouched.
+Without these, a deployment serves only the login page and the health check.
 
 ## Authentication settings in the production project
 
@@ -178,6 +177,23 @@ To enable it in production, add in Vercel (Production only):
 
 Then redeploy.
 
+### Route protection
+
+Everything is private unless it is on a short public list: `/login`, `/auth/callback` and
+`/api/health`. New routes are therefore protected by default.
+
+Protection is layered, and no layer relies on another:
+
+1. **Proxy** (`proxy.ts`): an anonymous request for a private page is redirected to `/login`,
+   remembering the page asked for; a private API route answers `401`. If Supabase is not
+   configured for a deployment, private routes are not served at all.
+2. **Pages and server actions**: each calls `requireMember()`, which checks the session again and
+   also turns away signed-in users who are not members.
+3. **Database**: Row Level Security, as described in the ADR.
+
+Vercel preview deployments have no Supabase variables, so they show only the login page with
+"Sign-in is not available on this deployment".
+
 ### Sign-in flow
 
 ```
@@ -199,11 +215,11 @@ notice, or an explanation that no verified email was available. Provider error d
 | --- | --- | --- |
 | `lib/supabase/client.ts` | Client Components | Browser client, publishable key |
 | `lib/supabase/server.ts` | Server Components, Server Actions, Route Handlers | One client per request, reads the session from cookies; marked `server-only` |
-| `lib/supabase/proxy.ts` + `proxy.ts` | Every request | Refreshes the session cookie; marks responses that set auth cookies as uncacheable |
+| `lib/supabase/proxy.ts` + `proxy.ts` | Every request | Refreshes the session cookie; turns anonymous visitors away from private routes |
 | `lib/supabase/env.ts` | All of the above | Reads and validates the public configuration |
 | `lib/auth/actions.ts` | `/login` | Server actions that start OAuth sign-in and sign out |
 | `app/auth/callback/route.ts` | OAuth return | Exchanges the one-time code for a session |
 | `lib/supabase/admin.ts` | Admin invitation functions only | Secret-key client; bypasses RLS; `server-only` |
 
 The browser, server and proxy clients use the publishable key and the signed-in user's session, so every query is
-subject to Row Level Security. The proxy only keeps sessions fresh; it does not protect routes.
+subject to Row Level Security. The proxy is the outer door only; pages, actions and the database each check again.
