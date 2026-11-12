@@ -36,7 +36,7 @@ manual, on production, and are recorded with date and outcome.
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| A1 | Anonymous visitor cannot reach the planner | E2E | PASS 2026-11-12 (E2E, local) — every private page redirects, export answers 401, unconfigured deployment fails closed; production pending |
+| A1 | Anonymous visitor cannot reach the planner | E2E | PASS 2026-11-12 (E2E, local) — every private page redirects, export answers 401, unconfigured deployment fails closed; production signed-out redirect confirmed by Tanuj |
 | A2 | Invited Google user gets in | Manual, production | PASS 2026-11-12 (Tanuj, production), with the invite gate in place |
 | A3 | Invited GitHub user gets in | Manual, production | PASS 2026-11-12 (Tanuj, production), with the invite gate in place |
 | A4 | Non-invited OAuth user is denied with the friendly message | Database + E2E (local) + manual | PASS 2026-11-12 (database: refused, no profile; E2E: message shown, sign-out works). Callback refusal on production: PASS 2026-11-12 (Tanuj, production) |

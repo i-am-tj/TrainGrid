@@ -343,12 +343,12 @@ Review fixes:          Legacy slug links restored (D-71); non-existent weeks ref
                        misleading category casts replaced by one documented helper.
 Production deps:       Verified 2026-11-12 (read-only CLI): all 5 migrations applied; seed
                        recorded as applied and up to date. Seeded row counts not inspected.
-                       Production app behaviour: NOT VERIFIED.
+                       Production app behaviour: confirmed working by Tanuj 2026-11-12.
 Deployment impact:     The cut-over. Members' planner and library read and write Supabase.
                        The published/read-only notice, import and the file-backed code are
                        gone. Migrations and seed are already on production.
-Status:                MERGED to main 2026-11-12 (d8dddb4). Production use not yet
-                       confirmed.
+Status:                DONE — merged to main 2026-11-12 (d8dddb4); production UI confirmed
+                       by Tanuj.
 ```
 
 ### Step 13 — Cross-user authorization tests (story 28)
