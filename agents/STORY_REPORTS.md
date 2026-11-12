@@ -175,7 +175,28 @@ Tests:                 Lint pass. Unit 69/69 pass (4 new). Database 121/121 pass
 Deployment impact:     From this deploy, sign-in succeeds only for invited emails. Until
                        migrations are applied to production, every sign-in ends with the
                        generic error. The planner itself is unaffected.
-Status:                IN REVIEW — production check pending
+Status:                MERGED to main 2026-11-12 (784b194). Confirmed on production by Tanuj
+                       2026-11-12: invited Google and GitHub accounts admitted, uninvited
+                       account refused. Status: DONE.
+```
+
+### Step 7b — Sign-out UX, account chooser, function region (follow-up to stories 7, 8, 26)
+
+```
+Story:                 Feedback from production use on 2026-11-12
+Branch:                epic-1/07b-signout-ux
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/9
+Commit:                3af6b63
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: Adds vercel.json pinning functions to syd1. No variables.
+Tests:                 Lint pass. Unit 69/69 pass. E2E 23/23 pass. Build pass. Database
+                       tests not re-run (no database change).
+                       Sign-out speed on production and the GitHub account chooser:
+                       NOT VERIFIED until deployed.
+Deployment impact:     Functions move from iad1 to syd1. Header shows Sign out for signed-in
+                       users. Providers show an account chooser on each sign-in.
+Status:                IN REVIEW
 ```
 
 ## Epic completion report

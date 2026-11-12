@@ -73,6 +73,9 @@ test("login page offers only the configured OAuth providers", async ({ page, bas
 
   await page.goto("/login");
 
+  // Anonymous visitors get no sign-out control.
+  await expect(page.getByRole("button", { name: "Sign out" })).toHaveCount(0);
+
   await expect(page.getByRole("heading", { name: "Welcome to TrainGrid" })).toBeVisible();
   await expect(page.getByText("Invite-only access")).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
@@ -102,6 +105,7 @@ test("Continue with Google hands off to Supabase with a callback on this site", 
 
   expect(url.searchParams.get("provider")).toBe("google");
   expect(url.searchParams.get("code_challenge")).toBeTruthy();
+  expect(url.searchParams.get("prompt")).toBe("select_account");
   const redirectTo = new URL(url.searchParams.get("redirect_to")!);
   expect(redirectTo.origin).toBe(new URL(baseURL!).origin);
   expect(redirectTo.pathname).toBe("/auth/callback");
@@ -124,6 +128,7 @@ test("Continue with GitHub hands off to Supabase with a callback on this site", 
 
   expect(url.searchParams.get("provider")).toBe("github");
   expect(url.searchParams.get("code_challenge")).toBeTruthy();
+  expect(url.searchParams.get("prompt")).toBe("select_account");
   const redirectTo = new URL(url.searchParams.get("redirect_to")!);
   expect(redirectTo.origin).toBe(new URL(baseURL!).origin);
   expect(redirectTo.pathname).toBe("/auth/callback");
@@ -200,7 +205,10 @@ test("a member sees their email and can sign out", async ({ page, context, baseU
   await expect(page.getByText(email)).toBeVisible();
   await expect(page.getByText("TrainGrid is currently invite-only.")).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Sign out" }).click();
+  // Sign-out lives in the header, on every page.
+  await page.getByRole("link", { name: "Go to the planner" }).click();
+  await expect(page).toHaveURL(/\/week\//);
+  await page.getByRole("banner").getByRole("button", { name: "Sign out" }).click();
 
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
