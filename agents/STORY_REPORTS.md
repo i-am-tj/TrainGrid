@@ -54,16 +54,16 @@ Tests:                 Database 38/38 pass (local). Schema lint clean. Lint pass
                        Unit 41/41 pass. Build pass. E2E not run (application code unchanged).
 Deployment impact:     None. The app does not use the database yet and nothing has been
                        applied to any cloud project.
-Status:                IN REVIEW
+Status:                DONE — merged to main 2026-11-12 (3fd88bd)
 ```
 
 ### Step 3 — RLS policies + database tests (story 6, story 28 database part)
 
 ```
 Story:                 6 Row Level Security everywhere; 28 security tests (database level)
-Branch:                epic-1/03-rls-policies (stacked on epic-1/02-schema-migrations)
-PR:                    not opened yet
-Commit:                not committed yet
+Branch:                epic-1/03-rls-policies
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/4
+Commit:                5950cd5
 Schema impact:         One migration, supabase/migrations/20261112010000_rls_policies.sql:
                        function public.is_member() and 14 policies. No table changes.
 RLS impact:            profiles: select/update own. routines: select GLOBAL (members) or own;
