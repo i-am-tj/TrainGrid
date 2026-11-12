@@ -31,8 +31,7 @@ RLS impact:            none
 Secrets/config impact: none
 Tests:                 not applicable (documentation only); lint/unit/build not re-run
 Deployment impact:     none
-Status:                IN REVIEW — D-03, D-04, D-04A, D-04B, D-05, D-06 resolved 2026-11-12 and
-                       recorded; PR open, not merged
+Status:                DONE — merged to main 2026-11-12 (03c331f)
 ```
 
 ### Step 2 — Database schema + migrations (stories 2, 3, 4, 5, 29)
@@ -40,9 +39,9 @@ Status:                IN REVIEW — D-03, D-04, D-04A, D-04B, D-05, D-06 resolv
 ```
 Story:                 2 profiles, 3 routines, 4 workout items, 5 scheduled sessions,
                        29 migration management
-Branch:                epic-1/02-schema-migrations (stacked on epic-1/01-architecture-adr)
-PR:                    not opened yet
-Commit:                not committed yet
+Branch:                epic-1/02-schema-migrations
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/3
+Commit:                351fc09
 Schema impact:         New tables profiles, routines, workout_items, scheduled_sessions with
                        check constraints, indexes, updated_at triggers. One migration:
                        supabase/migrations/20261112000000_core_schema.sql

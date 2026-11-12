@@ -35,7 +35,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 29 | Supabase migration management | 2 | Agent | IN REVIEW |
 | 30 | Vercel production configuration | 15 | Tanuj + Agent | TODO |
 | 31 | Free-tier constraint | 15 | Agent | TODO |
-| 32 | Architecture documentation (ADR) | 1 | Agent | IN REVIEW |
+| 32 | Architecture documentation (ADR) | 1 | Agent | DONE |
 | 33 | Update existing documentation | 16 | Agent | TODO |
 
 ## Work that only Tanuj can do
