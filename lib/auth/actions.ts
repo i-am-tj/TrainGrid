@@ -23,7 +23,13 @@ export async function signInWithProvider(formData: FormData) {
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: buildCallbackUrl(origin, nextPath) },
+    options: {
+      redirectTo: buildCallbackUrl(origin, nextPath),
+      // Always let the person pick the account. Signing out of TrainGrid does
+      // not sign them out of Google or GitHub, so without this the provider
+      // would silently reuse whichever account the browser last used.
+      queryParams: { prompt: "select_account" },
+    },
   });
 
   if (error || !data.url) {

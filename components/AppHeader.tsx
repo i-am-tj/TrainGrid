@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ImportExport } from "@/components/ImportExport";
+import { getViewer } from "@/lib/auth/session";
 import { isPublishedReadonly } from "@/lib/runtime";
 
-export function AppHeader() {
+export async function AppHeader() {
   const readonly = isPublishedReadonly();
+  const viewer = await getViewer();
 
   return (
     <header className="border-b border-line bg-card">
@@ -32,6 +35,9 @@ export function AppHeader() {
           ) : (
             <ImportExport />
           )}
+          {viewer.status !== "anonymous" ? (
+            <SignOutButton className="rounded-md px-1.5 py-1 text-stone-700 hover:bg-stone-100 disabled:opacity-60 sm:px-2" />
+          ) : null}
         </nav>
       </div>
     </header>
