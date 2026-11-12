@@ -31,7 +31,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 25 | OAuth account handling | 6 | Agent | DONE |
 | 26 | Authentication UI | 5 | Agent | DONE |
 | 27 | Admin security | 8 | Agent | DONE |
-| 28 | Security tests | 3, 13 | Agent | IN PROGRESS (database part in review) |
+| 28 | Security tests | 3, 10, 13 | Agent | IN REVIEW (all automated checks pass; production rows A2–A4 confirmed manually) |
 | 29 | Supabase migration management | 2 | Agent | DONE |
 | 30 | Vercel production configuration | 15 | Tanuj + Agent | TODO |
 | 31 | Free-tier constraint | 15 | Agent | TODO |

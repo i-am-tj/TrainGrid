@@ -343,10 +343,34 @@ Review fixes:          Legacy slug links restored (D-71); non-existent weeks ref
                        misleading category casts replaced by one documented helper.
 Production deps:       Verified 2026-11-12 (read-only CLI): all 5 migrations applied; seed
                        recorded as applied and up to date. Seeded row counts not inspected.
-                       Production app behaviour: NOT VERIFIED (not deployed).
+                       Production app behaviour: NOT VERIFIED.
 Deployment impact:     The cut-over. Members' planner and library read and write Supabase.
                        The published/read-only notice, import and the file-backed code are
                        gone. Migrations and seed are already on production.
+Status:                MERGED to main 2026-11-12 (d8dddb4). Production use not yet
+                       confirmed.
+```
+
+### Step 13 — Cross-user authorization tests (story 28)
+
+```
+Story:                 28 security tests (application level, completing the matrix)
+Branch:                epic-1/13-authz-tests
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None. New scripts: typecheck, test:all.
+Tests:                 New e2e/authorization.spec.ts, 10 tests: member A forging B's ids into
+                       their own edit, customise, delete, routine save and routine delete
+                       forms; ownership fields injected into add-session and new-routine
+                       forms; forged Duplicate Week; B's pages returning 404; an admin's
+                       invite and revoke requests replayed by a member and an anonymous
+                       visitor. Every outcome checked in the database. Mutation check:
+                       with the admin check removed, the replay test fails.
+                       test:all: lint, typecheck, unit 131/131, database 186/186,
+                       integration 26/26, E2E 53/53, build all pass.
+Deployment impact:     None. Tests and scripts only.
 Status:                IN REVIEW
 ```
 

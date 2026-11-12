@@ -21,7 +21,9 @@
     "supabase:stop": "supabase stop",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "seed:generate": "tsx scripts/generate-global-seed.ts",
-    "import:legacy": "tsx scripts/import-legacy-schedule.ts"
+    "import:legacy": "tsx scripts/import-legacy-schedule.ts",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:all": "npm run lint && npm run typecheck && npm test && npm run db:test && npm run test:integration && npm run test:e2e && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -47,15 +47,15 @@ manual, on production, and are recorded with date and outcome.
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| I1 | A sees only A's schedule; B sees only B's | RLS + E2E | PASS 2026-11-12 (database, local); E2E pending; PASS 2026-11-12 (integration, local) |
-| I2 | A cannot read B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
-| I3 | A cannot update B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
-| I4 | A cannot delete B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
-| I5 | A cannot insert a session owned by B | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
-| I6 | A cannot read, update or delete B's personal routine | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
-| I7 | A cannot insert a routine owned by B, or a GLOBAL routine | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
-| I8 | A cannot duplicate B's week | RLS + E2E | PASS 2026-11-12 (database, local); E2E pending; PASS 2026-11-12 (integration, local) |
-| I9 | Members can read GLOBAL routines and cannot change them | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I1 | A sees only A's schedule; B sees only B's | RLS + E2E | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); E2E PASS 2026-11-12 (forged Duplicate Week included) |
+| I2 | A cannot read B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); app with forged form input PASS 2026-11-12 (E2E) |
+| I3 | A cannot update B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); app with forged form input PASS 2026-11-12 (E2E) |
+| I4 | A cannot delete B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); app with forged form input PASS 2026-11-12 (E2E) |
+| I5 | A cannot insert a session owned by B | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); app with forged form input PASS 2026-11-12 (E2E) |
+| I6 | A cannot read, update or delete B's personal routine | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); app with forged form input PASS 2026-11-12 (E2E) |
+| I7 | A cannot insert a routine owned by B, or a GLOBAL routine | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); app with forged form input PASS 2026-11-12 (E2E) |
+| I8 | A cannot duplicate B's week | RLS + E2E | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); E2E PASS 2026-11-12 (forged Duplicate Week included) |
+| I9 | Members can read GLOBAL routines and cannot change them | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local); app with forged form input PASS 2026-11-12 (E2E) |
 | I10 | Authenticated but uninvited user reads and writes nothing | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
 | I11 | Anonymous key reads and writes nothing | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
 
@@ -64,9 +64,28 @@ manual, on production, and are recorded with date and outcome.
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
 | M1 | Admin can create and revoke an invitation | E2E | PASS 2026-11-12 (E2E, local); admin page working on production (Tanuj) |
-| M2 | Member cannot create an invitation (action and direct query) | Integration + RLS | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly as a member |
-| M3 | Anonymous user cannot create an invitation | Integration | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly while anonymous |
+| M2 | Member cannot create an invitation (action and direct query) | Integration + RLS | PASS 2026-11-12: direct query refused (database); the real invite and revoke server actions, captured from an admin and replayed by a member, change nothing (E2E). The test was confirmed to fail with the admin check removed |
+| M3 | Anonymous user cannot create an invitation | Integration | PASS 2026-11-12: direct query refused (database); the real invite and revoke server actions, captured from an admin and replayed by an anonymous visitor, change nothing (E2E). The test was confirmed to fail with the admin check removed |
 | M4 | Member cannot open `/admin` | E2E | PASS 2026-11-12 (E2E, local) — 404, no admin link |
+
+### Story 28 traceability
+
+| Epic requirement | Covered by |
+| --- | --- |
+| Anonymous visitor cannot access planner | A1 |
+| Invited Google / GitHub user can access | A2, A3 |
+| Non-invited OAuth user is denied | A4 |
+| Sign-out removes access | A5 |
+| A sees A's schedule; B sees B's | I1 |
+| A cannot read / update / delete B's session | I2, I3, I4 |
+| A cannot read / update / delete B's personal routine | I6 |
+| A cannot duplicate B's week | I8 |
+| RLS itself blocks cross-user access (direct authenticated queries) | I1–I11 at database and integration level, including with the app's own filters bypassed |
+| Admin can create invite | M1 |
+| Member / anonymous cannot create invite | M2, M3 |
+| Member cannot access `/admin` | M4 |
+
+Every layer runs with one command: `npm run test:all` (needs Docker and the local Supabase stack).
 
 ### Member revocation (step 8b)
 
