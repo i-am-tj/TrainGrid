@@ -140,6 +140,23 @@ Create an **OAuth App**, not a GitHub App.
   Supabase links both sign-in methods to one user, so they see the same TrainGrid data. Accounts
   with different emails are separate users. TrainGrid adds no account-linking logic of its own.
 
+### Invite-only access
+
+Signing in proves identity; it does not grant access. After the code exchange, `/auth/callback`
+calls the database function `accept_invitation()`, which:
+
+1. reads the caller's own email from Supabase Auth;
+2. requires that email to be confirmed and to come from a Google or GitHub identity;
+3. looks for an invitation with that email (case-insensitive) that has not been revoked;
+4. on a match, creates the member's `profiles` row and marks the invitation accepted.
+
+Anyone else is signed out again immediately and sees a fixed message. Because every table's
+access rules require a `profiles` row, a person who is not invited cannot read or write anything
+even by calling the database API directly.
+
+The `invitations` table is not readable or writable by members. See
+[`supabase/README.md`](../supabase/README.md) for creating the first invitation.
+
 ### Sign-in flow
 
 ```
@@ -147,12 +164,13 @@ Create an **OAuth App**, not a GitHub App.
                                                   │
 /auth/callback?code=… ◀── Supabase ◀──────────────┘
       │ exchanges the one-time code for a session cookie
+      │ checks the invitation; refuses and signs out if there is none
       ▼
 the page the user originally asked for (same-site paths only)
 ```
 
-Any failure returns to `/login` with one of two fixed messages: a generic one, or an explanation
-that no verified email was available. Provider error details are never shown.
+Any failure returns to `/login` with one of three fixed messages: a generic one, the invite-only
+notice, or an explanation that no verified email was available. Provider error details are never shown.
 
 ## How the app talks to Supabase
 

@@ -1,5 +1,6 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 /**
  * Sign-in page and session tests.
@@ -46,7 +47,25 @@ async function signInAsNewLocalUser(context: BrowserContext, baseURL: string) {
   await context.addCookies(
     [...jar].map(([name, value]) => ({ name, value, url: baseURL })),
   );
-  return email;
+  return { email, userId: data.session.user.id };
+}
+
+/**
+ * Makes a local test user a member by creating their profile directly.
+ * Real members are only ever provisioned by accept_invitation(); that path is
+ * covered by the database tests, since it needs a Google or GitHub identity.
+ */
+async function makeLocalMember(userId: string) {
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  if (!secretKey) throw new Error("SUPABASE_SECRET_KEY is not set");
+  if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(supabaseUrl)) {
+    throw new Error("Refusing to use the secret key outside the local Supabase stack");
+  }
+  const admin = createClient(supabaseUrl, secretKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { error } = await admin.from("profiles").insert({ id: userId, display_name: "E2E Member" });
+  if (error) throw new Error(`Could not create local profile: ${error.message}`);
 }
 
 test("login page offers only the configured OAuth providers", async ({ page, baseURL }) => {
@@ -149,23 +168,55 @@ test("provider error details are not shown on the login page", async ({ page }) 
   );
 });
 
-test("a signed-in user sees their email and can sign out", async ({ page, context, baseURL }) => {
+test("a signed-in user who is not a member is told it is invite-only and can sign out", async ({
+  page,
+  context,
+  baseURL,
+}) => {
   test.skip((await supabaseState(baseURL!)) !== "ok", "Local Supabase stack is not running");
 
-  const email = await signInAsNewLocalUser(context, baseURL!);
+  const { email } = await signInAsNewLocalUser(context, baseURL!);
 
   await page.goto("/login");
-  await expect(page.getByText(email)).toBeVisible();
+  await expect(page.getByText("TrainGrid is currently invite-only.")).toBeVisible();
+  await expect(page.getByText(email)).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Continue with Google" })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Sign out" }).click();
 
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
-  await expect(page.getByText(email)).toHaveCount(0);
-
-  const authCookies = (await context.cookies()).filter(
-    (cookie) => cookie.name.includes("auth-token") && cookie.value !== "",
-  );
-  expect(authCookies).toHaveLength(0);
+  expect(await authCookieCount(context)).toBe(0);
 });
+
+test("a member sees their email and can sign out", async ({ page, context, baseURL }) => {
+  test.skip((await supabaseState(baseURL!)) !== "ok", "Local Supabase stack is not running");
+  test.skip(!process.env.SUPABASE_SECRET_KEY, "SUPABASE_SECRET_KEY is not set for the local stack");
+
+  const { email, userId } = await signInAsNewLocalUser(context, baseURL!);
+  await makeLocalMember(userId);
+
+  await page.goto("/login");
+  await expect(page.getByText(email)).toBeVisible();
+  await expect(page.getByText("TrainGrid is currently invite-only.")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+  await expect(page.getByText(email)).toHaveCount(0);
+  expect(await authCookieCount(context)).toBe(0);
+});
+
+test("the invite-only refusal uses the fixed friendly message", async ({ page }) => {
+  await page.goto("/login?error=invite");
+  await expect(page.locator('p[role="alert"]')).toHaveText(
+    "TrainGrid is currently invite-only. Ask the person who invited you to verify the email used for your account.",
+  );
+});
+
+async function authCookieCount(context: BrowserContext): Promise<number> {
+  return (await context.cookies()).filter(
+    (cookie) => cookie.name.includes("auth-token") && cookie.value !== "",
+  ).length;
+}

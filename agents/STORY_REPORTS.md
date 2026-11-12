@@ -125,9 +125,8 @@ Tests:                 Lint pass. Unit 58/58 pass (11 new). E2E 19/19 pass (5 ne
                        and this step deployed).
 Deployment impact:     Adds /login and /auth/callback. /login is not linked from the app.
                        Signing in grants no access to anything yet.
-Status:                MERGED to main 2026-11-12 (eb8c564); /login is live on production.
-                       Google provider reported enabled by Tanuj; a completed production
-                       sign-in has not yet been confirmed.
+Status:                DONE — merged to main 2026-11-12 (eb8c564). Google sign-in confirmed
+                       on production by Tanuj 2026-11-12.
 ```
 
 ### Step 6 — GitHub OAuth + account handling (stories 8, 25)
@@ -148,7 +147,34 @@ Tests:                 Lint pass. Unit 65/65 pass (7 new). E2E 21/21 pass (2 new
                        App and this step deployed). No-email case: simulated only.
 Deployment impact:     Adds a Continue with GitHub button to /login. Until the provider is
                        enabled in Supabase, clicking it ends on an error from Supabase.
-Status:                IN REVIEW — production GitHub sign-in pending
+Status:                DONE — merged to main 2026-11-12 (cb2bcee). GitHub sign-in confirmed
+                       on production by Tanuj 2026-11-12. No-email case still simulated only.
+```
+
+### Step 7 — Invitation / allowlist model (stories 9, 10)
+
+```
+Story:                 9 enforce invite-only access; 10 invitation model
+Branch:                epic-1/07-invitations
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         One migration, supabase/migrations/20261112020000_invitations.sql:
+                       table invitations (normalised email, accepted/revoked timestamps, one
+                       live invitation per email) and function accept_invitation().
+RLS impact:            invitations: RLS enabled, no policies, no privileges for anon or
+                       authenticated. accept_invitation() is SECURITY DEFINER, executable by
+                       authenticated only, and is the only way a profiles row is created.
+Secrets/config impact: No new production variables. Locally, SUPABASE_SECRET_KEY of the
+                       local stack is used by one E2E helper (ignored .env.local).
+                       Requires migrations applied to production and a first invitation.
+Tests:                 Lint pass. Unit 69/69 pass (4 new). Database 121/121 pass (31 new).
+                       E2E 23/23 pass. Build pass.
+                       Callback refusing or admitting a real OAuth user on production:
+                       NOT VERIFIED (needs migrations applied and this step deployed).
+Deployment impact:     From this deploy, sign-in succeeds only for invited emails. Until
+                       migrations are applied to production, every sign-in ends with the
+                       generic error. The planner itself is unaffected.
+Status:                IN REVIEW — production check pending
 ```
 
 ## Epic completion report
