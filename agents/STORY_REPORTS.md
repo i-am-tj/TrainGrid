@@ -125,7 +125,30 @@ Tests:                 Lint pass. Unit 58/58 pass (11 new). E2E 19/19 pass (5 ne
                        and this step deployed).
 Deployment impact:     Adds /login and /auth/callback. /login is not linked from the app.
                        Signing in grants no access to anything yet.
-Status:                IN REVIEW — production Google sign-in pending
+Status:                MERGED to main 2026-11-12 (eb8c564); /login is live on production.
+                       Google provider reported enabled by Tanuj; a completed production
+                       sign-in has not yet been confirmed.
+```
+
+### Step 6 — GitHub OAuth + account handling (stories 8, 25)
+
+```
+Story:                 8 GitHub OAuth; 25 OAuth account handling
+Branch:                epic-1/06-github-oauth
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: No new environment variables. The GitHub client secret is entered in
+                       the Supabase dashboard only.
+Tests:                 Lint pass. Unit 65/65 pass (7 new). E2E 21/21 pass (2 new: GitHub
+                       hand-off, no-email failure). Build pass. Database tests not re-run
+                       (no database change).
+                       GitHub sign-in on production: NOT VERIFIED (needs the GitHub OAuth
+                       App and this step deployed). No-email case: simulated only.
+Deployment impact:     Adds a Continue with GitHub button to /login. Until the provider is
+                       enabled in Supabase, clicking it ends on an error from Supabase.
+Status:                IN REVIEW — production GitHub sign-in pending
 ```
 
 ## Epic completion report

@@ -10,8 +10,8 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 4 | Workout items | 2 | Agent | DONE |
 | 5 | Scheduled sessions | 2 | Agent | DONE |
 | 6 | Row Level Security everywhere | 3 | Agent | DONE |
-| 7 | Google OAuth | 5 | Tanuj (credentials) + Agent (flow) | IN REVIEW (production sign-in pending) |
-| 8 | GitHub OAuth | 6 | Tanuj (credentials) + Agent (flow) | TODO |
+| 7 | Google OAuth | 5 | Tanuj (credentials) + Agent (flow) | MERGED (production sign-in to be confirmed) |
+| 8 | GitHub OAuth | 6 | Tanuj (credentials) + Agent (flow) | IN REVIEW (production sign-in pending) |
 | 9 | Enforce invite-only access | 7 | Agent | TODO |
 | 10 | Invitation model | 7 | Agent | TODO |
 | 11 | Admin invitation management | 8 | Agent | TODO |
@@ -28,8 +28,8 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 22 | Separate development and production | 14 | Agent + Tanuj | TODO |
 | 23 | GitHub security hardening | 14 | Tanuj | TODO |
 | 24 | Input validation | 10 | Agent | TODO |
-| 25 | OAuth account handling | 6 | Agent | TODO |
-| 26 | Authentication UI | 5 | Agent | IN REVIEW |
+| 25 | OAuth account handling | 6 | Agent | IN REVIEW |
+| 26 | Authentication UI | 5 | Agent | DONE |
 | 27 | Admin security | 8 | Agent | TODO |
 | 28 | Security tests | 3, 13 | Agent | IN PROGRESS (database part in review) |
 | 29 | Supabase migration management | 2 | Agent | DONE |
@@ -47,7 +47,7 @@ Each item gets step-by-step instructions in the PR that needs it.
 | --- | --- |
 | Step 4 | Supabase Free project created 2026-11-12 (done). Project URL and publishable key added to Vercel Production 2026-11-12 (done). `/api/health` on production is checked after the step 4 PR is merged |
 | Step 5 | In Supabase Authentication: disable the Email provider, set Site URL and the `/auth/callback` Redirect URL. Create the Google OAuth client and enable the Google provider (see `docs/SUPABASE_SETUP.md`). After the step 5 PR is merged, sign in at `/login` on production |
-| Before step 6 | Create the GitHub OAuth App; enable the GitHub provider in Supabase |
+| Step 6 | Create the GitHub OAuth App and enable the GitHub provider in Supabase (see `docs/SUPABASE_SETUP.md`). After the step 6 PR is merged, sign in with GitHub at `/login` on production |
 | Step 8 | Sign in once, copy your Supabase user UUID into `TRAINGRID_ADMIN_USER_IDS` |
 | Step 14 | Add environment variables in Vercel; review GitHub secret scanning, push protection, Dependabot |
 | Step 15 | Apply migrations to production; sign in on `train-grid.vercel.app` with Google and with GitHub |
