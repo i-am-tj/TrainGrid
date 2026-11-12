@@ -82,6 +82,51 @@ deployment reaches the project.
 Until these are set, the deployed site behaves exactly as before: the session proxy passes
 requests through untouched.
 
+## Authentication settings in the production project
+
+These are set once in the Supabase dashboard, under Authentication.
+
+| Setting | Value | Reason |
+| --- | --- | --- |
+| Email provider | Disabled | No password or email-link sign-in; without this, anyone could register through the API |
+| Site URL | `https://train-grid.vercel.app` | Default destination after sign-in |
+| Redirect URLs | `https://train-grid.vercel.app/auth/callback` | The only place Supabase may send an authorization code |
+| Google provider | Enabled, with the client ID and secret below | Sign-in |
+
+Local addresses are not added to the production project. Local development uses the local stack.
+
+### Google OAuth client
+
+In Google Cloud Console (APIs & Services):
+
+1. Configure the OAuth consent screen: user type **External**, app name TrainGrid, your email as
+   support and developer contact. Only the default scopes are needed: `openid`, `email`,
+   `profile`.
+2. Publish the app ("In production"). With only those scopes no Google review is required. While
+   it is left in "Testing", only accounts you list as test users can sign in.
+3. Create credentials → OAuth client ID → **Web application**.
+   - Authorized JavaScript origins: `https://train-grid.vercel.app`
+   - Authorized redirect URIs: `https://<project-ref>.supabase.co/auth/v1/callback`
+     (Supabase shows the exact value on the Google provider page)
+4. Copy the client ID and client secret into Supabase → Authentication → Providers → Google, and
+   enable the provider.
+
+The Google client secret lives only in the Supabase dashboard. It never goes into the repository
+or Vercel.
+
+### Sign-in flow
+
+```
+/login ── Continue with Google ──▶ Supabase ──▶ Google
+                                                  │
+/auth/callback?code=… ◀── Supabase ◀──────────────┘
+      │ exchanges the one-time code for a session cookie
+      ▼
+the page the user originally asked for (same-site paths only)
+```
+
+Any failure returns to `/login` with one generic message. Provider error details are never shown.
+
 ## How the app talks to Supabase
 
 | File | Used from | Notes |
@@ -90,6 +135,8 @@ requests through untouched.
 | `lib/supabase/server.ts` | Server Components, Server Actions, Route Handlers | One client per request, reads the session from cookies; marked `server-only` |
 | `lib/supabase/proxy.ts` + `proxy.ts` | Every request | Refreshes the session cookie; marks responses that set auth cookies as uncacheable |
 | `lib/supabase/env.ts` | All of the above | Reads and validates the public configuration |
+| `lib/auth/actions.ts` | `/login` | Server actions that start OAuth sign-in and sign out |
+| `app/auth/callback/route.ts` | OAuth return | Exchanges the one-time code for a session |
 
 All three clients use the publishable key and the signed-in user's session, so every query is
 subject to Row Level Security. The proxy only keeps sessions fresh; it does not protect routes.
