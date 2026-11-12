@@ -98,11 +98,34 @@ Tests:                 Lint pass. Unit 47/47 pass (6 new). Database 90/90 pass. 
                        with and without Supabase variables. Local Next.js → Supabase: health
                        route ok; cookie session read by the server client (temporary probe,
                        removed). E2E 14/14 pass (with the local Supabase stack configured).
-                       Vercel → Supabase: NOT VERIFIED (variables set in Vercel Production
-                       2026-11-12; check runs once this step is deployed).
+                       Vercel → Supabase: PASS 2026-11-12 — /api/health on production
+                       returns ok.
 Deployment impact:     Adds a proxy that runs on every request and a public /api/health
                        route. With no Supabase variables in Vercel the site behaves as before.
-Status:                IN REVIEW — cloud connection check pending
+Status:                DONE — merged to main 2026-11-12 (c717e40)
+```
+
+### Step 5 — Google OAuth + authentication UI (stories 7, 26)
+
+```
+Story:                 7 Google OAuth; 26 authentication UI
+Branch:                epic-1/05-google-oauth
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: No new environment variables. The Google client secret is entered in
+                       the Supabase dashboard only. Dashboard settings required: Email
+                       provider disabled, Site URL, Redirect URL, Google provider enabled.
+Tests:                 Lint pass. Unit 58/58 pass (11 new). E2E 19/19 pass (5 new: login
+                       page, hand-off to Supabase, callback failure, generic errors, sign-out
+                       with a real local session). Build pass with and without Supabase
+                       variables. Database tests not re-run (no database change).
+                       Google sign-in on production: NOT VERIFIED (needs the Google client
+                       and this step deployed).
+Deployment impact:     Adds /login and /auth/callback. /login is not linked from the app.
+                       Signing in grants no access to anything yet.
+Status:                IN REVIEW — production Google sign-in pending
 ```
 
 ## Epic completion report

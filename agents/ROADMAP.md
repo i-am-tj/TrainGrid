@@ -20,8 +20,8 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
 | 1 | Architecture records + ADR | `epic-1/01-architecture-adr` | 32 | — | DONE |
 | 2 | Database schema + migrations | `epic-1/02-schema-migrations` | 2, 3, 4, 5, 29 | — | DONE |
 | 3 | RLS policies + database tests | `epic-1/03-rls-policies` | 6, 28 (RLS part) | — | DONE |
-| 4 | Supabase SSR/Auth foundation | `epic-1/04-supabase-ssr` | 1, 18, 19, 21 | Merge the step 4 PR; then `/api/health` on production is checked | IN REVIEW (cloud check pending) |
-| 5 | Google OAuth | `epic-1/05-google-oauth` | 7, 26 | Google OAuth client; provider enabled in Supabase | TODO |
+| 4 | Supabase SSR/Auth foundation | `epic-1/04-supabase-ssr` | 1, 18, 19, 21 | — | DONE |
+| 5 | Google OAuth | `epic-1/05-google-oauth` | 7, 26 | Disable the Email provider; set Site URL and Redirect URL; create the Google OAuth client and enable the provider; then sign in on production | IN REVIEW (production sign-in pending) |
 | 6 | GitHub OAuth | `epic-1/06-github-oauth` | 8, 25 | GitHub OAuth App; provider enabled in Supabase | TODO |
 | 7 | Invitation / allowlist model | `epic-1/07-invitations` | 9, 10 | — | TODO |
 | 8 | Admin invitation flow | `epic-1/08-admin-invitations` | 11, 12, 27 | Own user UUID in `TRAINGRID_ADMIN_USER_IDS` | TODO |

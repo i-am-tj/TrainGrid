@@ -1,5 +1,10 @@
+import { existsSync } from "fs";
 import path from "path";
 import { defineConfig, devices } from "@playwright/test";
+
+// Give the test process the same local Supabase settings Next.js reads.
+const envFile = path.join(__dirname, ".env.local");
+if (existsSync(envFile)) process.loadEnvFile(envFile);
 
 export const e2eDataDir = path.join(__dirname, "e2e", ".data");
 
