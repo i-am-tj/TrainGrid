@@ -9,7 +9,13 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "db:start": "supabase db start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:lint": "supabase db lint --local",
+    "db:test": "supabase test db",
+    "db:types": "supabase gen types typescript --local --schema public > lib/database.types.ts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -26,6 +32,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "supabase": "^3.1.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.11"

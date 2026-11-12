@@ -5,10 +5,10 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | Story | Title | Step | Owner | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Introduce Supabase cloud infrastructure | 4 | Tanuj (project) + Agent (clients) | TODO |
-| 2 | User/profile model | 2 | Agent | TODO |
-| 3 | Routine data model | 2 | Agent | TODO |
-| 4 | Workout items | 2 | Agent | TODO |
-| 5 | Scheduled sessions | 2 | Agent | TODO |
+| 2 | User/profile model | 2 | Agent | IN REVIEW |
+| 3 | Routine data model | 2 | Agent | IN REVIEW |
+| 4 | Workout items | 2 | Agent | IN REVIEW |
+| 5 | Scheduled sessions | 2 | Agent | IN REVIEW |
 | 6 | Row Level Security everywhere | 3 | Agent | TODO |
 | 7 | Google OAuth | 5 | Tanuj (credentials) + Agent (flow) | TODO |
 | 8 | GitHub OAuth | 6 | Tanuj (credentials) + Agent (flow) | TODO |
@@ -32,7 +32,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 26 | Authentication UI | 5 | Agent | TODO |
 | 27 | Admin security | 8 | Agent | TODO |
 | 28 | Security tests | 3, 13 | Agent | TODO |
-| 29 | Supabase migration management | 2 | Agent | TODO |
+| 29 | Supabase migration management | 2 | Agent | IN REVIEW |
 | 30 | Vercel production configuration | 15 | Tanuj + Agent | TODO |
 | 31 | Free-tier constraint | 15 | Agent | TODO |
 | 32 | Architecture documentation (ADR) | 1 | Agent | IN REVIEW |

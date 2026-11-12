@@ -9,7 +9,8 @@ The product-level plan in `docs/TEST_PLAN.md` is updated in step 16.
 | --- | --- | --- | --- |
 | Lint | `npm run lint` | — | exists |
 | Unit | Vitest (`npm test`) | pure functions, Zod schemas | exists; extended in 10 |
-| RLS / integration | Vitest, separate project | local Supabase (Docker), real signed-in clients | 3 |
+| Database schema | pgTAP (`npm run db:test`) | local Postgres (Docker) | 2 |
+| RLS / integration | pgTAP + Vitest, separate project | local Supabase (Docker), real signed-in clients | 3 |
 | E2E | Playwright | `next dev` + local Supabase, seeded users | 12, 13 |
 | Build | `npm run build` | — | exists |
 | Production smoke | manual, by Tanuj | `https://train-grid.vercel.app` | 15 |
@@ -68,7 +69,7 @@ manual, on production, and are recorded with date and outcome.
 | S1 | Secret key absent from client bundles | search `.next/static` after build | — |
 | S2 | No credentials in Git history | secret scan of full history | — |
 | S3 | `.env.example` contains placeholders only | review | — |
-| S4 | RLS enabled on every table in `public` | SQL assertion in the RLS suite | — |
+| S4 | RLS enabled on every table in `public` | Database schema | PASS 2026-11-12 (local, 4 tables; re-checked as tables are added) |
 | S5 | No filesystem writes in production code paths | search for `fs` writes outside `scripts/` | — |
 
 ### Approved model decisions
@@ -77,11 +78,11 @@ manual, on production, and are recorded with date and outcome.
 | --- | --- | --- | --- |
 | D1 | Scheduling a routine stores a full snapshot; no session renders from its routine (D-03) | Integration + E2E | — |
 | D2 | Editing the source routine leaves the scheduled session unchanged (D-03) | E2E | — |
-| D3 | Deleting the source routine keeps the session and nulls `source_routine_id` (D-03) | RLS/integration | — |
+| D3 | Deleting the source routine keeps the session and nulls `source_routine_id` (D-03) | Database schema | PASS 2026-11-12 (local) |
 | D4 | Editing one scheduled session does not change its duplicates or the routine (D-03) | E2E | — |
 | D5 | Duplicate Week copies snapshots with new session and item ids (D-03, D-04B) | Unit + E2E | — |
 | D6 | Items save and load through structured fields; text such as `Rest: 2 min` typed into notes stays in notes (D-04) | Unit + E2E | — |
-| D7 | Schema has no performed-workout columns (D-04A) | SQL assertion | — |
+| D7 | Schema has no performed-workout columns (D-04A) | Database schema | PASS 2026-11-12 (local) |
 | D8 | Seeded GLOBAL routines preserve order, equipment and video links of every template file (D-04, D-05) | Seed unit test | — |
 | D9 | Member can create, edit and delete a PERSONAL routine and cannot edit a GLOBAL one (D-05) | RLS + E2E | — |
 | D10 | Export contains only the signed-in user's routines, items and sessions; no GLOBAL routines, invitations or auth data (D-06) | Integration | — |
