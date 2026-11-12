@@ -4,12 +4,12 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 
 | Story | Title | Step | Owner | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Introduce Supabase cloud infrastructure | 4 | Tanuj (project) + Agent (clients) | TODO |
+| 1 | Introduce Supabase cloud infrastructure | 4 | Tanuj (project) + Agent (clients) | IN REVIEW (Vercel → Supabase check pending) |
 | 2 | User/profile model | 2 | Agent | DONE |
 | 3 | Routine data model | 2 | Agent | DONE |
 | 4 | Workout items | 2 | Agent | DONE |
 | 5 | Scheduled sessions | 2 | Agent | DONE |
-| 6 | Row Level Security everywhere | 3 | Agent | IN REVIEW |
+| 6 | Row Level Security everywhere | 3 | Agent | DONE |
 | 7 | Google OAuth | 5 | Tanuj (credentials) + Agent (flow) | TODO |
 | 8 | GitHub OAuth | 6 | Tanuj (credentials) + Agent (flow) | TODO |
 | 9 | Enforce invite-only access | 7 | Agent | TODO |
@@ -21,10 +21,10 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 15 | Migrate away from runtime files | 11, 12 | Agent | TODO |
 | 16 | Migrate existing personal data safely | 12 | Agent | TODO |
 | 17 | Preserve planner functionality | 12 | Agent | TODO |
-| 18 | Environment variable contract | 4 | Agent | TODO |
-| 19 | Secure GitHub repository secrets | 4 | Agent | TODO |
+| 18 | Environment variable contract | 4 | Agent | IN REVIEW |
+| 19 | Secure GitHub repository secrets | 4 | Agent | IN REVIEW |
 | 20 | Store production secrets in Vercel | 14 | Tanuj | TODO |
-| 21 | Protect Supabase secrets | 4 | Agent | TODO |
+| 21 | Protect Supabase secrets | 4 | Agent | IN PROGRESS (guards in place; secret key first used in step 8) |
 | 22 | Separate development and production | 14 | Agent + Tanuj | TODO |
 | 23 | GitHub security hardening | 14 | Tanuj | TODO |
 | 24 | Input validation | 10 | Agent | TODO |
@@ -45,7 +45,7 @@ Each item gets step-by-step instructions in the PR that needs it.
 
 | When | Action |
 | --- | --- |
-| Before step 4 | Create the Supabase Free project; put the project URL and publishable key in `.env.local` |
+| Step 4 | Supabase Free project created 2026-11-12 (done). Project URL and publishable key added to Vercel Production 2026-11-12 (done). `/api/health` on production is checked after the step 4 PR is merged |
 | Before step 5 | Create the Google OAuth client; enable the Google provider in Supabase |
 | Before step 6 | Create the GitHub OAuth App; enable the GitHub provider in Supabase |
 | Step 8 | Sign in once, copy your Supabase user UUID into `TRAINGRID_ADMIN_USER_IDS` |

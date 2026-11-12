@@ -76,7 +76,33 @@ Tests:                 Database 90/90 pass (38 schema + 52 RLS, local). Suite ve
                        when RLS is disabled. Schema lint clean. Lint pass. Unit 41/41 pass.
                        Build pass. E2E not run (application code unchanged).
 Deployment impact:     None. Nothing applied to any cloud project.
-Status:                IN REVIEW
+Status:                DONE — merged to main 2026-11-12 (2bf9e9f)
+```
+
+### Step 4 — Supabase SSR/Auth foundation (stories 1, 18, 19, 21)
+
+```
+Story:                 1 Supabase infrastructure; 18 environment variable contract;
+                       19 repository secrets; 21 protect Supabase secrets (guards)
+Branch:                epic-1/04-supabase-ssr
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/5
+Commit:                2190622
+Schema impact:         None.
+RLS impact:            None. Verified through the app: an anonymous request is refused by
+                       the database (42501) and a signed-in non-member reads zero rows.
+Secrets/config impact: Adds .env.example (placeholders only). .env, .env.* and .vercel were
+                       already ignored. New public variables NEXT_PUBLIC_SUPABASE_URL and
+                       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. No secret key is read anywhere.
+                       New dependencies: @supabase/supabase-js, @supabase/ssr, server-only.
+Tests:                 Lint pass. Unit 47/47 pass (6 new). Database 90/90 pass. Build pass
+                       with and without Supabase variables. Local Next.js → Supabase: health
+                       route ok; cookie session read by the server client (temporary probe,
+                       removed). E2E 14/14 pass (with the local Supabase stack configured).
+                       Vercel → Supabase: NOT VERIFIED (variables set in Vercel Production
+                       2026-11-12; check runs once this step is deployed).
+Deployment impact:     Adds a proxy that runs on every request and a public /api/health
+                       route. With no Supabase variables in Vercel the site behaves as before.
+Status:                IN REVIEW — cloud connection check pending
 ```
 
 ## Epic completion report
