@@ -196,8 +196,8 @@ Tests:                 Lint pass. Unit 69/69 pass. E2E 23/23 pass. Build pass. D
                        NOT VERIFIED until deployed.
 Deployment impact:     Functions move from iad1 to syd1. Header shows Sign out for signed-in
                        users. Providers show an account chooser on each sign-in.
-Status:                MERGED to main 2026-11-12 (d91cf17). Sign-out speed and the GitHub
-                       account chooser not yet confirmed on production.
+Status:                DONE — merged to main 2026-11-12 (d91cf17). Confirmed on production
+                       by Tanuj 2026-11-12: sign-out faster, GitHub asks for the account.
 ```
 
 ### Step 8 — Admin invitation flow (stories 11, 12, 27; completes 21)
@@ -219,11 +219,11 @@ Tests:                 Lint pass. Unit 82/82 pass (13 new). Database 121/121 pas
                        absent from the client bundle.
                        Not tested: invoking the server actions directly as a non-admin
                        (covered by the unit-tested guard and code structure only).
-                       Production invite and revoke: NOT VERIFIED.
+                       Production: admin page working (Tanuj, 2026-11-12).
 Deployment impact:     Adds /admin/invitations and an Invitations header link for admins.
                        Without the two variables the page is a 404 for everyone.
-Status:                MERGED to main 2026-11-12 (8598e0e). Production invite and revoke not
-                       yet confirmed.
+Status:                DONE — merged to main 2026-11-12 (8598e0e). Admin page confirmed on
+                       production by Tanuj 2026-11-12.
 ```
 
 ### Step 9 — Route protection (story 13)
@@ -245,7 +245,30 @@ Tests:                 Lint pass. Unit 87/87 pass (5 new). Database 121/121 pass
 Deployment impact:     The production site stops being public. Anonymous visitors are sent
                        to /login. Members see the existing file-backed, read-only planner
                        until step 12. The E2E suite now needs the local Supabase stack.
-Status:                IN REVIEW — production check pending
+Status:                MERGED to main 2026-11-12 (7877baa). Production redirect not yet
+                       confirmed.
+```
+
+### Step 10 — User-scoped data layer + validation (story 24)
+
+```
+Story:                 24 input validation (and the data layer the planner will use)
+Branch:                epic-1/10-data-layer
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/12
+Commit:                f9f6b8f
+Schema impact:         One migration, 20261112030000_save_personal_routine.sql: function
+                       save_personal_routine() (security invoker). No table changes.
+                       Generated types added in lib/database.types.ts.
+RLS impact:            None changed. The new function runs under the caller's RLS.
+Secrets/config impact: None. New script: test:integration (local stack only).
+Tests:                 Lint pass. Unit 115/115 pass (28 new). Database 141/141 pass (20 new).
+                       Integration 20/20 pass (new): CRUD, snapshots, Duplicate Week, export,
+                       and every cross-user case, both through the data functions and by
+                       direct queries. With RLS disabled on scheduled_sessions, 3 fail, as
+                       expected. E2E 36/36 pass. Build pass. Secret key absent from bundle.
+Deployment impact:     None visible. Nothing in the app calls the data layer until step 12.
+                       The new migration must be applied to production before step 12.
+Status:                IN REVIEW
 ```
 
 ## Epic completion report

@@ -1,6 +1,7 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from "@/lib/database.types";
 import { requireSupabaseEnv } from "./env";
 
 /**
@@ -11,5 +12,5 @@ import { requireSupabaseEnv } from "./env";
  */
 export function createSupabaseBrowserClient() {
   const { url, publishableKey } = requireSupabaseEnv();
-  return createBrowserClient(url, publishableKey);
+  return createBrowserClient<Database>(url, publishableKey);
 }

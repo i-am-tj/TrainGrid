@@ -10,7 +10,8 @@ The product-level plan in `docs/TEST_PLAN.md` is updated in step 16.
 | Lint | `npm run lint` | — | exists |
 | Unit | Vitest (`npm test`) | pure functions, Zod schemas | exists; extended in 10 |
 | Database schema | pgTAP (`npm run db:test`) | local Postgres (Docker) | 2 |
-| RLS / integration | pgTAP + Vitest, separate project | local Supabase (Docker), real signed-in clients | 3 |
+| RLS | pgTAP | local Postgres, as `anon` / `authenticated` roles | 3 |
+| Integration | Vitest (`npm run test:integration`) | local Supabase API, real signed-in users | 10 |
 | E2E | Playwright | `next dev` + local Supabase, seeded users (required from step 9: planner tests sign in as a member) | 5, 8, 9, 12, 13 |
 | Build | `npm run build` | — | exists |
 | Production smoke | manual, by Tanuj | `https://train-grid.vercel.app` | 15 |
@@ -46,23 +47,23 @@ manual, on production, and are recorded with date and outcome.
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| I1 | A sees only A's schedule; B sees only B's | RLS + E2E | PASS 2026-11-12 (database, local); E2E pending |
-| I2 | A cannot read B's session | RLS | PASS 2026-11-12 (database, local) |
-| I3 | A cannot update B's session | RLS | PASS 2026-11-12 (database, local) |
-| I4 | A cannot delete B's session | RLS | PASS 2026-11-12 (database, local) |
-| I5 | A cannot insert a session owned by B | RLS | PASS 2026-11-12 (database, local) |
-| I6 | A cannot read, update or delete B's personal routine | RLS | PASS 2026-11-12 (database, local) |
-| I7 | A cannot insert a routine owned by B, or a GLOBAL routine | RLS | PASS 2026-11-12 (database, local) |
-| I8 | A cannot duplicate B's week | RLS + E2E | PASS 2026-11-12 (database, local); E2E pending |
-| I9 | Members can read GLOBAL routines and cannot change them | RLS | PASS 2026-11-12 (database, local) |
-| I10 | Authenticated but uninvited user reads and writes nothing | RLS | PASS 2026-11-12 (database, local) |
-| I11 | Anonymous key reads and writes nothing | RLS | PASS 2026-11-12 (database, local) |
+| I1 | A sees only A's schedule; B sees only B's | RLS + E2E | PASS 2026-11-12 (database, local); E2E pending; PASS 2026-11-12 (integration, local) |
+| I2 | A cannot read B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I3 | A cannot update B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I4 | A cannot delete B's session | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I5 | A cannot insert a session owned by B | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I6 | A cannot read, update or delete B's personal routine | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I7 | A cannot insert a routine owned by B, or a GLOBAL routine | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I8 | A cannot duplicate B's week | RLS + E2E | PASS 2026-11-12 (database, local); E2E pending; PASS 2026-11-12 (integration, local) |
+| I9 | Members can read GLOBAL routines and cannot change them | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I10 | Authenticated but uninvited user reads and writes nothing | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
+| I11 | Anonymous key reads and writes nothing | RLS | PASS 2026-11-12 (database, local); PASS 2026-11-12 (integration, local) |
 
 ### Admin
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| M1 | Admin can create and revoke an invitation | E2E | PASS 2026-11-12 (E2E, local); production pending |
+| M1 | Admin can create and revoke an invitation | E2E | PASS 2026-11-12 (E2E, local); admin page working on production (Tanuj) |
 | M2 | Member cannot create an invitation (action and direct query) | Integration + RLS | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly as a member |
 | M3 | Anonymous user cannot create an invitation | Integration | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly while anonymous |
 | M4 | Member cannot open `/admin` | E2E | PASS 2026-11-12 (E2E, local) — 404, no admin link |
@@ -81,17 +82,17 @@ manual, on production, and are recorded with date and outcome.
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| D1 | Scheduling a routine stores a full snapshot; no session renders from its routine (D-03) | Integration + E2E | — |
-| D2 | Editing the source routine leaves the scheduled session unchanged (D-03) | E2E | — |
-| D3 | Deleting the source routine keeps the session and nulls `source_routine_id` (D-03) | Database schema | PASS 2026-11-12 (local) |
-| D4 | Editing one scheduled session does not change its duplicates or the routine (D-03) | E2E | — |
-| D5 | Duplicate Week copies snapshots with new session and item ids (D-03, D-04B) | Unit + E2E | — |
-| D6 | Items save and load through structured fields; text such as `Rest: 2 min` typed into notes stays in notes (D-04) | Unit + E2E | — |
+| D1 | Scheduling a routine stores a full snapshot; no session renders from its routine (D-03) | Integration + E2E | PASS 2026-11-12 (integration, local) |
+| D2 | Editing the source routine leaves the scheduled session unchanged (D-03) | E2E | PASS 2026-11-12 (integration, local); E2E in step 12 |
+| D3 | Deleting the source routine keeps the session and nulls `source_routine_id` (D-03) | Database schema | PASS 2026-11-12 (database and integration, local) |
+| D4 | Editing one scheduled session does not change its duplicates or the routine (D-03) | E2E | PASS 2026-11-12 (integration, local); E2E in step 12 |
+| D5 | Duplicate Week copies snapshots with new session and item ids (D-03, D-04B) | Unit + E2E | PASS 2026-11-12 (unit and integration, local); E2E in step 12 |
+| D6 | Items save and load through structured fields; text such as `Rest: 2 min` typed into notes stays in notes (D-04) | Unit + E2E | PASS 2026-11-12 (unit and integration, local); E2E in step 12 |
 | D7 | Schema has no performed-workout columns (D-04A) | Database schema | PASS 2026-11-12 (local) |
 | D8 | Seeded GLOBAL routines preserve order, equipment and video links of every template file (D-04, D-05) | Seed unit test | — |
-| D9 | Member can create, edit and delete a PERSONAL routine and cannot edit a GLOBAL one (D-05) | RLS + E2E | — |
-| D10 | Export contains only the signed-in user's routines, items and sessions; no GLOBAL routines, invitations or auth data (D-06) | Integration | — |
-| D11 | Export requires authentication (D-06) | Integration | — |
+| D9 | Member can create, edit and delete a PERSONAL routine and cannot edit a GLOBAL one (D-05) | RLS + E2E | PASS 2026-11-12 (integration, local); E2E in step 12 |
+| D10 | Export contains only the signed-in user's routines, items and sessions; no GLOBAL routines, invitations or auth data (D-06) | Integration | PASS 2026-11-12 (integration, local) |
+| D11 | Export requires authentication (D-06) | Integration | PASS 2026-11-12 (E2E, local, step 9: export answers 401 when not a member) |
 | D12 | No import UI and no import endpoint or action exists (D-06) | E2E + code search | — |
 
 ### Planner regression
