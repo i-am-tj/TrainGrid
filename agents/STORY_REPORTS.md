@@ -271,7 +271,8 @@ Tests:                 Lint pass. Unit 119/119 (4 new). Database 174/174 (33 new
 Deployment impact:     Migration applied to production by Tanuj 2026-11-12 (before merge;
                        inert for the code already deployed). Admin page gains a Revoke
                        access button for accepted non-admin members once merged.
-Status:                IN REVIEW
+Status:                MERGED to main 2026-11-12 (29bf41d). Revoke and restore with real
+                       accounts not yet checked on production.
 ```
 
 ### Step 10 — User-scoped data layer + validation (story 24)
@@ -295,6 +296,28 @@ Deployment impact:     None visible. Nothing in the app calls the data layer unt
                        Migration applied to production by Tanuj 2026-11-12
                        (supabase db push --remote).
 Status:                DONE — merged to main 2026-11-12 (e8f5396)
+```
+
+### Step 11 — Template migration foundation (story 15, templates part)
+
+```
+Story:                 15 migrate away from runtime files (templates → GLOBAL routines)
+Branch:                epic-1/11-template-seed
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/14
+Commit:                8d3cc79
+Schema impact:         None. Adds supabase/seed.sql (generated): 18 GLOBAL routines, 96 items.
+RLS impact:            None. Seeded routines are GLOBAL: readable by members, writable by none.
+Secrets/config impact: None. New dev dependency tsx; new script seed:generate.
+Tests:                 Lint pass. Unit 148/148 (29 new: converter, every template, seed
+                       freshness). Database 186/186 (12 new; 3 older files scoped to their
+                       own fixtures because GLOBAL routines now exist locally). Integration
+                       23/23. E2E 37/37. Build pass. Seed applied twice more locally: same
+                       96 item ids.
+                       Production seed: applied by Tanuj 2026-11-12
+                       (supabase db push --remote --include-seed); row counts not yet checked.
+Deployment impact:     None visible: the app still reads data/templates until step 12.
+                       Seed applied to production before merge; inert until step 12.
+Status:                IN REVIEW
 ```
 
 ## Epic completion report

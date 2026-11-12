@@ -7,6 +7,7 @@ Database schema for TrainGrid, managed with the Supabase CLI (installed as a dev
 | `config.toml` | Local stack configuration. Storage, Realtime, Edge Functions and analytics are disabled; TrainGrid does not use them. |
 | `migrations/` | Version-controlled schema: tables, constraints, indexes, triggers, RLS, privileges. |
 | `tests/database/` | pgTAP tests, run against the local database. |
+| `seed.sql` | GLOBAL routines generated from `data/templates/*.md`. Generic content only. |
 
 ## Local workflow
 
@@ -44,6 +45,28 @@ password is asked for, type it at the prompt; it is not stored in the repository
 
 Apply migrations before, or immediately after, merging a PR whose application code depends on
 them.
+
+### GLOBAL routines
+
+`seed.sql` creates or updates the shared GLOBAL routines from the Markdown templates in
+`data/templates/`. It is generated, not hand-written:
+
+```bash
+npm run seed:generate      # after changing a template; a unit test fails if you forget
+```
+
+- **Locally** it runs automatically on `npm run db:reset`.
+- **On production** it is applied deliberately, with the migrations:
+
+```bash
+npx supabase db push --remote --include-seed --dry-run
+npx supabase db push --remote --include-seed
+```
+
+It is idempotent: every routine and item has a fixed id derived from its template, so running it
+again updates the same rows instead of adding copies. Items removed from a template are removed
+from its routine. A routine whose template file is deleted is left in place. It never touches
+personal routines, sessions, profiles or invitations.
 
 ### First member
 
