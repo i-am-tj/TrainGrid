@@ -110,8 +110,8 @@ Status:                DONE — merged to main 2026-11-12 (c717e40)
 ```
 Story:                 7 Google OAuth; 26 authentication UI
 Branch:                epic-1/05-google-oauth
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/6
+Commit:                450fad9
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: No new environment variables. The Google client secret is entered in
