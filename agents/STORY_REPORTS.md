@@ -254,8 +254,8 @@ Status:                MERGED to main 2026-11-12 (7877baa). Production redirect 
 ```
 Story:                 24 input validation (and the data layer the planner will use)
 Branch:                epic-1/10-data-layer
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/12
+Commit:                f9f6b8f
 Schema impact:         One migration, 20261112030000_save_personal_routine.sql: function
                        save_personal_routine() (security invoker). No table changes.
                        Generated types added in lib/database.types.ts.
