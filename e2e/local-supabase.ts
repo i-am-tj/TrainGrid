@@ -131,3 +131,61 @@ export async function createAcceptedInvitation(email: string, userId: string) {
     .insert({ email: email.toLowerCase(), accepted_at: new Date().toISOString(), accepted_by: userId });
   if (error) throw new Error(`Could not create accepted invitation: ${error.message}`);
 }
+
+/** Inserts a PERSONAL routine with one item directly for a user (test fixture). */
+export async function createLocalRoutineFor(userId: string, name: string): Promise<string> {
+  const db = serviceClient();
+  const routine = await db
+    .from("routines")
+    .insert({ scope: "PERSONAL", owner_user_id: userId, name, category: "running" })
+    .select("id")
+    .single();
+  if (routine.error) throw new Error(routine.error.message);
+  const item = await db
+    .from("workout_items")
+    .insert({ routine_id: routine.data.id, name: `${name} item`, instruction: "original", sort_order: 0 });
+  if (item.error) throw new Error(item.error.message);
+  return routine.data.id;
+}
+
+/** Inserts a scheduled session directly for a user (test fixture). */
+export async function createLocalSessionFor(userId: string, name: string, date: string): Promise<string> {
+  const { data, error } = await serviceClient()
+    .from("scheduled_sessions")
+    .insert({
+      user_id: userId,
+      date,
+      start_time: "06:00",
+      name,
+      category: "running",
+      snapshot: {
+        version: 1,
+        items: [
+          {
+            id: crypto.randomUUID(),
+            source_item_id: null,
+            name: "Original item",
+            instruction: "original",
+            rest: "",
+            target: "",
+            notes: "",
+            equipment: [],
+            video_url: null,
+          },
+        ],
+      },
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return data.id;
+}
+
+/** Reads rows as the service role, to check what really happened. */
+export async function readRows(table: "routines" | "scheduled_sessions" | "invitations", filter: Record<string, string>) {
+  let query = serviceClient().from(table).select("*");
+  for (const [column, value] of Object.entries(filter)) query = query.eq(column, value);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data as Array<Record<string, unknown>>;
+}

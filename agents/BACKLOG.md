@@ -17,10 +17,10 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 11 | Admin invitation management | 8, 8b | Agent | DONE; extended in 8b with revoking accepted members (IN REVIEW) |
 | 12 | Invitation email delivery | 8 | Agent | DONE (manual link, per D-08) |
 | 13 | Protect application routes | 9 | Agent | MERGED (production check to be confirmed) |
-| 14 | Remove hosted read-only architecture | 12 | Agent | IN REVIEW |
-| 15 | Migrate away from runtime files | 11, 12 | Agent | IN REVIEW (no runtime file reads or writes after step 12) |
-| 16 | Migrate existing personal data safely | 12 | Agent | IN REVIEW (script ready; production schedule.json was empty, nothing to import) |
-| 17 | Preserve planner functionality | 12 | Agent | IN REVIEW |
+| 14 | Remove hosted read-only architecture | 12 | Agent | DONE |
+| 15 | Migrate away from runtime files | 11, 12 | Agent | DONE (no runtime file reads or writes after step 12) |
+| 16 | Migrate existing personal data safely | 12 | Agent | DONE (script ready; production schedule.json was empty, nothing to import) |
+| 17 | Preserve planner functionality | 12 | Agent | DONE |
 | 18 | Environment variable contract | 4 | Agent | DONE |
 | 19 | Secure GitHub repository secrets | 4 | Agent | DONE |
 | 20 | Store production secrets in Vercel | 14 | Tanuj | TODO |
@@ -31,7 +31,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 25 | OAuth account handling | 6 | Agent | DONE |
 | 26 | Authentication UI | 5 | Agent | DONE |
 | 27 | Admin security | 8 | Agent | DONE |
-| 28 | Security tests | 3, 13 | Agent | IN PROGRESS (database part in review) |
+| 28 | Security tests | 3, 10, 13 | Agent | IN REVIEW (all automated checks pass; production rows A2–A4 confirmed manually) |
 | 29 | Supabase migration management | 2 | Agent | DONE |
 | 30 | Vercel production configuration | 15 | Tanuj + Agent | TODO |
 | 31 | Free-tier constraint | 15 | Agent | TODO |
