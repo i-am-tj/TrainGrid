@@ -356,8 +356,8 @@ Status:                MERGED to main 2026-11-12 (d8dddb4). Production use not y
 ```
 Story:                 28 security tests (application level, completing the matrix)
 Branch:                epic-1/13-authz-tests
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/16
+Commit:                300243e
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: None. New scripts: typecheck, test:all.
