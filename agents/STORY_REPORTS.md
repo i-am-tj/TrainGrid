@@ -374,6 +374,32 @@ Deployment impact:     None. Tests and scripts only.
 Status:                IN REVIEW
 ```
 
+### Step 14 — Environment / secrets hardening (stories 20, 22, 23; completes 19)
+
+```
+Story:                 20 secrets in Vercel; 22 dev/prod separation; 23 GitHub security
+Branch:                epic-1/14-secrets-hardening (stacked on epic-1/13-authz-tests)
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: No new variables. New docs/SECURITY.md: credential inventory, dev/prod
+                       separation, release checks, GitHub and Vercel checklists, incident steps.
+Findings:              Git history: no credentials in 56 commits on all branches; only
+                       .env.example ever tracked. GitHub: dependency graph, Dependabot alerts,
+                       Dependabot security updates, secret scanning and push protection all
+                       DISABLED. Dependencies: next 16.3.3 had a critical advisory (features
+                       unused) plus highs. Vercel previews: behind Vercel Authentication.
+Changes:               scripts/scan-secrets.ts (npm run scan:secrets); next 16.4.6,
+                       eslint-config-next 16.4.6, vitest 4.1.12, transitive updates.
+                       Production deps: 0 vulnerabilities; 8 moderate lint-only remain (D-77).
+Tests:                 test:all on the new versions: lint, typecheck, unit 131/131, database
+                       186/186, integration 26/26, E2E 53/53, build all pass. Scanner verified
+                       on planted values.
+Deployment impact:     Next.js minor upgrade ships to production on merge.
+Status:                IN REVIEW — waiting on Tanuj: GitHub settings, Vercel scoping review
+```
+
 ## Epic completion report
 
 Filled in at step 15. Until then every line is unverified.

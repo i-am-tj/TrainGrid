@@ -22,11 +22,11 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 16 | Migrate existing personal data safely | 12 | Agent | DONE (script ready; production schedule.json was empty, nothing to import) |
 | 17 | Preserve planner functionality | 12 | Agent | DONE |
 | 18 | Environment variable contract | 4 | Agent | DONE |
-| 19 | Secure GitHub repository secrets | 4 | Agent | DONE |
-| 20 | Store production secrets in Vercel | 14 | Tanuj | TODO |
+| 19 | Secure GitHub repository secrets | 4, 14 | Agent | DONE (history scan clean in step 14) |
+| 20 | Store production secrets in Vercel | 14 | Tanuj | IN REVIEW (all four set 2026-11-12; Tanuj to confirm Production-only scoping and Secret type, see docs/SECURITY.md) |
 | 21 | Protect Supabase secrets | 4, 8 | Agent | IN REVIEW (secret key used only in `lib/supabase/admin.ts`; bundle scan clean) |
-| 22 | Separate development and production | 14 | Agent + Tanuj | TODO |
-| 23 | GitHub security hardening | 14 | Tanuj | TODO |
+| 22 | Separate development and production | 14 | Agent + Tanuj | IN REVIEW (local stack for dev; previews protected and without Supabase variables) |
+| 23 | GitHub security hardening | 14 | Tanuj | IN REVIEW (all five settings found disabled 2026-11-12; Tanuj to enable; history scan clean; dependencies patched) |
 | 24 | Input validation | 10, 12 | Agent | DONE (data layer); every action uses it from step 12 |
 | 25 | OAuth account handling | 6 | Agent | DONE |
 | 26 | Authentication UI | 5 | Agent | DONE |
@@ -50,7 +50,7 @@ Each item gets step-by-step instructions in the PR that needs it.
 | Step 6 | Create the GitHub OAuth App and enable the GitHub provider in Supabase (see `docs/SUPABASE_SETUP.md`). After the step 6 PR is merged, sign in with GitHub at `/login` on production |
 | Step 7 | Apply migrations to production (`supabase link`, `supabase db push`); insert your own invitation in the SQL editor; after the step 7 PR is merged, sign in again (see `supabase/README.md`) |
 | Step 8 | In Vercel Production add `SUPABASE_SECRET_KEY` (type Secret) and `TRAINGRID_ADMIN_USER_IDS` (your user id from Supabase → Authentication → Users); redeploy; after the step 8 PR is merged, invite and revoke a test address at `/admin/invitations` |
-| Step 14 | Add environment variables in Vercel; review GitHub secret scanning, push protection, Dependabot |
+| Step 14 | Enable dependency graph, Dependabot alerts and security updates, secret scanning and push protection in GitHub; confirm the four Vercel variables are Production-only and the secret key is type Secret (checklist in docs/SECURITY.md) |
 | Step 15 | Apply migrations to production; sign in on `train-grid.vercel.app` with Google and with GitHub |
 
 ## Findings from the repository inspection that affect scope
