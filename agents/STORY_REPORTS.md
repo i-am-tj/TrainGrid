@@ -184,8 +184,8 @@ Status:                MERGED to main 2026-11-12 (784b194). Production invite ch
 ```
 Story:                 Feedback from production use on 2026-11-12
 Branch:                epic-1/07b-signout-ux
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/9
+Commit:                3af6b63
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: Adds vercel.json pinning functions to syd1. No variables.
