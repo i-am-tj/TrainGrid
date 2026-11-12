@@ -156,8 +156,8 @@ Status:                DONE — merged to main 2026-11-12 (cb2bcee). GitHub sign
 ```
 Story:                 9 enforce invite-only access; 10 invitation model
 Branch:                epic-1/07-invitations
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/8
+Commit:                e8197d4
 Schema impact:         One migration, supabase/migrations/20261112020000_invitations.sql:
                        table invitations (normalised email, accepted/revoked timestamps, one
                        live invitation per email) and function accept_invitation().
@@ -166,7 +166,8 @@ RLS impact:            invitations: RLS enabled, no policies, no privileges for 
                        authenticated only, and is the only way a profiles row is created.
 Secrets/config impact: No new production variables. Locally, SUPABASE_SECRET_KEY of the
                        local stack is used by one E2E helper (ignored .env.local).
-                       Requires migrations applied to production and a first invitation.
+                       Migrations applied to production and first invitation inserted by
+                       Tanuj 2026-11-12 (supabase db push --remote; SQL editor).
 Tests:                 Lint pass. Unit 69/69 pass (4 new). Database 121/121 pass (31 new).
                        E2E 23/23 pass. Build pass.
                        Callback refusing or admitting a real OAuth user on production:
