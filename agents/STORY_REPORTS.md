@@ -196,7 +196,8 @@ Tests:                 Lint pass. Unit 69/69 pass. E2E 23/23 pass. Build pass. D
                        NOT VERIFIED until deployed.
 Deployment impact:     Functions move from iad1 to syd1. Header shows Sign out for signed-in
                        users. Providers show an account chooser on each sign-in.
-Status:                IN REVIEW
+Status:                MERGED to main 2026-11-12 (d91cf17). Sign-out speed and the GitHub
+                       account chooser not yet confirmed on production.
 ```
 
 ### Step 8 — Admin invitation flow (stories 11, 12, 27; completes 21)
@@ -204,9 +205,9 @@ Status:                IN REVIEW
 ```
 Story:                 11 admin invitation management; 12 invitation delivery (manual link);
                        27 admin security; 21 protect Supabase secrets
-Branch:                epic-1/08-admin-invitations (stacked on epic-1/07b-signout-ux)
-PR:                    not opened yet
-Commit:                not committed yet
+Branch:                epic-1/08-admin-invitations
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/10
+Commit:                cfc081b
 Schema impact:         None.
 RLS impact:            None. invitations stays closed to members; admin operations use the
                        secret key only after a server-side admin check.
