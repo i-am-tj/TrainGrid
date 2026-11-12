@@ -19,10 +19,12 @@ export function isOAuthProviderId(value: unknown): value is OAuthProviderId {
  * Messages for the `error` query parameter on /login. Only these fixed texts
  * are ever shown; provider error details are never rendered.
  */
-export type LoginErrorCode = "signin" | "email";
+export type LoginErrorCode = "signin" | "email" | "invite";
 
 const LOGIN_ERRORS: Record<LoginErrorCode, string> = {
   signin: "Sign-in could not be completed. Please try again.",
+  invite:
+    "TrainGrid is currently invite-only. Ask the person who invited you to verify the email used for your account.",
   email:
     "We could not get a verified email address from that account. Add and verify a primary email with the provider, or sign in with a different account.",
 };

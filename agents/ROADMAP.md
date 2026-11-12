@@ -21,9 +21,9 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
 | 2 | Database schema + migrations | `epic-1/02-schema-migrations` | 2, 3, 4, 5, 29 | — | DONE |
 | 3 | RLS policies + database tests | `epic-1/03-rls-policies` | 6, 28 (RLS part) | — | DONE |
 | 4 | Supabase SSR/Auth foundation | `epic-1/04-supabase-ssr` | 1, 18, 19, 21 | — | DONE |
-| 5 | Google OAuth | `epic-1/05-google-oauth` | 7, 26 | Sign in with Google at `/login` on production and confirm | MERGED (production sign-in to be confirmed) |
-| 6 | GitHub OAuth | `epic-1/06-github-oauth` | 8, 25 | Create the GitHub OAuth App and enable the provider; after merge, sign in with GitHub on production | IN REVIEW (production sign-in pending) |
-| 7 | Invitation / allowlist model | `epic-1/07-invitations` | 9, 10 | — | TODO |
+| 5 | Google OAuth | `epic-1/05-google-oauth` | 7, 26 | — | DONE |
+| 6 | GitHub OAuth | `epic-1/06-github-oauth` | 8, 25 | — | DONE |
+| 7 | Invitation / allowlist model | `epic-1/07-invitations` | 9, 10 | Merge the step 7 PR; sign in again and confirm | IN REVIEW (production check pending) |
 | 8 | Admin invitation flow | `epic-1/08-admin-invitations` | 11, 12, 27 | Own user UUID in `TRAINGRID_ADMIN_USER_IDS` | TODO |
 | 9 | Route protection | `epic-1/09-route-protection` | 13 | — | TODO |
 | 10 | User-scoped data layer + validation | `epic-1/10-data-layer` | 24 | — | TODO |
@@ -43,5 +43,8 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
   GitHub account is done by Tanuj; the agent implements the flow and the automated checks around it.
 - The app stays deployable after every step. Until step 12 lands, production keeps serving the
   current read-only site; auth and the database are introduced alongside it, not in place of it.
+- Production migrations are applied at step 7, not at rollout: from this step on the sign-in
+  callback calls a database function, so production needs the schema. The tables hold no data and
+  stay closed by RLS, so applying them early carries no exposure.
 - Step 12 is the cut-over: the read-only mode and all filesystem persistence are removed in the
   same PR that makes the planner read and write the signed-in user's rows.

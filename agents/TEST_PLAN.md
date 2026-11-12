@@ -36,9 +36,9 @@ manual, on production, and are recorded with date and outcome.
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
 | A1 | Anonymous visitor cannot reach the planner | E2E | — |
-| A2 | Invited Google user gets in | Manual, production | — |
-| A3 | Invited GitHub user gets in | Manual, production | — |
-| A4 | Non-invited OAuth user is denied with the friendly message | E2E (local) + manual | — |
+| A2 | Invited Google user gets in | Manual, production | Google sign-in itself: PASS 2026-11-12 (Tanuj, production). With the invite gate: pending step 7 deploy |
+| A3 | Invited GitHub user gets in | Manual, production | GitHub sign-in itself: PASS 2026-11-12 (Tanuj, production). With the invite gate: pending step 7 deploy |
+| A4 | Non-invited OAuth user is denied with the friendly message | Database + E2E (local) + manual | PASS 2026-11-12 (database: refused, no profile; E2E: message shown, sign-out works). Callback refusal on production: pending |
 | A5 | Sign-out removes access | E2E | PASS 2026-11-12 (E2E, local) — session cookies cleared; planner access re-checked in step 9 |
 | A6 | GitHub account with no usable verified email fails safely | E2E + manual | PASS 2026-11-12 (E2E, local, simulated callback error); real account not tested |
 
@@ -63,8 +63,8 @@ manual, on production, and are recorded with date and outcome.
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
 | M1 | Admin can create and revoke an invitation | E2E | — |
-| M2 | Member cannot create an invitation (action and direct query) | Integration + RLS | — |
-| M3 | Anonymous user cannot create an invitation | Integration | — |
+| M2 | Member cannot create an invitation (action and direct query) | Integration + RLS | Direct query: PASS 2026-11-12 (database, local). Action: step 8 |
+| M3 | Anonymous user cannot create an invitation | Integration | Direct query: PASS 2026-11-12 (database, local). Action: step 8 |
 | M4 | Member cannot open `/admin` | E2E | — |
 
 ### Secrets and platform
@@ -74,7 +74,7 @@ manual, on production, and are recorded with date and outcome.
 | S1 | Secret key absent from client bundles | search `.next/static` after build | — |
 | S2 | No credentials in Git history | secret scan of full history | — |
 | S3 | `.env.example` contains placeholders only | review | PASS 2026-11-12 |
-| S4 | RLS enabled on every table in `public`, each with policies, all scoped to `authenticated` | Database | PASS 2026-11-12 (local, 4 tables; re-checked as tables are added) |
+| S4 | RLS enabled on every table in `public`; member-facing tables have policies scoped to `authenticated`; `invitations` has none | Database | PASS 2026-11-12 (local, 5 tables) |
 | S5 | No filesystem writes in production code paths | search for `fs` writes outside `scripts/` | — |
 
 ### Approved model decisions
