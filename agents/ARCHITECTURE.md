@@ -129,5 +129,18 @@ Rules fixed by the approved decisions (see [DECISIONS.md](DECISIONS.md)):
 | `data/schedule.json` | No longer read or written by the app |
 | Playwright against a scratch data folder | Playwright against local Supabase with seeded test users |
 
+### Data layer (step 10)
+
+`lib/data/` holds every database read and write the planner will use:
+
+| Module | Contents |
+| --- | --- |
+| `routines.ts` | list, get, save (create or update with items, atomically), delete personal routines |
+| `sessions.ts` | list a week, get, schedule a routine, create ad hoc, update details, replace items, delete, Duplicate Week |
+| `export.ts` | the signed-in user's own data |
+| `schemas.ts` | Zod validation for every mutation and for stored snapshots |
+| `mappers.ts` | pure conversions between rows and app types |
+| `server.ts` | `memberData()`: the verified member's client and id, for pages and actions |
+
 Pure logic in `week.ts`, `duplicate-week.ts` and `youtube.ts` is kept. The Markdown parsing in
 `workout-items.ts` moves out of the app and into the seed tooling.

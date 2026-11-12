@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 import { requireSupabaseEnv } from "./env";
 
 /**
@@ -24,7 +25,7 @@ export function createSupabaseAdminClient() {
   if (secretKey.startsWith("sb_publishable_")) {
     throw new Error("SUPABASE_SECRET_KEY contains a publishable key. Use the secret key.");
   }
-  return createClient(url, secretKey, {
+  return createClient<Database>(url, secretKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 }

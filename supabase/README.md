@@ -20,6 +20,10 @@ npm run db:lint    # lint the schema
 npm run db:stop    # stop the local stack
 ```
 
+The data layer is also tested against the local stack through the real API, as real signed-in
+users: `npm run supabase:start`, then `npm run test:integration`. Those tests need the local
+stack's publishable and secret keys in `.env.local` and skip otherwise.
+
 ## Applying migrations to production
 
 Run by the project owner, from a terminal, never by CI and never automatically on merge.

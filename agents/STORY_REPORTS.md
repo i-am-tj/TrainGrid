@@ -245,7 +245,30 @@ Tests:                 Lint pass. Unit 87/87 pass (5 new). Database 121/121 pass
 Deployment impact:     The production site stops being public. Anonymous visitors are sent
                        to /login. Members see the existing file-backed, read-only planner
                        until step 12. The E2E suite now needs the local Supabase stack.
-Status:                IN REVIEW — production check pending
+Status:                MERGED to main 2026-11-12 (7877baa). Production redirect not yet
+                       confirmed.
+```
+
+### Step 10 — User-scoped data layer + validation (story 24)
+
+```
+Story:                 24 input validation (and the data layer the planner will use)
+Branch:                epic-1/10-data-layer
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         One migration, 20261112030000_save_personal_routine.sql: function
+                       save_personal_routine() (security invoker). No table changes.
+                       Generated types added in lib/database.types.ts.
+RLS impact:            None changed. The new function runs under the caller's RLS.
+Secrets/config impact: None. New script: test:integration (local stack only).
+Tests:                 Lint pass. Unit 115/115 pass (28 new). Database 141/141 pass (20 new).
+                       Integration 20/20 pass (new): CRUD, snapshots, Duplicate Week, export,
+                       and every cross-user case, both through the data functions and by
+                       direct queries. With RLS disabled on scheduled_sessions, 3 fail, as
+                       expected. E2E 36/36 pass. Build pass. Secret key absent from bundle.
+Deployment impact:     None visible. Nothing in the app calls the data layer until step 12.
+                       The new migration must be applied to production before step 12.
+Status:                IN REVIEW
 ```
 
 ## Epic completion report

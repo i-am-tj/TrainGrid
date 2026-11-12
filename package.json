@@ -13,12 +13,13 @@
     "db:start": "supabase db start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
-    "db:lint": "supabase db lint --local",
+    "db:lint": "supabase db lint",
     "db:test": "supabase test db",
     "db:types": "supabase gen types typescript --local --schema public > lib/database.types.ts",
     "supabase:start": "supabase start -x studio,imgproxy,logflare,vector,supavisor,postgres-meta,mailpit",
     "supabase:status": "supabase status",
-    "supabase:stop": "supabase stop"
+    "supabase:stop": "supabase stop",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

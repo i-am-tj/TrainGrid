@@ -16,7 +16,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 10 | Invitation model | 7 | Agent | DONE |
 | 11 | Admin invitation management | 8 | Agent | IN REVIEW (production check pending) |
 | 12 | Invitation email delivery | 8 | Agent | IN REVIEW (manual link, per D-08) |
-| 13 | Protect application routes | 9 | Agent | IN REVIEW (production check pending) |
+| 13 | Protect application routes | 9 | Agent | MERGED (production check to be confirmed) |
 | 14 | Remove hosted read-only architecture | 12 | Agent | TODO |
 | 15 | Migrate away from runtime files | 11, 12 | Agent | TODO |
 | 16 | Migrate existing personal data safely | 12 | Agent | TODO |
@@ -27,7 +27,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 21 | Protect Supabase secrets | 4, 8 | Agent | IN REVIEW (secret key used only in `lib/supabase/admin.ts`; bundle scan clean) |
 | 22 | Separate development and production | 14 | Agent + Tanuj | TODO |
 | 23 | GitHub security hardening | 14 | Tanuj | TODO |
-| 24 | Input validation | 10 | Agent | TODO |
+| 24 | Input validation | 10 | Agent | IN REVIEW (data layer; wired into actions in step 12) |
 | 25 | OAuth account handling | 6 | Agent | DONE |
 | 26 | Authentication UI | 5 | Agent | DONE |
 | 27 | Admin security | 8 | Agent | IN REVIEW |
