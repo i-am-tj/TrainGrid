@@ -1,0 +1,121 @@
+# Decisions
+
+Last updated: 2026-11-12
+
+Status values: **LOCKED** (approved in the epic), **APPROVED** (resolved by Tanuj, final for
+Epic 1), **DEFERRED** (explicitly not in Epic 1), **PROPOSED** (agent recommendation, followed
+unless Tanuj objects). There are no open decisions.
+
+## Locked by the epic
+
+| ID | Decision |
+| --- | --- |
+| L-01 | Hosting: Vercel Hobby, deployed by the GitHub → Vercel Git integration |
+| L-02 | Authentication: Supabase Auth, Google and GitHub OAuth only |
+| L-03 | Database: Supabase PostgreSQL, Free plan; all mutable production data lives there |
+| L-04 | Authorization: server-side checks and Row Level Security, both mandatory |
+| L-05 | Clients: `@supabase/supabase-js` + `@supabase/ssr`; no ORM; SQL migrations |
+| L-06 | No Supabase Storage; YouTube references stay external URLs |
+| L-07 | Invite-only; no public signup, no passwords |
+| L-08 | Apple and ChatGPT sign-in deferred; no placeholder buttons |
+| L-09 | No paid service of any kind |
+| L-10 | Formal ADR lives at `docs/adr/001-multi-user-supabase-architecture.md` |
+
+## Approved by Tanuj on 2026-11-12
+
+### D-03 Scheduled sessions always snapshot — APPROVED
+
+Scheduling a routine copies its complete workout definition into the scheduled session. There is
+no "follows template" mode; this is the only scheduling behaviour.
+
+- Editing the source routine does not change a scheduled session.
+- Deleting the source routine does not delete a scheduled session.
+- Editing a scheduled session affects only that occurrence.
+- Duplicate Week copies the snapshots.
+- `source_routine_id` is optional provenance only and never controls session contents. It is set
+  to null when the routine is deleted.
+
+### D-04 Workout item structure — APPROVED WITH MODIFICATION
+
+Workout items use explicit structured fields. Nothing is parsed out of a generic details box at
+runtime; there are no magic `Rest:` / `Target:` strings.
+
+| Field | Meaning |
+| --- | --- |
+| `name` | Exercise, movement or workout step name |
+| `instruction` | Planned work to perform, e.g. `4 × 5–6` |
+| `rest` | Planned recovery instruction, e.g. `2–3 min` |
+| `target` | Planned intensity: RPE, pace, HR zone, effort |
+| `notes` | Optional coaching or context notes |
+| `equipment` | Zero or more equipment tags |
+| `video_url` | Optional YouTube/demo reference |
+| `sort_order` | Position within the routine |
+
+`instruction` replaces the epic's working name `prescription`. The editor gets one input per
+field; Rest, Target, Notes, Equipment and Video may sit under a collapsible "More details"
+section to keep it compact. The same field set is used for items inside a session snapshot.
+
+Implementation note: the existing `data/templates/*.md` files are converted to these fields once,
+by the seed tooling in step 11. That conversion is migration input handling, not application
+behaviour; the running app never parses Markdown bodies.
+
+### D-04A Planned definitions stay separate from performed logs — APPROVED
+
+Routine workout items and session snapshots describe what the user plans to do. No performed
+data (`actual_weight`, `actual_reps`, `actual_rpe`, `completed_sets`, or similar) is added to
+them in Epic 1. The intended future chain is:
+
+```
+Routine → Routine Workout Item → Scheduled Session Snapshot
+        → Performed Workout → Exercise Log → Set Logs
+```
+
+Performed-set data (weight, reps, RPE, set number, completed-at) will live in its own tables
+referencing the scheduled session, so progressive-overload features can be added without
+reshaping the routine or calendar model.
+
+### D-04B Exercise identity — DEFERRED, designed for
+
+No exercise catalogue in Epic 1. To keep the door open for a later `exercises` table and an
+`exercise_id` on items:
+
+- Workout items have stable UUID primary keys.
+- Each item copied into a session snapshot gets its own stable UUID, and records the id of the
+  routine item it came from.
+- Nothing keys off an item's display name.
+
+### D-05 Library behaviour during Epic 1 — APPROVED, with scope boundary
+
+- The existing templates are seeded as GLOBAL routines: visible to members, read-only to them,
+  managed as system content.
+- The existing routine editor is kept and writes PERSONAL routines. A member can create, view,
+  edit and delete their own.
+- Not in Epic 1: polished Global / My Library navigation, advanced filtering, richer search,
+  global-to-personal copy workflows, and any global-library management UI.
+
+### D-06 Backup / export — APPROVED
+
+- Export is kept and is scoped entirely to the signed-in user: their personal routines, those
+  routines' workout items, and their scheduled sessions.
+- Export never contains another user's data, invitation or admin data, Supabase Auth internals,
+  or any secret. GLOBAL routines are not included; snapshots already carry the scheduled content.
+- Hosted import is removed: no import UI and no import endpoint in Epic 1. It may return later
+  with explicit handling of validation, ownership, conflicts, duplicates, schema versions and
+  security.
+
+## Proposed — will proceed unless objected to
+
+| ID | Decision | Reason |
+| --- | --- | --- |
+| D-01 | Membership is "a `profiles` row exists". The row is created only by a `security definer` database function that checks the caller's verified email against a valid invitation and marks it accepted. Every RLS policy on user data requires membership as well as ownership. | An OAuth user who is not invited can obtain a Supabase session but can read or write nothing, even by calling the database API directly. Invite enforcement does not depend on application code. |
+| D-02 | Additionally block uninvited sign-ups at the auth layer with a Supabase "before user created" hook, if it is available on the Free plan (to be verified in step 7). | Keeps `auth.users` free of strangers. D-01 remains the guarantee either way. |
+| D-07 | `invitations` has RLS enabled and no policies for members. Admin server actions check the caller against `TRAINGRID_ADMIN_USER_IDS` and then use the secret key. This is the only use of the secret key in the app. | The database cannot see an environment variable, so admin rights cannot be expressed as a policy without adding a role table. Denying everyone at the database and gating on the server is the smallest secure design. |
+| D-08 | Invitation delivery uses the manual fallback: the admin page records the email and shows a sign-in link to send by hand. | Supabase's built-in invite email creates an email-link identity, which conflicts with OAuth-only sign-in. |
+| D-09 | Development and automated tests run against a local Supabase stack (Supabase CLI + Docker). Only Vercel Production holds production Supabase values; Preview gets none. | One free cloud project, and no path from a laptop or preview build to production data. |
+| D-10 | Zod for server-side validation of every mutation. | No validation library exists in the project today. |
+| D-11 | Routine, workout item and session ids are UUIDs. Seeded GLOBAL routines also keep their old slug in a `slug` column. | Matches the epic's model; slugs keep the seed idempotent. |
+| D-12 | `scheduled_sessions` keeps `duration_minutes` and `notes` in addition to the epic's columns, and stores a real `date` instead of `weekId` + `day`. | Both fields exist in the current planner and must be preserved; week and weekday are derived from the date. |
+| D-13 | Next.js 16 `proxy.ts` refreshes the auth session and redirects anonymous visitors; every server data function still authenticates on its own. | Route protection alone is explicitly not sufficient. |
+| D-14 | These records live in `agents/` and are committed. The older `.agent/` folder stays untracked and untouched. | Records should be reviewable alongside the PRs they describe. |
+| D-15 | `snapshot` is a versioned JSON document: `{ "version": 1, "items": [ { id, source_item_id, name, instruction, rest, target, notes, equipment, video_url } ] }`, with array order as display order. Its shape is validated by Zod on every write and by a database check that it is an object with an `items` array. | Follows from D-03, D-04 and D-04B; the version field lets the shape evolve. |
+| D-16 | GLOBAL routines are seeded by a local script using the secret key, run by hand per environment; the seed content is generic and is not a schema migration. | D-05 excludes a management UI; the epic keeps seed data separate from migrations. |
