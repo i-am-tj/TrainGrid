@@ -135,8 +135,8 @@ Status:                MERGED to main 2026-11-12 (eb8c564); /login is live on pr
 ```
 Story:                 8 GitHub OAuth; 25 OAuth account handling
 Branch:                epic-1/06-github-oauth
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/7
+Commit:                c47ceb5
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: No new environment variables. The GitHub client secret is entered in
