@@ -21,14 +21,14 @@ export type Database = {
                   ]
                 },"profiles": {
                   Row: {
-                    "avatar_url": string | null,"created_at": string,"display_name": string | null,"id": string,"updated_at": string
+                    "avatar_url": string | null,"created_at": string,"display_name": string | null,"id": string,"revoked_at": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"id": string,"updated_at"?: string
+                    "avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"id": string,"revoked_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"id"?: string,"updated_at"?: string
+                    "avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"id"?: string,"revoked_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -110,6 +110,9 @@ isOneToOne: false
                            },
 "is_member":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"revoke_invitation":
+{ Args: { "p_invitation_id": string,"p_protected_user_ids": (string)[] }; Returns: string
                            },
 "save_personal_routine":
 { Args: { "p_category": string,"p_description": string,"p_items": Json,"p_name": string,"p_routine_id": string }; Returns: string

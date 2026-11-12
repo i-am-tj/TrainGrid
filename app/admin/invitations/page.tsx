@@ -3,8 +3,12 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { InviteForm, RevokeForm } from "@/components/admin/InvitationForms";
 import { getAdminViewer } from "@/lib/admin/guard";
-import { invitationStatus, type InvitationStatus } from "@/lib/admin/invitation-model";
-import { listInvitations } from "@/lib/admin/invitations";
+import {
+  invitationStatus,
+  revokeKind,
+  type InvitationStatus,
+} from "@/lib/admin/invitation-model";
+import { listInvitations, protectedUserIds } from "@/lib/admin/invitations";
 import { originFromHeaders } from "@/lib/auth/redirect";
 import { isSecretKeyConfigured } from "@/lib/supabase/admin";
 
@@ -29,7 +33,8 @@ function formatDate(iso: string): string {
 
 export default async function InvitationsPage() {
   // Anyone who is not an admin gets the same 404 as a page that does not exist.
-  if (!(await getAdminViewer())) notFound();
+  const admin = await getAdminViewer();
+  if (!admin) notFound();
 
   if (!isSecretKeyConfigured()) {
     return (
@@ -43,6 +48,7 @@ export default async function InvitationsPage() {
   }
 
   const invitations = await listInvitations();
+  const protectedIds = protectedUserIds(admin.userId);
   const signInUrl = `${originFromHeaders(await headers())}/login`;
 
   return (
@@ -50,7 +56,9 @@ export default async function InvitationsPage() {
       <h1 className="text-xl font-semibold tracking-tight">Invitations</h1>
       <p className="mt-1.5 text-sm text-stone-600">
         Only invited email addresses can use TrainGrid. An invitation is matched against the
-        verified email of the Google or GitHub account the person signs in with.
+        verified email of the Google or GitHub account the person signs in with. Revoking an
+        accepted member removes their access but keeps their data; inviting the same email again
+        restores it. Admins cannot be revoked.
       </p>
 
       <section className="mt-6 rounded-2xl border border-line bg-card px-4 py-4 sm:px-5">
@@ -74,6 +82,10 @@ export default async function InvitationsPage() {
           <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-card">
             {invitations.map((invitation) => {
               const status = invitationStatus(invitation);
+              const kind = revokeKind(invitation, protectedIds);
+              const isAdminRow = Boolean(
+                invitation.accepted_by && protectedIds.has(invitation.accepted_by.toLowerCase()),
+              );
               return (
                 <li
                   key={invitation.id}
@@ -83,6 +95,8 @@ export default async function InvitationsPage() {
                     <p className="text-sm font-medium break-all">{invitation.email}</p>
                     <p className="mt-0.5 text-xs text-stone-500">
                       Invited {formatDate(invitation.created_at)}
+                      {isAdminRow ? " · Admin" : ""}
+                      {invitation.accepted_at && invitation.revoked_at ? " · Access revoked, data kept" : ""}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -91,8 +105,8 @@ export default async function InvitationsPage() {
                     >
                       {status}
                     </span>
-                    {status === "Pending" ? (
-                      <RevokeForm id={invitation.id} email={invitation.email} />
+                    {kind ? (
+                      <RevokeForm id={invitation.id} email={invitation.email} kind={kind} />
                     ) : null}
                   </div>
                 </li>

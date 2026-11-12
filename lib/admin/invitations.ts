@@ -1,5 +1,6 @@
 import "server-only";
 
+import { parseAdminUserIds } from "@/lib/admin/access";
 import { getAdminViewer } from "@/lib/admin/guard";
 import {
   invitationEmailSchema,
@@ -22,7 +23,7 @@ export class NotAdminError extends Error {
 
 export type MutationResult = { ok: true } | { ok: false; message: string };
 
-const COLUMNS = "id, email, created_at, accepted_at, revoked_at";
+const COLUMNS = "id, email, created_at, accepted_at, accepted_by, revoked_at";
 
 export async function listInvitations(): Promise<InvitationRow[]> {
   if (!(await getAdminViewer())) throw new NotAdminError();
@@ -55,24 +56,39 @@ export async function createInvitation(rawEmail: unknown): Promise<MutationResul
   return { ok: false, message: "The invitation could not be created." };
 }
 
+/** Admins can never be revoked, including by another admin or themselves. */
+export function protectedUserIds(adminId: string): Set<string> {
+  const ids = new Set(parseAdminUserIds(process.env.TRAINGRID_ADMIN_USER_IDS));
+  ids.add(adminId.toLowerCase());
+  return ids;
+}
+
+/**
+ * Revokes a pending invitation, or an accepted member's access. In the second
+ * case the member's data is kept; inviting the same email again restores it.
+ * Both happen in one database transaction.
+ */
 export async function revokeInvitation(rawId: unknown): Promise<MutationResult> {
-  if (!(await getAdminViewer())) throw new NotAdminError();
+  const admin = await getAdminViewer();
+  if (!admin) throw new NotAdminError();
 
   const id = invitationIdSchema.safeParse(rawId);
   if (!id.success) return { ok: false, message: "Unknown invitation." };
 
-  // Only an unused, live invitation can be revoked.
-  const { data, error } = await createSupabaseAdminClient()
-    .from("invitations")
-    .update({ revoked_at: new Date().toISOString() })
-    .eq("id", id.data)
-    .is("accepted_at", null)
-    .is("revoked_at", null)
-    .select("id");
+  const { data, error } = await createSupabaseAdminClient().rpc("revoke_invitation", {
+    p_invitation_id: id.data,
+    p_protected_user_ids: [...protectedUserIds(admin.userId)],
+  });
 
   if (error) return { ok: false, message: "The invitation could not be revoked." };
-  if (!data || data.length === 0) {
-    return { ok: false, message: "Only a pending invitation can be revoked." };
+  switch (data) {
+    case "revoked":
+      return { ok: true };
+    case "protected":
+      return { ok: false, message: "An admin's access cannot be revoked." };
+    case "already_revoked":
+      return { ok: false, message: "That invitation is already revoked." };
+    default:
+      return { ok: false, message: "Unknown invitation." };
   }
-  return { ok: true };
 }

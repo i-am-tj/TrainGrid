@@ -14,7 +14,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 8 | GitHub OAuth | 6 | Tanuj (credentials) + Agent (flow) | DONE |
 | 9 | Enforce invite-only access | 7 | Agent | DONE |
 | 10 | Invitation model | 7 | Agent | DONE |
-| 11 | Admin invitation management | 8 | Agent | DONE |
+| 11 | Admin invitation management | 8, 8b | Agent | DONE; extended in 8b with revoking accepted members (IN REVIEW) |
 | 12 | Invitation email delivery | 8 | Agent | DONE (manual link, per D-08) |
 | 13 | Protect application routes | 9 | Agent | MERGED (production check to be confirmed) |
 | 14 | Remove hosted read-only architecture | 12 | Agent | TODO |

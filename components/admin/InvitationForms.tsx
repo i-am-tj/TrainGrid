@@ -57,17 +57,33 @@ export function InviteForm() {
   );
 }
 
-export function RevokeForm({ id, email }: { id: string; email: string }) {
+export function RevokeForm({
+  id,
+  email,
+  kind,
+}: {
+  id: string;
+  email: string;
+  kind: "invitation" | "access";
+}) {
   const [state, action] = useActionState(revokeAction, null);
+  const question =
+    kind === "access"
+      ? `Revoke access for ${email}?\n\nThey lose access to TrainGrid straight away. Their routines and sessions are kept, and inviting this email again restores them.`
+      : `Revoke the invitation for ${email}?`;
   return (
     <form
       action={action}
       onSubmit={(event) => {
-        if (!confirm(`Revoke the invitation for ${email}?`)) event.preventDefault();
+        if (!confirm(question)) event.preventDefault();
       }}
     >
       <input type="hidden" name="id" value={id} />
-      <Submit label="Revoke" busy="Revoking…" className={btnDanger} />
+      <Submit
+        label={kind === "access" ? "Revoke access" : "Revoke"}
+        busy="Revoking…"
+        className={btnDanger}
+      />
       <Message state={state} />
     </form>
   );

@@ -40,5 +40,5 @@ export async function revokeAction(
   formData: FormData,
 ): Promise<InvitationFormState> {
   const state = await run(() => revokeInvitation(formData.get("id")));
-  return state?.ok ? { ok: true, message: "Invitation revoked." } : state;
+  return state?.ok ? { ok: true, message: "Revoked." } : state;
 }

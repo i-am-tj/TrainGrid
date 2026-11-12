@@ -249,6 +249,31 @@ Status:                MERGED to main 2026-11-12 (7877baa). Production redirect 
                        confirmed.
 ```
 
+### Step 8b — Revoke accepted members (extends stories 11, 27)
+
+```
+Story:                 Requested by Tanuj 2026-11-12: admins can revoke an accepted member
+                       (never an admin); data kept; re-inviting restores access
+Branch:                epic-1/08b-revoke-members (stacked on epic-1/10-data-layer)
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         One migration, 20261112040000_revoke_members.sql: profiles.revoked_at;
+                       drops invitations_not_accepted_and_revoked; is_member() excludes
+                       revoked; accept_invitation() restores on re-invite; new
+                       revoke_invitation() (service role only).
+RLS impact:            Every own-row policy on routines, workout_items, scheduled_sessions and
+                       profiles UPDATE now also requires active membership.
+Secrets/config impact: None new. Revocation uses the existing secret key, admin-only.
+Tests:                 Lint pass. Unit 119/119 (4 new). Database 174/174 (33 new; 2 old tests
+                       rewritten for the new rule). Integration 23/23 (3 new). E2E 37/37 (1 new).
+                       Build pass. Schema lint: one warning, from step 10 (D-61).
+                       Production: NOT VERIFIED.
+Deployment impact:     Migration applied to production by Tanuj 2026-11-12 (before merge;
+                       inert for the code already deployed). Admin page gains a Revoke
+                       access button for accepted non-admin members once merged.
+Status:                IN REVIEW
+```
+
 ### Step 10 — User-scoped data layer + validation (story 24)
 
 ```
@@ -267,7 +292,8 @@ Tests:                 Lint pass. Unit 115/115 pass (28 new). Database 141/141 p
                        direct queries. With RLS disabled on scheduled_sessions, 3 fail, as
                        expected. E2E 36/36 pass. Build pass. Secret key absent from bundle.
 Deployment impact:     None visible. Nothing in the app calls the data layer until step 12.
-                       The new migration must be applied to production before step 12.
+                       Migration applied to production by Tanuj 2026-11-12
+                       (supabase db push --remote).
 Status:                IN REVIEW
 ```
 

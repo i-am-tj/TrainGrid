@@ -68,6 +68,17 @@ manual, on production, and are recorded with date and outcome.
 | M3 | Anonymous user cannot create an invitation | Integration | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly while anonymous |
 | M4 | Member cannot open `/admin` | E2E | PASS 2026-11-12 (E2E, local) — 404, no admin link |
 
+### Member revocation (step 8b)
+
+| # | Check | Layer | Result |
+| --- | --- | --- | --- |
+| R1 | Admin revokes an accepted member; their next request is refused (page and export) | E2E | PASS 2026-11-12 (local) |
+| R2 | A revoked member cannot read, add, change or delete anything, including their own rows | Database + integration | PASS 2026-11-12 (local) |
+| R3 | A revoked member's data is kept unchanged | Database + integration | PASS 2026-11-12 (local) |
+| R4 | Signing in again does not restore access; a new invitation does, with the data | Database | PASS 2026-11-12 (local) |
+| R5 | An admin cannot be revoked; the admin's row offers no revoke action | Database + integration + E2E | PASS 2026-11-12 (local) |
+| R6 | Members and anon cannot call `revoke_invitation()`; a revoked member cannot un-revoke themselves | Database + integration | PASS 2026-11-12 (local) |
+
 ### Secrets and platform
 
 | # | Check | How | Result |

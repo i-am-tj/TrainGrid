@@ -159,16 +159,22 @@ The `invitations` table is not readable or writable by members. See
 ### Managing invitations
 
 `/admin/invitations` lets an admin invite an email address, see each invitation's status
-(Pending, Accepted, Revoked) and revoke a pending one. No email is sent: the page shows the
+(Pending, Accepted, Revoked), revoke a pending invitation, and revoke an accepted member's access. No email is sent: the page shows the
 sign-in link to pass on by hand.
 
 - An admin is a member whose Supabase user id is listed in `TRAINGRID_ADMIN_USER_IDS`. The list
   is read on the server only; nothing the browser sends is consulted.
 - The page and both of its server actions check this themselves. Anyone else, signed in or not,
   gets a 404.
-- This is the only place the secret key is used, and only after the admin check has passed. The
+- This is the only place the secret key is used, and only after the admin check has passed.
+  Revocation runs in one database transaction (`revoke_invitation()`), which only the secret key
+  may call. The
   module that reads it is marked `server-only`, so it cannot be bundled for the browser.
-- Only a pending invitation can be revoked. Removing an existing member is not supported.
+- Revoking an accepted member takes effect on their next request: every access rule requires an
+  active membership, so they can no longer read or change anything, including their own data. Their
+  routines and sessions are kept. Inviting the same email again restores access with the data.
+- Admins (anyone in `TRAINGRID_ADMIN_USER_IDS`) cannot be revoked, by themselves or another admin.
+- Deleting a member's data permanently is not offered.
 
 To enable it in production, add in Vercel (Production only):
 
