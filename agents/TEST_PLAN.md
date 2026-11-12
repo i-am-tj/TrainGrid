@@ -36,9 +36,9 @@ manual, on production, and are recorded with date and outcome.
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
 | A1 | Anonymous visitor cannot reach the planner | E2E | — |
-| A2 | Invited Google user gets in | Manual, production | Google sign-in itself: PASS 2026-11-12 (Tanuj, production). With the invite gate: pending step 7 deploy |
-| A3 | Invited GitHub user gets in | Manual, production | GitHub sign-in itself: PASS 2026-11-12 (Tanuj, production). With the invite gate: pending step 7 deploy |
-| A4 | Non-invited OAuth user is denied with the friendly message | Database + E2E (local) + manual | PASS 2026-11-12 (database: refused, no profile; E2E: message shown, sign-out works). Callback refusal on production: pending |
+| A2 | Invited Google user gets in | Manual, production | PASS 2026-11-12 (Tanuj, production), with the invite gate in place |
+| A3 | Invited GitHub user gets in | Manual, production | PASS 2026-11-12 (Tanuj, production), with the invite gate in place |
+| A4 | Non-invited OAuth user is denied with the friendly message | Database + E2E (local) + manual | PASS 2026-11-12 (database: refused, no profile; E2E: message shown, sign-out works). Callback refusal on production: PASS 2026-11-12 (Tanuj, production) |
 | A5 | Sign-out removes access | E2E | PASS 2026-11-12 (E2E, local) — session cookies cleared; planner access re-checked in step 9 |
 | A6 | GitHub account with no usable verified email fails safely | E2E + manual | PASS 2026-11-12 (E2E, local, simulated callback error); real account not tested |
 

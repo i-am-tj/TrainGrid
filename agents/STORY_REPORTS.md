@@ -175,8 +175,9 @@ Tests:                 Lint pass. Unit 69/69 pass (4 new). Database 121/121 pass
 Deployment impact:     From this deploy, sign-in succeeds only for invited emails. Until
                        migrations are applied to production, every sign-in ends with the
                        generic error. The planner itself is unaffected.
-Status:                MERGED to main 2026-11-12 (784b194). Production invite check not yet
-                       confirmed by Tanuj.
+Status:                MERGED to main 2026-11-12 (784b194). Confirmed on production by Tanuj
+                       2026-11-12: invited Google and GitHub accounts admitted, uninvited
+                       account refused. Status: DONE.
 ```
 
 ### Step 7b — Sign-out UX, account chooser, function region (follow-up to stories 7, 8, 26)

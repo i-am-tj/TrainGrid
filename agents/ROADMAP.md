@@ -23,7 +23,7 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
 | 4 | Supabase SSR/Auth foundation | `epic-1/04-supabase-ssr` | 1, 18, 19, 21 | — | DONE |
 | 5 | Google OAuth | `epic-1/05-google-oauth` | 7, 26 | — | DONE |
 | 6 | GitHub OAuth | `epic-1/06-github-oauth` | 8, 25 | — | DONE |
-| 7 | Invitation / allowlist model | `epic-1/07-invitations` | 9, 10 | Confirm the three production sign-in checks | MERGED (production check to be confirmed) |
+| 7 | Invitation / allowlist model | `epic-1/07-invitations` | 9, 10 | — | DONE |
 | 7b | Sign-out UX, account chooser, function region | `epic-1/07b-signout-ux` | 26 (follow-up) | Review and merge; re-test sign-out speed and GitHub chooser | IN REVIEW |
 | 8 | Admin invitation flow | `epic-1/08-admin-invitations` | 11, 12, 27 | Own user UUID in `TRAINGRID_ADMIN_USER_IDS` | TODO |
 | 9 | Route protection | `epic-1/09-route-protection` | 13 | — | TODO |

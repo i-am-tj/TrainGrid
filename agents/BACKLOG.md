@@ -12,8 +12,8 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 6 | Row Level Security everywhere | 3 | Agent | DONE |
 | 7 | Google OAuth | 5 | Tanuj (credentials) + Agent (flow) | DONE |
 | 8 | GitHub OAuth | 6 | Tanuj (credentials) + Agent (flow) | DONE |
-| 9 | Enforce invite-only access | 7 | Agent | IN REVIEW (production check pending) |
-| 10 | Invitation model | 7 | Agent | IN REVIEW |
+| 9 | Enforce invite-only access | 7 | Agent | DONE |
+| 10 | Invitation model | 7 | Agent | DONE |
 | 11 | Admin invitation management | 8 | Agent | TODO |
 | 12 | Invitation email delivery | 8 | Agent | TODO |
 | 13 | Protect application routes | 9 | Agent | TODO |
