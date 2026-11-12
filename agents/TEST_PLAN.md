@@ -62,16 +62,16 @@ manual, on production, and are recorded with date and outcome.
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| M1 | Admin can create and revoke an invitation | E2E | — |
-| M2 | Member cannot create an invitation (action and direct query) | Integration + RLS | Direct query: PASS 2026-11-12 (database, local). Action: step 8 |
-| M3 | Anonymous user cannot create an invitation | Integration | Direct query: PASS 2026-11-12 (database, local). Action: step 8 |
-| M4 | Member cannot open `/admin` | E2E | — |
+| M1 | Admin can create and revoke an invitation | E2E | PASS 2026-11-12 (E2E, local); production pending |
+| M2 | Member cannot create an invitation (action and direct query) | Integration + RLS | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly as a member |
+| M3 | Anonymous user cannot create an invitation | Integration | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly while anonymous |
+| M4 | Member cannot open `/admin` | E2E | PASS 2026-11-12 (E2E, local) — 404, no admin link |
 
 ### Secrets and platform
 
 | # | Check | How | Result |
 | --- | --- | --- | --- |
-| S1 | Secret key absent from client bundles | search `.next/static` after build | — |
+| S1 | Secret key absent from client bundles | search `.next/static` after build | PASS 2026-11-12 (local build: neither the key value nor its variable name appears) |
 | S2 | No credentials in Git history | secret scan of full history | — |
 | S3 | `.env.example` contains placeholders only | review | PASS 2026-11-12 |
 | S4 | RLS enabled on every table in `public`; member-facing tables have policies scoped to `authenticated`; `invitations` has none | Database | PASS 2026-11-12 (local, 5 tables) |

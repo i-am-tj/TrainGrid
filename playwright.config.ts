@@ -26,6 +26,8 @@ export default defineConfig({
     env: {
       ...process.env,
       TRAINGRID_DATA_DIR: e2eDataDir,
+      // Fixed id of the local E2E admin (see e2e/local-supabase.ts).
+      TRAINGRID_ADMIN_USER_IDS: "e2e00000-0000-4000-8000-00000000ad01",
     },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],

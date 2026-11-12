@@ -22,8 +22,8 @@ A laptop or a preview build never holds production values.
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Public | Project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public | Publishable key (`sb_publishable_…`) |
-| `SUPABASE_SECRET_KEY` | Server only | Secret key (`sb_secret_…`); bypasses RLS. Not used until the admin invitation flow. |
-| `TRAINGRID_ADMIN_USER_IDS` | Server only | Comma-separated admin user ids. Not used until the admin invitation flow. |
+| `SUPABASE_SECRET_KEY` | Server only | Secret key (`sb_secret_…`); bypasses RLS. Used only by the admin invitation page. |
+| `TRAINGRID_ADMIN_USER_IDS` | Server only | Comma-separated Supabase user ids (UUIDs) of admins. |
 
 The two public values are sent to the browser on purpose. Data is protected by Supabase Auth and
 Row Level Security, not by hiding the publishable key. The app refuses to start its Supabase
@@ -157,6 +157,27 @@ even by calling the database API directly.
 The `invitations` table is not readable or writable by members. See
 [`supabase/README.md`](../supabase/README.md) for creating the first invitation.
 
+### Managing invitations
+
+`/admin/invitations` lets an admin invite an email address, see each invitation's status
+(Pending, Accepted, Revoked) and revoke a pending one. No email is sent: the page shows the
+sign-in link to pass on by hand.
+
+- An admin is a member whose Supabase user id is listed in `TRAINGRID_ADMIN_USER_IDS`. The list
+  is read on the server only; nothing the browser sends is consulted.
+- The page and both of its server actions check this themselves. Anyone else, signed in or not,
+  gets a 404.
+- This is the only place the secret key is used, and only after the admin check has passed. The
+  module that reads it is marked `server-only`, so it cannot be bundled for the browser.
+- Only a pending invitation can be revoked. Removing an existing member is not supported.
+
+To enable it in production, add in Vercel (Production only):
+
+- `SUPABASE_SECRET_KEY` — type **Secret**; from Supabase → Project Settings → API Keys
+- `TRAINGRID_ADMIN_USER_IDS` — your user id from Supabase → Authentication → Users
+
+Then redeploy.
+
 ### Sign-in flow
 
 ```
@@ -182,6 +203,7 @@ notice, or an explanation that no verified email was available. Provider error d
 | `lib/supabase/env.ts` | All of the above | Reads and validates the public configuration |
 | `lib/auth/actions.ts` | `/login` | Server actions that start OAuth sign-in and sign out |
 | `app/auth/callback/route.ts` | OAuth return | Exchanges the one-time code for a session |
+| `lib/supabase/admin.ts` | Admin invitation functions only | Secret-key client; bypasses RLS; `server-only` |
 
-All three clients use the publishable key and the signed-in user's session, so every query is
+The browser, server and proxy clients use the publishable key and the signed-in user's session, so every query is
 subject to Row Level Security. The proxy only keeps sessions fresh; it does not protect routes.
