@@ -371,16 +371,16 @@ Tests:                 New e2e/authorization.spec.ts, 10 tests: member A forging
                        test:all: lint, typecheck, unit 131/131, database 186/186,
                        integration 26/26, E2E 53/53, build all pass.
 Deployment impact:     None. Tests and scripts only.
-Status:                IN REVIEW
+Status:                DONE — merged to main 2026-11-12 (93e3322)
 ```
 
 ### Step 14 — Environment / secrets hardening (stories 20, 22, 23; completes 19)
 
 ```
 Story:                 20 secrets in Vercel; 22 dev/prod separation; 23 GitHub security
-Branch:                epic-1/14-secrets-hardening (stacked on epic-1/13-authz-tests)
-PR:                    not opened yet
-Commit:                not committed yet
+Branch:                epic-1/14-secrets-hardening
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/17
+Commit:                b7b5255
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: No new variables. New docs/SECURITY.md: credential inventory, dev/prod

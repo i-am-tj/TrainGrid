@@ -31,7 +31,7 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
 | 10 | User-scoped data layer + validation | `epic-1/10-data-layer` | 24 | — | DONE |
 | 11 | Template migration foundation | `epic-1/11-template-seed` | 15 (templates) | — | DONE |
 | 12 | Planner migration files → Supabase | `epic-1/12-planner-migration` | 14, 15, 16, 17 | — | DONE |
-| 13 | Cross-user authorization tests | `epic-1/13-authz-tests` | 28 | Review and merge PR #16 | IN REVIEW |
+| 13 | Cross-user authorization tests | `epic-1/13-authz-tests` | 28 | — | DONE |
 | 14 | Environment / secrets hardening | `epic-1/14-secrets-hardening` | 20, 22, 23 | Enable GitHub security settings; confirm Vercel variable scoping | IN REVIEW |
 | 15 | Production rollout | `epic-1/15-rollout` | 30, 31 | Apply migrations to production; verify both OAuth flows live | TODO |
 | 16 | Documentation closure | `epic-1/16-docs-closure` | 33 | — | TODO |
