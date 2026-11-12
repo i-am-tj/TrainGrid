@@ -63,7 +63,7 @@ manual, on production, and are recorded with date and outcome.
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| M1 | Admin can create and revoke an invitation | E2E | PASS 2026-11-12 (E2E, local); production pending |
+| M1 | Admin can create and revoke an invitation | E2E | PASS 2026-11-12 (E2E, local); admin page working on production (Tanuj) |
 | M2 | Member cannot create an invitation (action and direct query) | Integration + RLS | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly as a member |
 | M3 | Anonymous user cannot create an invitation | Integration | Direct query: PASS 2026-11-12 (database, local). Guard: PASS (unit); page returns 404 (E2E). The action was not invoked directly while anonymous |
 | M4 | Member cannot open `/admin` | E2E | PASS 2026-11-12 (E2E, local) — 404, no admin link |

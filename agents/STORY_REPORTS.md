@@ -196,8 +196,8 @@ Tests:                 Lint pass. Unit 69/69 pass. E2E 23/23 pass. Build pass. D
                        NOT VERIFIED until deployed.
 Deployment impact:     Functions move from iad1 to syd1. Header shows Sign out for signed-in
                        users. Providers show an account chooser on each sign-in.
-Status:                MERGED to main 2026-11-12 (d91cf17). Sign-out speed and the GitHub
-                       account chooser not yet confirmed on production.
+Status:                DONE — merged to main 2026-11-12 (d91cf17). Confirmed on production
+                       by Tanuj 2026-11-12: sign-out faster, GitHub asks for the account.
 ```
 
 ### Step 8 — Admin invitation flow (stories 11, 12, 27; completes 21)
@@ -219,11 +219,11 @@ Tests:                 Lint pass. Unit 82/82 pass (13 new). Database 121/121 pas
                        absent from the client bundle.
                        Not tested: invoking the server actions directly as a non-admin
                        (covered by the unit-tested guard and code structure only).
-                       Production invite and revoke: NOT VERIFIED.
+                       Production: admin page working (Tanuj, 2026-11-12).
 Deployment impact:     Adds /admin/invitations and an Invitations header link for admins.
                        Without the two variables the page is a 404 for everyone.
-Status:                MERGED to main 2026-11-12 (8598e0e). Production invite and revoke not
-                       yet confirmed.
+Status:                DONE — merged to main 2026-11-12 (8598e0e). Admin page confirmed on
+                       production by Tanuj 2026-11-12.
 ```
 
 ### Step 9 — Route protection (story 13)
