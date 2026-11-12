@@ -1,5 +1,6 @@
 import "server-only";
 
+import { redirect } from "next/navigation";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -42,4 +43,20 @@ export async function getViewer(): Promise<Viewer> {
     email,
     displayName: typeof displayName === "string" && displayName ? displayName : null,
   };
+}
+
+export type Member = Extract<Viewer, { status: "member" }>;
+
+/**
+ * Returns the current member, or sends the request to /login.
+ *
+ * Call this at the top of every private page, server action and data
+ * function. The proxy has usually already turned anonymous visitors away,
+ * but nothing may rely on that: this is the check that counts, and it also
+ * covers signed-in users who are not members.
+ */
+export async function requireMember(): Promise<Member> {
+  const viewer = await getViewer();
+  if (viewer.status !== "member") redirect("/login");
+  return viewer;
 }

@@ -25,8 +25,8 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
 | 6 | GitHub OAuth | `epic-1/06-github-oauth` | 8, 25 | — | DONE |
 | 7 | Invitation / allowlist model | `epic-1/07-invitations` | 9, 10 | — | DONE |
 | 7b | Sign-out UX, account chooser, function region | `epic-1/07b-signout-ux` | 26 (follow-up) | Confirm sign-out speed and the GitHub chooser on production | MERGED (production check to be confirmed) |
-| 8 | Admin invitation flow | `epic-1/08-admin-invitations` | 11, 12, 27 | Add `SUPABASE_SECRET_KEY` and `TRAINGRID_ADMIN_USER_IDS` to Vercel Production; after merge, invite and revoke on production | IN REVIEW (production check pending) |
-| 9 | Route protection | `epic-1/09-route-protection` | 13 | — | TODO |
+| 8 | Admin invitation flow | `epic-1/08-admin-invitations` | 11, 12, 27 | Add `SUPABASE_SECRET_KEY` and `TRAINGRID_ADMIN_USER_IDS` to Vercel Production; invite and revoke on production | MERGED (production check to be confirmed) |
+| 9 | Route protection | `epic-1/09-route-protection` | 13 | Review and merge; confirm on production that a signed-out browser is sent to `/login` | IN REVIEW (production check pending) |
 | 10 | User-scoped data layer + validation | `epic-1/10-data-layer` | 24 | — | TODO |
 | 11 | Template migration foundation | `epic-1/11-template-seed` | 15 (templates) | — | TODO |
 | 12 | Planner migration files → Supabase | `epic-1/12-planner-migration` | 14, 15, 16, 17 | — | TODO |

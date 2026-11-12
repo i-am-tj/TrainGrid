@@ -164,6 +164,10 @@ test("a member sees their email and can sign out", async ({ page, context, baseU
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByText(email)).toHaveCount(0);
   expect(await authCookieCount(context)).toBe(0);
+
+  // A5: signing out removes access to the planner.
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/login$/);
 });
 
 test("the invite-only refusal uses the fixed friendly message", async ({ page }) => {

@@ -84,6 +84,13 @@ export async function makeLocalMember(userId: string, displayName = "E2E Member"
   if (error) throw new Error(`Could not create local profile: ${error.message}`);
 }
 
+/** Creates a throwaway member and signs the browser in as them. */
+export async function signInAsNewLocalMember(context: BrowserContext, baseURL: string) {
+  const user = await signInAsNewLocalUser(context, baseURL);
+  await makeLocalMember(user.userId);
+  return user;
+}
+
 /** Signs the browser in as the fixed local admin, creating them on first use. */
 export async function signInAsLocalAdmin(context: BrowserContext, baseURL: string) {
   const admin = serviceClient();

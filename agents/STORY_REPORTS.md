@@ -222,6 +222,29 @@ Tests:                 Lint pass. Unit 82/82 pass (13 new). Database 121/121 pas
                        Production invite and revoke: NOT VERIFIED.
 Deployment impact:     Adds /admin/invitations and an Invitations header link for admins.
                        Without the two variables the page is a 404 for everyone.
+Status:                MERGED to main 2026-11-12 (8598e0e). Production invite and revoke not
+                       yet confirmed.
+```
+
+### Step 9 — Route protection (story 13)
+
+```
+Story:                 13 protect application routes
+Branch:                epic-1/09-route-protection
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/11
+Commit:                fd94884
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None. A deployment without Supabase variables now serves only the
+                       login page and the health check.
+Tests:                 Lint pass. Unit 87/87 pass (5 new). Database 121/121 pass.
+                       E2E 36/36 pass (9 new; the 14 planner tests now sign in as a member).
+                       Build pass with and without Supabase variables. Unconfigured
+                       deployment checked by hand: pages redirect, export 401.
+                       Production: NOT VERIFIED.
+Deployment impact:     The production site stops being public. Anonymous visitors are sent
+                       to /login. Members see the existing file-backed, read-only planner
+                       until step 12. The E2E suite now needs the local Supabase stack.
 Status:                IN REVIEW — production check pending
 ```
 

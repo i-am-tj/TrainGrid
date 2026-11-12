@@ -3,12 +3,14 @@ import { EditSessionForm } from "@/components/session/EditSessionForm";
 import { getSession } from "@/lib/schedule";
 import { listTemplates } from "@/lib/templates";
 import { isPublishedReadonly } from "@/lib/runtime";
+import { requireMember } from "@/lib/auth/session";
 
 export default async function EditSessionPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireMember();
   const { id } = await params;
   if (isPublishedReadonly()) redirect(`/session/${id}`);
   const session = await getSession(id);

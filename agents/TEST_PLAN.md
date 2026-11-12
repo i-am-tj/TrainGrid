@@ -11,7 +11,7 @@ The product-level plan in `docs/TEST_PLAN.md` is updated in step 16.
 | Unit | Vitest (`npm test`) | pure functions, Zod schemas | exists; extended in 10 |
 | Database schema | pgTAP (`npm run db:test`) | local Postgres (Docker) | 2 |
 | RLS / integration | pgTAP + Vitest, separate project | local Supabase (Docker), real signed-in clients | 3 |
-| E2E | Playwright | `next dev` + local Supabase, seeded users | 12, 13 |
+| E2E | Playwright | `next dev` + local Supabase, seeded users (required from step 9: planner tests sign in as a member) | 5, 8, 9, 12, 13 |
 | Build | `npm run build` | — | exists |
 | Production smoke | manual, by Tanuj | `https://train-grid.vercel.app` | 15 |
 
@@ -35,11 +35,11 @@ manual, on production, and are recorded with date and outcome.
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| A1 | Anonymous visitor cannot reach the planner | E2E | — |
+| A1 | Anonymous visitor cannot reach the planner | E2E | PASS 2026-11-12 (E2E, local) — every private page redirects, export answers 401, unconfigured deployment fails closed; production pending |
 | A2 | Invited Google user gets in | Manual, production | PASS 2026-11-12 (Tanuj, production), with the invite gate in place |
 | A3 | Invited GitHub user gets in | Manual, production | PASS 2026-11-12 (Tanuj, production), with the invite gate in place |
 | A4 | Non-invited OAuth user is denied with the friendly message | Database + E2E (local) + manual | PASS 2026-11-12 (database: refused, no profile; E2E: message shown, sign-out works). Callback refusal on production: PASS 2026-11-12 (Tanuj, production) |
-| A5 | Sign-out removes access | E2E | PASS 2026-11-12 (E2E, local) — session cookies cleared; planner access re-checked in step 9 |
+| A5 | Sign-out removes access | E2E | PASS 2026-11-12 (E2E, local) — session cookies cleared and the planner then redirects to login |
 | A6 | GitHub account with no usable verified email fails safely | E2E + manual | PASS 2026-11-12 (E2E, local, simulated callback error); real account not tested |
 
 ### User isolation

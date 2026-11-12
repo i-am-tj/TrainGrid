@@ -2,12 +2,14 @@ import { notFound, redirect } from "next/navigation";
 import { TemplateEditor } from "@/components/library/TemplateEditor";
 import { getTemplate } from "@/lib/templates";
 import { isPublishedReadonly } from "@/lib/runtime";
+import { requireMember } from "@/lib/auth/session";
 
 export default async function EditTemplatePage({
   params,
 }: {
   params: Promise<{ templateId: string }>;
 }) {
+  await requireMember();
   const { templateId } = await params;
   if (isPublishedReadonly()) redirect(`/library/${templateId}`);
   if (templateId === "new") notFound();

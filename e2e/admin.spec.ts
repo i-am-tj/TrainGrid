@@ -18,9 +18,9 @@ test.beforeEach(async ({ baseURL }) => {
   test.skip(!hasLocalSecretKey(), "SUPABASE_SECRET_KEY is not set for the local stack");
 });
 
-test("M3: an anonymous visitor gets a 404 for the admin page", async ({ page }) => {
-  const response = await page.goto("/admin/invitations");
-  expect(response?.status()).toBe(404);
+test("M3: an anonymous visitor is sent to login from the admin page", async ({ page }) => {
+  await page.goto("/admin/invitations");
+  await expect(page).toHaveURL(/\/login\?next=%2Fadmin%2Finvitations$/);
   await expect(page.getByRole("heading", { name: "Invitations" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Invitations" })).toHaveCount(0);
 });

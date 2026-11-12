@@ -11,6 +11,7 @@ import { resolveSessions } from "@/lib/resolve-session";
 import { addWeeks, formatWeekLabel, isValidWeekId, nearbyWeekIds, todayParts } from "@/lib/week";
 import { isPublishedReadonly } from "@/lib/runtime";
 import { PublishedNotice } from "@/components/PublishedNotice";
+import { requireMember } from "@/lib/auth/session";
 
 export default async function WeekPage({
   params,
@@ -19,6 +20,7 @@ export default async function WeekPage({
   params: Promise<{ weekId: string }>;
   searchParams: Promise<{ day?: string }>;
 }) {
+  await requireMember();
   const { weekId: rawWeekId } = await params;
   const query = await searchParams;
   const today = todayParts();

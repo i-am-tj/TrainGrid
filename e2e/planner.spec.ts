@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { addWorkoutItem, resetData, saveTemplate, scheduleTemplate } from "./helpers";
+import { signInAsNewLocalMember } from "./local-supabase";
 
-test.beforeEach(async () => {
+// The planner is private: every test runs as a signed-in member.
+test.beforeEach(async ({ context, baseURL }) => {
   await resetData();
+  await signInAsNewLocalMember(context, baseURL!);
 });
 
 test("planner shows seven days Monday to Sunday", async ({ page }) => {

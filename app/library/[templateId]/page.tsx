@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import { TemplateDetail } from "@/components/library/TemplateDetail";
 import { getTemplate } from "@/lib/templates";
+import { requireMember } from "@/lib/auth/session";
 
 export default async function TemplatePage({
   params,
 }: {
   params: Promise<{ templateId: string }>;
 }) {
+  await requireMember();
   const { templateId } = await params;
   if (templateId === "new") notFound();
   const template = await getTemplate(templateId);
