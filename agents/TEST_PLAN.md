@@ -40,7 +40,7 @@ manual, on production, and are recorded with date and outcome.
 | A3 | Invited GitHub user gets in | Manual, production | — |
 | A4 | Non-invited OAuth user is denied with the friendly message | E2E (local) + manual | — |
 | A5 | Sign-out removes access | E2E | PASS 2026-11-12 (E2E, local) — session cookies cleared; planner access re-checked in step 9 |
-| A6 | GitHub account with no usable verified email fails safely | Integration + manual | — |
+| A6 | GitHub account with no usable verified email fails safely | E2E + manual | PASS 2026-11-12 (E2E, local, simulated callback error); real account not tested |
 
 ### User isolation
 

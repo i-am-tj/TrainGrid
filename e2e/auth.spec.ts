@@ -57,6 +57,8 @@ test("login page offers only the configured OAuth providers", async ({ page, bas
   await expect(page.getByRole("heading", { name: "Welcome to TrainGrid" })).toBeVisible();
   await expect(page.getByText("Invite-only access")).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue with GitHub" })).toBeVisible();
+  await expect(page.locator("form button")).toHaveCount(2);
 
   // No password login, no sign-up, no placeholder providers.
   await expect(page.locator('input[type="password"]')).toHaveCount(0);
@@ -85,6 +87,48 @@ test("Continue with Google hands off to Supabase with a callback on this site", 
   expect(redirectTo.origin).toBe(new URL(baseURL!).origin);
   expect(redirectTo.pathname).toBe("/auth/callback");
   expect(redirectTo.searchParams.get("next")).toBe("/library");
+});
+
+test("Continue with GitHub hands off to Supabase with a callback on this site", async ({
+  page,
+  baseURL,
+}) => {
+  test.skip((await supabaseState(baseURL!)) === "unconfigured", "Supabase is not configured");
+
+  await page.goto("/login");
+
+  const authorize = page.waitForRequest((request) =>
+    request.url().startsWith(`${supabaseUrl}/auth/v1/authorize`),
+  );
+  await page.getByRole("button", { name: "Continue with GitHub" }).click();
+  const url = new URL((await authorize).url());
+
+  expect(url.searchParams.get("provider")).toBe("github");
+  expect(url.searchParams.get("code_challenge")).toBeTruthy();
+  const redirectTo = new URL(url.searchParams.get("redirect_to")!);
+  expect(redirectTo.origin).toBe(new URL(baseURL!).origin);
+  expect(redirectTo.pathname).toBe("/auth/callback");
+});
+
+test("a provider account without a usable email gets a clear explanation and no session", async ({
+  page,
+  context,
+}) => {
+  await page.goto(
+    "/auth/callback?error=server_error&error_code=unexpected_failure&error_description=Error+getting+user+email+from+external+provider",
+  );
+
+  await expect(page).toHaveURL(/\/login\?error=email$/);
+  await expect(page.locator('p[role="alert"]')).toContainText(
+    "We could not get a verified email address from that account.",
+  );
+  // The raw provider message is never shown.
+  await expect(page.getByText("external provider")).toHaveCount(0);
+
+  const authCookies = (await context.cookies()).filter(
+    (cookie) => cookie.name.includes("auth-token") && cookie.value !== "",
+  );
+  expect(authCookies).toHaveLength(0);
 });
 
 test("callback without a valid code returns to login with a generic error", async ({ page }) => {

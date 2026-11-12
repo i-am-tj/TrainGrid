@@ -92,6 +92,7 @@ These are set once in the Supabase dashboard, under Authentication.
 | Site URL | `https://train-grid.vercel.app` | Default destination after sign-in |
 | Redirect URLs | `https://train-grid.vercel.app/auth/callback` | The only place Supabase may send an authorization code |
 | Google provider | Enabled, with the client ID and secret below | Sign-in |
+| GitHub provider | Enabled, with the client ID and secret below | Sign-in |
 
 Local addresses are not added to the production project. Local development uses the local stack.
 
@@ -114,10 +115,35 @@ In Google Cloud Console (APIs & Services):
 The Google client secret lives only in the Supabase dashboard. It never goes into the repository
 or Vercel.
 
+### GitHub OAuth App
+
+In GitHub → Settings → Developer settings → OAuth Apps → New OAuth App:
+
+- Application name: TrainGrid
+- Homepage URL: `https://train-grid.vercel.app`
+- Authorization callback URL: `https://<project-ref>.supabase.co/auth/v1/callback`
+  (Supabase shows the exact value on the GitHub provider page)
+
+Leave "Enable Device Flow" off. Generate a client secret, then copy the client ID and secret into
+Supabase → Authentication → Providers → GitHub and enable the provider. As with Google, the
+secret lives only in the Supabase dashboard.
+
+Create an **OAuth App**, not a GitHub App.
+
+### Accounts and email
+
+- Eligibility is decided by the verified email the provider reports. Supabase asks GitHub for the
+  account's primary verified email; a GitHub profile's "public email" setting does not matter.
+- If a provider account has no usable verified email, sign-in is refused with an explanation and
+  no session is created. Invite validation is never skipped.
+- When the same person signs in with Google and later with GitHub using the same verified email,
+  Supabase links both sign-in methods to one user, so they see the same TrainGrid data. Accounts
+  with different emails are separate users. TrainGrid adds no account-linking logic of its own.
+
 ### Sign-in flow
 
 ```
-/login ── Continue with Google ──▶ Supabase ──▶ Google
+/login ── Continue with Google / GitHub ──▶ Supabase ──▶ provider
                                                   │
 /auth/callback?code=… ◀── Supabase ◀──────────────┘
       │ exchanges the one-time code for a session cookie
@@ -125,7 +151,8 @@ or Vercel.
 the page the user originally asked for (same-site paths only)
 ```
 
-Any failure returns to `/login` with one generic message. Provider error details are never shown.
+Any failure returns to `/login` with one of two fixed messages: a generic one, or an explanation
+that no verified email was available. Provider error details are never shown.
 
 ## How the app talks to Supabase
 

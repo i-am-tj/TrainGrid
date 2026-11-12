@@ -6,6 +6,7 @@
  */
 export const OAUTH_PROVIDERS = [
   { id: "google", label: "Continue with Google" },
+  { id: "github", label: "Continue with GitHub" },
 ] as const;
 
 export type OAuthProviderId = (typeof OAUTH_PROVIDERS)[number]["id"];
@@ -15,14 +16,39 @@ export function isOAuthProviderId(value: unknown): value is OAuthProviderId {
 }
 
 /**
- * Messages for the `error` query parameter on /login. Deliberately generic:
- * they never reveal why a sign-in was refused.
+ * Messages for the `error` query parameter on /login. Only these fixed texts
+ * are ever shown; provider error details are never rendered.
  */
-const LOGIN_ERRORS: Record<string, string> = {
+export type LoginErrorCode = "signin" | "email";
+
+const LOGIN_ERRORS: Record<LoginErrorCode, string> = {
   signin: "Sign-in could not be completed. Please try again.",
+  email:
+    "We could not get a verified email address from that account. Add and verify a primary email with the provider, or sign in with a different account.",
 };
 
 export function loginErrorMessage(code: unknown): string | null {
   if (typeof code !== "string" || !code) return null;
-  return LOGIN_ERRORS[code] ?? LOGIN_ERRORS.signin!;
+  return Object.hasOwn(LOGIN_ERRORS, code)
+    ? LOGIN_ERRORS[code as LoginErrorCode]
+    : LOGIN_ERRORS.signin;
+}
+
+type ParamReader = { get(name: string): string | null };
+
+/**
+ * Maps the error parameters Supabase adds to the callback URL onto one of
+ * our fixed codes.
+ *
+ * A provider account without a usable verified email (possible on GitHub)
+ * gets its own explanation, because the person can fix it. Access is never
+ * granted without a verified email; everything else stays generic.
+ */
+export function classifyCallbackError(params: ParamReader): LoginErrorCode {
+  const text = [params.get("error_code"), params.get("error_description")]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .replace(/_/g, " ");
+  return /\bemail\b/.test(text) ? "email" : "signin";
 }
