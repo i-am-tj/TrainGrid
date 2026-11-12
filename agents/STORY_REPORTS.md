@@ -326,8 +326,8 @@ Status:                DONE — merged to main 2026-11-12 (02a32eb). Production 
 Story:                 14 remove read-only mode; 15 no runtime files; 16 legacy data import;
                        17 preserve planner functionality
 Branch:                epic-1/12-planner-migration
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/15
+Commit:                14c51b3
 Schema impact:         None.
 RLS impact:            None. All reads and writes now go through the member's own client.
 Secrets/config impact: None new. TRAINGRID_READONLY and TRAINGRID_DATA_DIR no longer exist.
