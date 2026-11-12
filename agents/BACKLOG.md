@@ -27,7 +27,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 21 | Protect Supabase secrets | 4, 8 | Agent | IN REVIEW (secret key used only in `lib/supabase/admin.ts`; bundle scan clean) |
 | 22 | Separate development and production | 14 | Agent + Tanuj | TODO |
 | 23 | GitHub security hardening | 14 | Tanuj | TODO |
-| 24 | Input validation | 10 | Agent | IN REVIEW (data layer; wired into actions in step 12) |
+| 24 | Input validation | 10 | Agent | DONE in the data layer; wired into actions in step 12 |
 | 25 | OAuth account handling | 6 | Agent | DONE |
 | 26 | Authentication UI | 5 | Agent | DONE |
 | 27 | Admin security | 8 | Agent | DONE |

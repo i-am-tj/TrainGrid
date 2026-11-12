@@ -254,9 +254,9 @@ Status:                MERGED to main 2026-11-12 (7877baa). Production redirect 
 ```
 Story:                 Requested by Tanuj 2026-11-12: admins can revoke an accepted member
                        (never an admin); data kept; re-inviting restores access
-Branch:                epic-1/08b-revoke-members (stacked on epic-1/10-data-layer)
-PR:                    not opened yet
-Commit:                not committed yet
+Branch:                epic-1/08b-revoke-members
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/13
+Commit:                8f27095
 Schema impact:         One migration, 20261112040000_revoke_members.sql: profiles.revoked_at;
                        drops invitations_not_accepted_and_revoked; is_member() excludes
                        revoked; accept_invitation() restores on re-invite; new
@@ -294,7 +294,7 @@ Tests:                 Lint pass. Unit 115/115 pass (28 new). Database 141/141 p
 Deployment impact:     None visible. Nothing in the app calls the data layer until step 12.
                        Migration applied to production by Tanuj 2026-11-12
                        (supabase db push --remote).
-Status:                IN REVIEW
+Status:                DONE — merged to main 2026-11-12 (e8f5396)
 ```
 
 ## Epic completion report
