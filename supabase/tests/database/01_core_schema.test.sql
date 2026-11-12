@@ -91,7 +91,7 @@ insert into public.profiles (id, display_name) values
 
 select lives_ok(
   $$insert into public.routines (id, scope, slug, name, category)
-    values ('10000000-0000-4000-8000-000000000001', 'GLOBAL', 'lower-a', 'Lower A', 'strength')$$,
+    values ('10000000-0000-4000-8000-000000000001', 'GLOBAL', 'test-lower-a', 'Lower A', 'strength')$$,
   'GLOBAL routine without an owner is accepted'
 );
 
@@ -126,7 +126,7 @@ select throws_ok(
 
 select throws_ok(
   $$insert into public.routines (scope, slug, name, category)
-    values ('GLOBAL', 'lower-a', 'Lower A again', 'strength')$$,
+    values ('GLOBAL', 'test-lower-a', 'Lower A again', 'strength')$$,
   '23505', null, 'duplicate slug is rejected'
 );
 

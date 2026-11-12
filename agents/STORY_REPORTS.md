@@ -297,6 +297,27 @@ Deployment impact:     None visible. Nothing in the app calls the data layer unt
 Status:                DONE — merged to main 2026-11-12 (e8f5396)
 ```
 
+### Step 11 — Template migration foundation (story 15, templates part)
+
+```
+Story:                 15 migrate away from runtime files (templates → GLOBAL routines)
+Branch:                epic-1/11-template-seed
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         None. Adds supabase/seed.sql (generated): 18 GLOBAL routines, 96 items.
+RLS impact:            None. Seeded routines are GLOBAL: readable by members, writable by none.
+Secrets/config impact: None. New dev dependency tsx; new script seed:generate.
+Tests:                 Lint pass. Unit 148/148 (29 new: converter, every template, seed
+                       freshness). Database 186/186 (12 new; 3 older files scoped to their
+                       own fixtures because GLOBAL routines now exist locally). Integration
+                       23/23. E2E 37/37. Build pass. Seed applied twice more locally: same
+                       96 item ids.
+                       Production seed: NOT APPLIED.
+Deployment impact:     None visible: the app still reads data/templates until step 12.
+                       Production needs `supabase db push --remote --include-seed`.
+Status:                IN REVIEW
+```
+
 ## Epic completion report
 
 Filled in at step 15. Until then every line is unverified.

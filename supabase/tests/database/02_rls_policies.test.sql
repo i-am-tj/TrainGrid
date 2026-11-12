@@ -113,14 +113,14 @@ select results_eq(
 );
 
 select set_eq(
-  'select id from public.routines',
+  $$select id from public.routines where id::text like '10000000-%'$$,
   $$values ('10000000-0000-4000-8000-000000000001'::uuid),
            ('10000000-0000-4000-8000-0000000000a1'::uuid)$$,
   'I9: A sees GLOBAL routines and their own, not B''s'
 );
 
 select set_eq(
-  'select id from public.workout_items',
+  $$select id from public.workout_items where id::text like '20000000-%'$$,
   $$values ('20000000-0000-4000-8000-000000000001'::uuid),
            ('20000000-0000-4000-8000-0000000000a1'::uuid)$$,
   'A sees items of GLOBAL routines and their own, not B''s'
@@ -377,7 +377,7 @@ select results_eq(
 );
 
 select set_eq(
-  'select id from public.routines',
+  $$select id from public.routines where id::text like '10000000-%'$$,
   $$values ('10000000-0000-4000-8000-000000000001'::uuid),
            ('10000000-0000-4000-8000-0000000000b1'::uuid)$$,
   'B sees GLOBAL routines and their own, not A''s'

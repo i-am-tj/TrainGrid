@@ -18,7 +18,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 12 | Invitation email delivery | 8 | Agent | DONE (manual link, per D-08) |
 | 13 | Protect application routes | 9 | Agent | MERGED (production check to be confirmed) |
 | 14 | Remove hosted read-only architecture | 12 | Agent | TODO |
-| 15 | Migrate away from runtime files | 11, 12 | Agent | TODO |
+| 15 | Migrate away from runtime files | 11, 12 | Agent | IN PROGRESS (templates seeded as GLOBAL routines in step 11; runtime switch in step 12) |
 | 16 | Migrate existing personal data safely | 12 | Agent | TODO |
 | 17 | Preserve planner functionality | 12 | Agent | TODO |
 | 18 | Environment variable contract | 4 | Agent | DONE |

@@ -56,7 +56,7 @@ select throws_ok(
 
 -- Before revocation the member sees their own data.
 select is((select count(*)::int from public.scheduled_sessions), 1, 'before: member sees their session');
-select is((select count(*)::int from public.routines), 2, 'before: member sees their routine and the GLOBAL one');
+select is((select count(*)::int from public.routines where id::text like '10000000-%'), 2, 'before: member sees their routine and the GLOBAL one');
 reset role;
 
 -- ---------------------------------------------------------------------------

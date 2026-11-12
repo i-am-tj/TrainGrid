@@ -100,7 +100,7 @@ manual, on production, and are recorded with date and outcome.
 | D5 | Duplicate Week copies snapshots with new session and item ids (D-03, D-04B) | Unit + E2E | PASS 2026-11-12 (unit and integration, local); E2E in step 12 |
 | D6 | Items save and load through structured fields; text such as `Rest: 2 min` typed into notes stays in notes (D-04) | Unit + E2E | PASS 2026-11-12 (unit and integration, local); E2E in step 12 |
 | D7 | Schema has no performed-workout columns (D-04A) | Database schema | PASS 2026-11-12 (local) |
-| D8 | Seeded GLOBAL routines preserve order, equipment and video links of every template file (D-04, D-05) | Seed unit test | — |
+| D8 | Seeded GLOBAL routines preserve order, equipment and video links of every template file (D-04, D-05) | Seed unit test + database | PASS 2026-11-12 (unit: all 18 files; database: 18 routines, 96 items, re-seeding idempotent). No template has a video link today |
 | D9 | Member can create, edit and delete a PERSONAL routine and cannot edit a GLOBAL one (D-05) | RLS + E2E | PASS 2026-11-12 (integration, local); E2E in step 12 |
 | D10 | Export contains only the signed-in user's routines, items and sessions; no GLOBAL routines, invitations or auth data (D-06) | Integration | PASS 2026-11-12 (integration, local) |
 | D11 | Export requires authentication (D-06) | Integration | PASS 2026-11-12 (E2E, local, step 9: export answers 401 when not a member) |
