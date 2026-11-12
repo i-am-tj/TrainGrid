@@ -123,3 +123,11 @@ export async function deleteLocalInvitations(emails: string[]) {
   if (emails.length === 0) return;
   await serviceClient().from("invitations").delete().in("email", emails);
 }
+
+/** Records that a user accepted an invitation for their email, as accept_invitation() would. */
+export async function createAcceptedInvitation(email: string, userId: string) {
+  const { error } = await serviceClient()
+    .from("invitations")
+    .insert({ email: email.toLowerCase(), accepted_at: new Date().toISOString(), accepted_by: userId });
+  if (error) throw new Error(`Could not create accepted invitation: ${error.message}`);
+}

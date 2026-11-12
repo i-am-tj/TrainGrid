@@ -76,11 +76,13 @@ select lives_ok(
 delete from public.invitations
  where email = 'revoked@example.test' and revoked_at is null;
 
-select throws_ok(
+select lives_ok(
   $$insert into public.invitations (email, accepted_at, revoked_at)
     values ('both@example.test', now(), now())$$,
-  '23514', null, 'an invitation cannot be both accepted and revoked'
+  'an accepted invitation may later be revoked (member revocation)'
 );
+
+delete from public.invitations where email = 'both@example.test';
 
 -- ---------------------------------------------------------------------------
 -- The table is closed to API roles
@@ -199,10 +201,9 @@ select is(
   'refused attempts do not consume invitations'
 );
 
-select throws_ok(
-  $$update public.invitations set revoked_at = now()
-     where id = '50000000-0000-4000-8000-000000000001'$$,
-  '23514', null, 'an accepted invitation cannot be revoked'
+select ok(
+  (select revoked_at is null from public.profiles where id = '00000000-0000-4000-8000-0000000000a1'),
+  'a newly accepted member is not revoked'
 );
 
 select * from finish();

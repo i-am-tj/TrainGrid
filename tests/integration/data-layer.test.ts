@@ -367,6 +367,75 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
     });
   });
 
+  describe("revoked member", () => {
+    it("keeps the data but blocks every read and write until restored", async () => {
+      const c = await createTestUser("revoked");
+      const routineId = await savePersonalRoutine(c.db, null, {
+        name: "C Plan",
+        category: "running",
+        items: [{ name: "Tempo" }],
+      });
+      const session = await scheduleRoutine(c.db, c.id, { routineId, date: MONDAY });
+
+      const admin = service();
+      const invitation = await admin
+        .from("invitations")
+        .insert({ email: c.email, accepted_at: new Date().toISOString(), accepted_by: c.id })
+        .select("id")
+        .single();
+      expect(invitation.error).toBeNull();
+      const revoked = await admin.rpc("revoke_invitation", {
+        p_invitation_id: invitation.data!.id,
+        p_protected_user_ids: [a.id],
+      });
+      expect(revoked.data).toBe("revoked");
+
+      // Same signed-in client as before: no new sign-in needed for it to apply.
+      expect(await listSessionsForWeek(c.db, c.id, WEEK)).toEqual([]);
+      expect(await getSession(c.db, c.id, session.id)).toBeNull();
+      expect(await getRoutine(c.db, c.id, routineId)).toBeNull();
+      expect(await listRoutines(c.db, c.id)).toEqual([]);
+      await rejects(deleteSession(c.db, c.id, session.id), "not_found");
+      await rejects(savePersonalRoutine(c.db, routineId, { name: "x", category: "other" }), "not_found");
+      await expect(createAdhocSession(c.db, c.id, { name: "x", category: "other", date: MONDAY })).rejects.toThrow();
+      expect((await exportUserData(c.db, c.id)).sessions).toEqual([]);
+
+      const kept = await admin.from("scheduled_sessions").select("id").eq("user_id", c.id);
+      expect(kept.data!.map((row) => row.id)).toEqual([session.id]);
+
+      // Restoring (what a new, accepted invitation does) brings it all back.
+      await admin.from("profiles").update({ revoked_at: null }).eq("id", c.id);
+      expect((await getSession(c.db, c.id, session.id))!.name).toBe("C Plan");
+      expect((await getRoutine(c.db, c.id, routineId))!.items.map((item) => item.name)).toEqual(["Tempo"]);
+
+      await admin.from("invitations").delete().eq("id", invitation.data!.id);
+    });
+
+    it("an admin listed as protected cannot be revoked", async () => {
+      const admin = service();
+      const invitation = await admin
+        .from("invitations")
+        .insert({ email: a.email, accepted_at: new Date().toISOString(), accepted_by: a.id })
+        .select("id")
+        .single();
+      const result = await admin.rpc("revoke_invitation", {
+        p_invitation_id: invitation.data!.id,
+        p_protected_user_ids: [a.id],
+      });
+      expect(result.data).toBe("protected");
+      expect((await listSessionsForWeek(a.db, a.id, WEEK)).length).toBeGreaterThan(0);
+      await admin.from("invitations").delete().eq("id", invitation.data!.id);
+    });
+
+    it("members cannot call revoke_invitation", async () => {
+      const result = await a.db.rpc("revoke_invitation", {
+        p_invitation_id: "00000000-0000-4000-8000-000000000000",
+        p_protected_user_ids: [],
+      });
+      expect(result.error?.code).toBe("42501");
+    });
+  });
+
   describe("export", () => {
     it("D10: contains only the caller's own routines and sessions", async () => {
       const data = await exportUserData(a.db, a.id);

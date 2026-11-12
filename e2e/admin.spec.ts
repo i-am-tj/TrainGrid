@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
+  LOCAL_ADMIN_ID,
+  createAcceptedInvitation,
   deleteLocalInvitations,
   hasLocalSecretKey,
   makeLocalMember,
@@ -88,5 +90,57 @@ test("M1: an admin can invite, sees the status, and can revoke", async ({
     await expect(row.getByRole("button", { name: "Revoke" })).toHaveCount(0);
   } finally {
     await deleteLocalInvitations([email]);
+  }
+});
+
+test("an admin revokes an accepted member's access; the member is locked out at once", async ({
+  page,
+  context,
+  browser,
+  baseURL,
+}) => {
+  // The member signs in in their own browser.
+  const memberContext = await browser.newContext({ baseURL });
+  const memberPage = await memberContext.newPage();
+  const member = await signInAsNewLocalUser(memberContext, baseURL!);
+  await makeLocalMember(member.userId);
+  await createAcceptedInvitation(member.email, member.userId);
+
+  const adminEmail = `admin-${crypto.randomUUID()}@example.test`;
+  await createAcceptedInvitation(adminEmail, LOCAL_ADMIN_ID);
+  await signInAsLocalAdmin(context, baseURL!);
+
+  try {
+    await memberPage.goto("/");
+    await expect(memberPage).toHaveURL(/\/week\//);
+
+    await page.goto("/admin/invitations");
+
+    // An admin's own row offers nothing to revoke.
+    const adminRow = page.getByRole("listitem").filter({ hasText: adminEmail });
+    await expect(adminRow.getByText("Accepted")).toBeVisible();
+    await expect(adminRow.getByText(/· Admin$/)).toBeVisible();
+    await expect(adminRow.getByRole("button")).toHaveCount(0);
+
+    const memberRow = page.getByRole("listitem").filter({ hasText: member.email });
+    await expect(memberRow.getByText("Accepted")).toBeVisible();
+    page.once("dialog", (dialog) => {
+      expect(dialog.message()).toContain("Their routines and sessions are kept");
+      return dialog.accept();
+    });
+    await memberRow.getByRole("button", { name: "Revoke access" }).click();
+    await expect(memberRow.getByText("Revoked", { exact: true })).toBeVisible();
+    await expect(memberRow.getByText("Access revoked, data kept")).toBeVisible();
+    await expect(memberRow.getByRole("button")).toHaveCount(0);
+
+    // The member's very next request is refused, without signing out.
+    await memberPage.goto("/");
+    await expect(memberPage).toHaveURL(/\/login$/);
+    await expect(memberPage.getByText("TrainGrid is currently invite-only.")).toBeVisible();
+    const exportResponse = await memberContext.request.get("/api/export", { maxRedirects: 0 });
+    expect(exportResponse.status()).toBe(401);
+  } finally {
+    await deleteLocalInvitations([member.email.toLowerCase(), adminEmail]);
+    await memberContext.close();
   }
 });

@@ -14,8 +14,8 @@ export type Viewer =
  *
  * The user id comes from the verified session token, never from the request
  * body or URL. Membership is read through Row Level Security: a user can see
- * only their own profile row, so a row coming back means "this caller is a
- * member".
+ * only their own profile row, so a row that comes back and is not revoked
+ * means "this caller is a member".
  */
 export async function getViewer(): Promise<Viewer> {
   if (!getSupabaseEnv()) return { status: "anonymous" };
@@ -30,11 +30,14 @@ export async function getViewer(): Promise<Viewer> {
 
   const profile = await supabase
     .from("profiles")
-    .select("display_name")
+    .select("display_name, revoked_at")
     .eq("id", userId)
     .maybeSingle();
 
-  if (profile.error || !profile.data) return { status: "not_member", userId, email };
+  // A revoked member is treated exactly like someone who was never invited.
+  if (profile.error || !profile.data || profile.data.revoked_at) {
+    return { status: "not_member", userId, email };
+  }
 
   const displayName = profile.data.display_name;
   return {
