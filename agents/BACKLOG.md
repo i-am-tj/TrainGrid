@@ -9,7 +9,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 3 | Routine data model | 2 | Agent | IN REVIEW |
 | 4 | Workout items | 2 | Agent | IN REVIEW |
 | 5 | Scheduled sessions | 2 | Agent | IN REVIEW |
-| 6 | Row Level Security everywhere | 3 | Agent | TODO |
+| 6 | Row Level Security everywhere | 3 | Agent | IN REVIEW |
 | 7 | Google OAuth | 5 | Tanuj (credentials) + Agent (flow) | TODO |
 | 8 | GitHub OAuth | 6 | Tanuj (credentials) + Agent (flow) | TODO |
 | 9 | Enforce invite-only access | 7 | Agent | TODO |
@@ -31,7 +31,7 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 25 | OAuth account handling | 6 | Agent | TODO |
 | 26 | Authentication UI | 5 | Agent | TODO |
 | 27 | Admin security | 8 | Agent | TODO |
-| 28 | Security tests | 3, 13 | Agent | TODO |
+| 28 | Security tests | 3, 13 | Agent | IN PROGRESS (database part in review) |
 | 29 | Supabase migration management | 2 | Agent | IN REVIEW |
 | 30 | Vercel production configuration | 15 | Tanuj + Agent | TODO |
 | 31 | Free-tier constraint | 15 | Agent | TODO |

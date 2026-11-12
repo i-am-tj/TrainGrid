@@ -57,6 +57,28 @@ Deployment impact:     None. The app does not use the database yet and nothing h
 Status:                IN REVIEW
 ```
 
+### Step 3 — RLS policies + database tests (story 6, story 28 database part)
+
+```
+Story:                 6 Row Level Security everywhere; 28 security tests (database level)
+Branch:                epic-1/03-rls-policies (stacked on epic-1/02-schema-migrations)
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         One migration, supabase/migrations/20261112010000_rls_policies.sql:
+                       function public.is_member() and 14 policies. No table changes.
+RLS impact:            profiles: select/update own. routines: select GLOBAL (members) or own;
+                       insert/update/delete own PERSONAL only. workout_items: follow the
+                       parent routine. scheduled_sessions: select/insert/update/delete own.
+                       INSERT and UPDATE use WITH CHECK. All policies target `authenticated`;
+                       anon has none. Uninvited authenticated users see and write nothing.
+Secrets/config impact: None.
+Tests:                 Database 90/90 pass (38 schema + 52 RLS, local). Suite verified to fail
+                       when RLS is disabled. Schema lint clean. Lint pass. Unit 41/41 pass.
+                       Build pass. E2E not run (application code unchanged).
+Deployment impact:     None. Nothing applied to any cloud project.
+Status:                IN REVIEW
+```
+
 ## Epic completion report
 
 Filled in at step 15. Until then every line is unverified.

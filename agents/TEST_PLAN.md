@@ -18,8 +18,13 @@ The product-level plan in `docs/TEST_PLAN.md` is updated in step 16.
 Test identities — User A, User B, Admin — exist only in the local Supabase stack and are created
 by the test setup. They are never created in the production project.
 
-RLS tests sign in as each user with the publishable key and query the database directly, so they
-prove the policies themselves rather than the UI.
+RLS is proven at two levels. The pgTAP suite (step 3) runs each query as the `anon` or
+`authenticated` database role with a user's JWT subject set, which is how the Supabase API
+executes requests, so it tests the policies directly. Step 13 repeats the cross-user checks through
+the real API with signed-in clients and the publishable key.
+
+The suite was confirmed able to fail: with RLS switched off on `scheduled_sessions` in a scratch
+database, nine RLS assertions and the S4 check failed.
 
 Real Google and GitHub sign-in cannot be automated without real accounts. Those two checks are
 manual, on production, and are recorded with date and outcome.
@@ -41,17 +46,17 @@ manual, on production, and are recorded with date and outcome.
 
 | # | Check | Layer | Result |
 | --- | --- | --- | --- |
-| I1 | A sees only A's schedule; B sees only B's | RLS + E2E | — |
-| I2 | A cannot read B's session | RLS | — |
-| I3 | A cannot update B's session | RLS | — |
-| I4 | A cannot delete B's session | RLS | — |
-| I5 | A cannot insert a session owned by B | RLS | — |
-| I6 | A cannot read, update or delete B's personal routine | RLS | — |
-| I7 | A cannot insert a routine owned by B, or a GLOBAL routine | RLS | — |
-| I8 | A cannot duplicate B's week | RLS + E2E | — |
-| I9 | Members can read GLOBAL routines and cannot change them | RLS | — |
-| I10 | Authenticated but uninvited user reads and writes nothing | RLS | — |
-| I11 | Anonymous key reads and writes nothing | RLS | — |
+| I1 | A sees only A's schedule; B sees only B's | RLS + E2E | PASS 2026-11-12 (database, local); E2E pending |
+| I2 | A cannot read B's session | RLS | PASS 2026-11-12 (database, local) |
+| I3 | A cannot update B's session | RLS | PASS 2026-11-12 (database, local) |
+| I4 | A cannot delete B's session | RLS | PASS 2026-11-12 (database, local) |
+| I5 | A cannot insert a session owned by B | RLS | PASS 2026-11-12 (database, local) |
+| I6 | A cannot read, update or delete B's personal routine | RLS | PASS 2026-11-12 (database, local) |
+| I7 | A cannot insert a routine owned by B, or a GLOBAL routine | RLS | PASS 2026-11-12 (database, local) |
+| I8 | A cannot duplicate B's week | RLS + E2E | PASS 2026-11-12 (database, local); E2E pending |
+| I9 | Members can read GLOBAL routines and cannot change them | RLS | PASS 2026-11-12 (database, local) |
+| I10 | Authenticated but uninvited user reads and writes nothing | RLS | PASS 2026-11-12 (database, local) |
+| I11 | Anonymous key reads and writes nothing | RLS | PASS 2026-11-12 (database, local) |
 
 ### Admin
 
@@ -69,7 +74,7 @@ manual, on production, and are recorded with date and outcome.
 | S1 | Secret key absent from client bundles | search `.next/static` after build | — |
 | S2 | No credentials in Git history | secret scan of full history | — |
 | S3 | `.env.example` contains placeholders only | review | — |
-| S4 | RLS enabled on every table in `public` | Database schema | PASS 2026-11-12 (local, 4 tables; re-checked as tables are added) |
+| S4 | RLS enabled on every table in `public`, each with policies, all scoped to `authenticated` | Database | PASS 2026-11-12 (local, 4 tables; re-checked as tables are added) |
 | S5 | No filesystem writes in production code paths | search for `fs` writes outside `scripts/` | — |
 
 ### Approved model decisions
