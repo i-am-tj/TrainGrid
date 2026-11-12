@@ -2,306 +2,209 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type {
-  BackupFile,
-  IsoDay,
-  ScheduledSession,
-  SessionTemplate,
-  SessionType,
-} from "@/lib/domain";
-import { isSessionType, sanitizeName } from "@/lib/domain";
-import { parseBackupJson } from "@/lib/backup";
-import { duplicateWeekSessions } from "@/lib/duplicate-week";
-import { resolveSession, templatesById } from "@/lib/resolve-session";
+import { dateOfWeekDay, isRealWeekId } from "@/lib/calendar-date";
+import { DataError } from "@/lib/data/model";
+import { deletePersonalRoutine, savePersonalRoutine } from "@/lib/data/routines";
+import type { WorkoutItemInput } from "@/lib/data/schemas";
+import { memberData } from "@/lib/data/server";
 import {
+  createAdhocSession,
   deleteSession,
-  listSessions,
-  readSchedule,
-  upsertSession,
-  writeSchedule,
-} from "@/lib/schedule";
-import {
-  createTemplateId,
-  deleteTemplateFile,
-  getTemplate,
-  listTemplates,
-  replaceAllTemplates,
-  saveTemplate,
-} from "@/lib/templates";
-import { isValidTime, isValidWeekId } from "@/lib/week";
-import { serializeWorkoutItems, parseEquipmentValues } from "@/lib/workout-items";
-import { requireMember } from "@/lib/auth/session";
-import { isPublishedReadonly } from "@/lib/runtime";
+  duplicateWeek,
+  replaceSessionItems,
+  scheduleRoutine,
+  updateSessionDetails,
+} from "@/lib/data/sessions";
+import type { IsoDay, SessionType } from "@/lib/domain";
+
+/**
+ * Every planner and library mutation.
+ *
+ * Each action starts from memberData(): the verified member's own client
+ * and user id. Nothing here reads an owner, user id or scope from the form.
+ * The data layer validates every value with Zod, narrows every query to the
+ * member, and Row Level Security enforces the same again in the database.
+ */
 
 function revalidateAll() {
   revalidatePath("/", "layout");
 }
 
-function assertWritable() {
-  if (isPublishedReadonly()) {
-    throw new Error(
-      "This published TrainGrid site is read-only. Edit locally, then commit and push data/ to publish.",
-    );
-  }
+function text(form: FormData, name: string): string {
+  const value = form.get(name);
+  return typeof value === "string" ? value : "";
 }
 
-function parseIsoDay(value: FormDataEntryValue | null): IsoDay {
-  const n = Number(value);
-  if (!Number.isInteger(n) || n < 1 || n > 7) {
-    throw new Error("Invalid day");
-  }
+/** "1".."7" → IsoDay. Anything else fails validation as an invalid date. */
+function isoDay(form: FormData): IsoDay {
+  const n = Number(text(form, "day"));
+  if (!Number.isInteger(n) || n < 1 || n > 7) throw new DataError("invalid", "Invalid day");
   return n as IsoDay;
 }
 
-function parseType(value: FormDataEntryValue | null): SessionType {
-  const raw = String(value ?? "");
-  if (!isSessionType(raw)) throw new Error("Invalid session type");
-  return raw;
+function dateFromForm(form: FormData): string {
+  const weekId = text(form, "weekId");
+  if (!isRealWeekId(weekId)) throw new DataError("invalid", "Invalid week");
+  return dateOfWeekDay(weekId, isoDay(form));
 }
 
-function parseTime(form: FormData): string | null {
-  const untimed = String(form.get("untimed") ?? "");
-  if (untimed === "on" || untimed === "true") {
-    return null;
-  }
-  const time = String(form.get("time") ?? "").trim();
-  if (!time) return null;
-  if (!isValidTime(time)) throw new Error("Invalid time");
-  return time;
+/**
+ * The category exactly as submitted. Typed for the call only: the data
+ * layer's Zod schema rejects anything that is not a real category.
+ */
+function category(form: FormData): SessionType {
+  return text(form, "type") as SessionType;
 }
 
-function parseDuration(form: FormData): number | null {
-  const raw = String(form.get("durationMinutes") ?? "").trim();
-  if (!raw) return null;
-  const n = Number(raw);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return Math.round(n);
+function startTime(form: FormData): string | null {
+  const untimed = text(form, "untimed");
+  if (untimed === "on" || untimed === "true") return null;
+  return text(form, "time").trim() || null;
 }
 
-function parseItemsFromForm(form: FormData): string {
-  const titles = form.getAll("itemTitle").map((v) => String(v));
-  const bodies = form.getAll("itemBody").map((v) => String(v));
-  const equipment = form.getAll("itemEquipment").map((v) => String(v));
-  const videos = form.getAll("itemVideo").map((v) => String(v));
-  const items = titles.map((title, i) => ({
-    id: `item-${i}`,
-    title,
-    body: bodies[i] ?? "",
-    equipment: parseEquipmentValues(equipment[i] ?? ""),
-    videoUrl: videos[i]?.trim() ? videos[i]! : null,
-  }));
-  return serializeWorkoutItems(items);
+function duration(form: FormData): number | null {
+  const raw = text(form, "durationMinutes").trim();
+  return raw ? Number(raw) : null;
 }
+
+/**
+ * Reads the structured item editor. Rows that are entirely empty are
+ * skipped (the editor always shows one row); a row with details but no name
+ * is kept so validation can reject it.
+ */
+function itemsFromForm(form: FormData): WorkoutItemInput[] {
+  const field = (name: string) => form.getAll(name).map((v) => (typeof v === "string" ? v : ""));
+  const ids = field("itemId");
+  const names = field("itemName");
+  const instructions = field("itemInstruction");
+  const rests = field("itemRest");
+  const targets = field("itemTarget");
+  const notes = field("itemNotes");
+  const equipment = field("itemEquipment");
+  const videos = field("itemVideo");
+
+  const items: WorkoutItemInput[] = [];
+  names.forEach((name, i) => {
+    const row = {
+      name,
+      instruction: instructions[i] ?? "",
+      rest: rests[i] ?? "",
+      target: targets[i] ?? "",
+      notes: notes[i] ?? "",
+      equipment: (equipment[i] ?? "").split(",").filter(Boolean),
+      videoUrl: videos[i] ?? "",
+    };
+    const empty =
+      !row.name.trim() &&
+      ![row.instruction, row.rest, row.target, row.notes, row.videoUrl].some((v) => v.trim()) &&
+      row.equipment.length === 0;
+    if (empty) return;
+    const id = ids[i]?.trim();
+    items.push({
+      ...(id ? { id } : {}),
+      ...row,
+      equipment: row.equipment as WorkoutItemInput["equipment"],
+    });
+  });
+  return items;
+}
+
+// ---------------------------------------------------------------------------
+// Scheduled sessions
+// ---------------------------------------------------------------------------
 
 export async function createScheduledSession(formData: FormData) {
-  await requireMember();
-  assertWritable();
-  const weekId = String(formData.get("weekId") ?? "");
-  if (!isValidWeekId(weekId)) throw new Error("Invalid week");
-  const name = sanitizeName(String(formData.get("name") ?? ""));
-  if (!name) throw new Error("Name is required");
-  const from = String(formData.get("from") ?? "template");
-  const templateIdRaw = String(formData.get("templateId") ?? "").trim();
-  const templateId =
-    from === "template" && templateIdRaw ? templateIdRaw : null;
-
-  const session: ScheduledSession = {
-    id: crypto.randomUUID(),
-    name,
-    type: parseType(formData.get("type")),
-    weekId,
-    day: parseIsoDay(formData.get("day")),
-    time: parseTime(formData),
-    durationMinutes: parseDuration(formData),
-    notes: String(formData.get("notes") ?? "").trim(),
-    templateId,
-    bodySnapshot: templateId
-      ? null
-      : parseItemsFromForm(formData) || String(formData.get("body") ?? ""),
+  const { db, userId } = await memberData();
+  const date = dateFromForm(formData);
+  const common = {
+    date,
+    startTime: startTime(formData),
+    durationMinutes: duration(formData),
+    notes: text(formData, "notes"),
   };
 
-  if (templateId) {
-    const template = await getTemplate(templateId);
-    if (!template) throw new Error("Template not found");
-  }
+  const session =
+    text(formData, "from") === "routine"
+      ? await scheduleRoutine(db, userId, {
+          ...common,
+          routineId: text(formData, "routineId"),
+          name: text(formData, "name").trim() || undefined,
+        })
+      : await createAdhocSession(db, userId, {
+          ...common,
+          name: text(formData, "name"),
+          category: category(formData),
+          items: itemsFromForm(formData),
+        });
 
-  await upsertSession(session);
   revalidateAll();
-  redirect(`/week/${weekId}?day=${session.day}`);
+  redirect(`/week/${session.weekId}?day=${session.day}`);
 }
 
 export async function updateScheduledSession(formData: FormData) {
-  await requireMember();
-  assertWritable();
-  const id = String(formData.get("id") ?? "");
-  const existing = (await listSessions()).find((s) => s.id === id);
-  if (!existing) throw new Error("Session not found");
-
-  const name = sanitizeName(String(formData.get("name") ?? ""));
-  if (!name) throw new Error("Name is required");
-
-  const replace = String(formData.get("replaceTemplateId") ?? "").trim();
-  let templateId = existing.templateId;
-  let bodySnapshot = existing.bodySnapshot;
-
-  if (replace) {
-    const template = await getTemplate(replace);
-    if (!template) throw new Error("Template not found");
-    templateId = replace;
-    bodySnapshot = null;
-  }
-
-  const updated: ScheduledSession = {
-    ...existing,
-    name,
-    type: parseType(formData.get("type")),
-    weekId: String(formData.get("weekId") ?? existing.weekId),
-    day: parseIsoDay(formData.get("day")),
-    time: parseTime(formData),
-    durationMinutes: parseDuration(formData),
-    notes: String(formData.get("notes") ?? "").trim(),
-    templateId,
-    bodySnapshot,
-  };
-
-  if (!isValidWeekId(updated.weekId)) throw new Error("Invalid week");
-
-  await upsertSession(updated);
-  revalidateAll();
-  redirect(`/session/${id}`);
-}
-
-export async function customizeScheduledSession(formData: FormData) {
-  await requireMember();
-  assertWritable();
-  const id = String(formData.get("id") ?? "");
-  const existing = (await listSessions()).find((s) => s.id === id);
-  if (!existing) throw new Error("Session not found");
-  const templates = templatesById(await listTemplates());
-  const resolved = resolveSession(existing, templates);
-  const body = parseItemsFromForm(formData) || resolved.body;
-
-  await upsertSession({
-    ...existing,
-    bodySnapshot: body,
+  const { db, userId } = await memberData();
+  const id = text(formData, "id");
+  const session = await updateSessionDetails(db, userId, id, {
+    name: text(formData, "name"),
+    category: category(formData),
+    date: dateFromForm(formData),
+    startTime: startTime(formData),
+    durationMinutes: duration(formData),
+    notes: text(formData, "notes"),
   });
   revalidateAll();
-  redirect(`/session/${id}`);
+  redirect(`/session/${session.id}`);
+}
+
+/** Edits the workout of this one occurrence. Its routine is not touched. */
+export async function customizeScheduledSession(formData: FormData) {
+  const { db, userId } = await memberData();
+  const session = await replaceSessionItems(db, userId, text(formData, "id"), itemsFromForm(formData));
+  revalidateAll();
+  redirect(`/session/${session.id}`);
 }
 
 export async function deleteScheduledSessionAction(formData: FormData) {
-  await requireMember();
-  assertWritable();
-  const id = String(formData.get("id") ?? "");
-  const weekId = String(formData.get("weekId") ?? "");
-  const day = String(formData.get("day") ?? "1");
-  await deleteSession(id);
+  const { db, userId } = await memberData();
+  await deleteSession(db, userId, text(formData, "id"));
   revalidateAll();
-  redirect(`/week/${weekId}?day=${day}`);
+  const weekId = text(formData, "weekId");
+  const day = text(formData, "day");
+  redirect(isRealWeekId(weekId) ? `/week/${weekId}?day=${encodeURIComponent(day)}` : "/");
 }
 
 export async function duplicateWeekAction(formData: FormData) {
-  await requireMember();
-  assertWritable();
-  const sourceWeekId = String(formData.get("sourceWeekId") ?? "");
-  const destWeekId = String(formData.get("destWeekId") ?? "");
-  if (!isValidWeekId(sourceWeekId) || !isValidWeekId(destWeekId)) {
-    throw new Error("Invalid week");
-  }
-  if (sourceWeekId === destWeekId) {
-    throw new Error("Choose a different week");
-  }
-
-  const file = await readSchedule();
-  const copies = duplicateWeekSessions(
-    file.sessions,
-    sourceWeekId,
+  const { db, userId } = await memberData();
+  const destWeekId = text(formData, "destWeekId");
+  await duplicateWeek(db, userId, {
+    sourceWeekId: text(formData, "sourceWeekId"),
     destWeekId,
-  );
-  file.sessions.push(...copies);
-  await writeSchedule(file);
+  });
   revalidateAll();
   redirect(`/week/${destWeekId}`);
 }
 
-export async function upsertTemplateAction(formData: FormData) {
-  await requireMember();
-  assertWritable();
-  const existingId = String(formData.get("id") ?? "").trim();
-  const name = sanitizeName(String(formData.get("name") ?? ""));
-  if (!name) throw new Error("Name is required");
-  const id = existingId || (await createTemplateId(name));
-  const template: SessionTemplate = {
-    id,
-    name,
-    type: parseType(formData.get("type")),
-    description: String(formData.get("description") ?? "").trim(),
-    body: parseItemsFromForm(formData),
-  };
-  await saveTemplate(template);
+// ---------------------------------------------------------------------------
+// Personal routines
+// ---------------------------------------------------------------------------
+
+/** Creates or updates one of the member's own routines. GLOBAL ones cannot be saved. */
+export async function upsertRoutineAction(formData: FormData) {
+  const { db } = await memberData();
+  const id = await savePersonalRoutine(db, text(formData, "id") || null, {
+    name: text(formData, "name"),
+    category: category(formData),
+    description: text(formData, "description"),
+    items: itemsFromForm(formData),
+  });
   revalidateAll();
   redirect(`/library/${id}`);
 }
 
-export async function deleteTemplateAction(formData: FormData) {
-  await requireMember();
-  assertWritable();
-  const id = String(formData.get("id") ?? "");
-  const template = await getTemplate(id);
-  const file = await readSchedule();
-  const map = templatesById(await listTemplates());
-  file.sessions = file.sessions.map((session) => {
-    if (session.templateId !== id) return session;
-    if (session.bodySnapshot !== null) {
-      return { ...session, templateId: null };
-    }
-    const resolved = resolveSession(session, map);
-    return {
-      ...session,
-      bodySnapshot: resolved.body || template?.body || "",
-      templateId: null,
-    };
-  });
-  await writeSchedule(file);
-  await deleteTemplateFile(id);
+/** Deletes one of the member's own routines. Scheduled sessions keep their copy. */
+export async function deleteRoutineAction(formData: FormData) {
+  const { db, userId } = await memberData();
+  await deletePersonalRoutine(db, userId, text(formData, "id"));
   revalidateAll();
   redirect("/library");
-}
-
-export async function importBackupAction(
-  _prev: { error: string } | null,
-  formData: FormData,
-): Promise<{ error: string } | null> {
-  await requireMember();
-  if (isPublishedReadonly()) {
-    return {
-      error:
-        "This published TrainGrid site is read-only. Edit locally, then commit and push data/ to publish.",
-    };
-  }
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) {
-    return { error: "Choose a backup file." };
-  }
-  const text = await file.text();
-  const parsed = parseBackupJson(text);
-  if (!parsed.ok) {
-    return { error: parsed.error };
-  }
-  await replaceAllTemplates(parsed.backup.templates);
-  await writeSchedule({ sessions: parsed.backup.sessions });
-  revalidateAll();
-  redirect("/");
-}
-
-export async function exportBackupPayload(): Promise<BackupFile> {
-  await requireMember();
-  const templates = await listTemplates();
-  const { sessions } = await readSchedule();
-  return {
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    templates,
-    sessions,
-  };
 }

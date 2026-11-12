@@ -51,6 +51,12 @@ test("A1: private pages send no planner content to an anonymous request", async 
   }
 });
 
+test("a legacy library link still requires sign-in", async ({ page }) => {
+  await page.goto("/library/lower-a");
+  await expect(page).toHaveURL(/\/login\?next=%2Flibrary%2Flower-a$/);
+  await expect(page.getByText("Lower A")).toHaveCount(0);
+});
+
 test("the export API answers 401 to an anonymous request", async ({ request }) => {
   const response = await request.get("/api/export", { maxRedirects: 0 });
   expect(response.status()).toBe(401);

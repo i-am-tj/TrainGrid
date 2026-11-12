@@ -17,17 +17,17 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 11 | Admin invitation management | 8, 8b | Agent | DONE; extended in 8b with revoking accepted members (IN REVIEW) |
 | 12 | Invitation email delivery | 8 | Agent | DONE (manual link, per D-08) |
 | 13 | Protect application routes | 9 | Agent | MERGED (production check to be confirmed) |
-| 14 | Remove hosted read-only architecture | 12 | Agent | TODO |
-| 15 | Migrate away from runtime files | 11, 12 | Agent | IN PROGRESS (templates seeded as GLOBAL routines in step 11; runtime switch in step 12) |
-| 16 | Migrate existing personal data safely | 12 | Agent | TODO |
-| 17 | Preserve planner functionality | 12 | Agent | TODO |
+| 14 | Remove hosted read-only architecture | 12 | Agent | IN REVIEW |
+| 15 | Migrate away from runtime files | 11, 12 | Agent | IN REVIEW (no runtime file reads or writes after step 12) |
+| 16 | Migrate existing personal data safely | 12 | Agent | IN REVIEW (script ready; production schedule.json was empty, nothing to import) |
+| 17 | Preserve planner functionality | 12 | Agent | IN REVIEW |
 | 18 | Environment variable contract | 4 | Agent | DONE |
 | 19 | Secure GitHub repository secrets | 4 | Agent | DONE |
 | 20 | Store production secrets in Vercel | 14 | Tanuj | TODO |
 | 21 | Protect Supabase secrets | 4, 8 | Agent | IN REVIEW (secret key used only in `lib/supabase/admin.ts`; bundle scan clean) |
 | 22 | Separate development and production | 14 | Agent + Tanuj | TODO |
 | 23 | GitHub security hardening | 14 | Tanuj | TODO |
-| 24 | Input validation | 10 | Agent | DONE in the data layer; wired into actions in step 12 |
+| 24 | Input validation | 10, 12 | Agent | DONE (data layer); every action uses it from step 12 |
 | 25 | OAuth account handling | 6 | Agent | DONE |
 | 26 | Authentication UI | 5 | Agent | DONE |
 | 27 | Admin security | 8 | Agent | DONE |

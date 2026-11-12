@@ -58,7 +58,7 @@ export function DuplicateWeekForm({
           Duplicate week
         </button>
         <p className="text-xs text-stone-500">
-          Copies sessions as independent rows. Templates stay linked.
+          Copies each session with its own copy of the workout.
         </p>
       </div>
     </form>

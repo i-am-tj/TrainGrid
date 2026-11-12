@@ -1,10 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { AddSessionForm } from "@/components/session/AddSessionForm";
+import { isRealWeekId } from "@/lib/calendar-date";
+import { findGlobalRoutineIdBySlug, listRoutines } from "@/lib/data/routines";
+import { memberData } from "@/lib/data/server";
 import type { IsoDay } from "@/lib/domain";
-import { listTemplates } from "@/lib/templates";
-import { isPublishedReadonly } from "@/lib/runtime";
-import { isValidWeekId, todayParts } from "@/lib/week";
-import { requireMember } from "@/lib/auth/session";
+import { isValidTime, todayParts } from "@/lib/week";
 
 export default async function AddSessionPage({
   params,
@@ -14,31 +14,28 @@ export default async function AddSessionPage({
   searchParams: Promise<{
     day?: string;
     time?: string;
+    routine?: string;
     template?: string;
     untimed?: string;
   }>;
 }) {
-  await requireMember();
+  const { db, userId } = await memberData();
   const { weekId: rawWeekId } = await params;
   const query = await searchParams;
   const today = todayParts();
 
-  if (isPublishedReadonly()) {
-    redirect(rawWeekId === "current" ? "/" : `/week/${rawWeekId}`);
-  }
-
   if (rawWeekId === "current") {
     const q = new URLSearchParams();
-    if (query.day) q.set("day", query.day);
-    if (query.time) q.set("time", query.time);
-    if (query.template) q.set("template", query.template);
-    if (query.untimed) q.set("untimed", query.untimed);
+    for (const key of ["day", "time", "routine", "template", "untimed"] as const) {
+      const value = query[key];
+      if (value) q.set(key, value);
+    }
     const suffix = q.toString() ? `?${q}` : "";
     redirect(`/week/${today.weekId}/add${suffix}`);
   }
-  if (!isValidWeekId(rawWeekId)) notFound();
+  if (!isRealWeekId(rawWeekId)) notFound();
 
-  const templates = await listTemplates();
+  const routines = await listRoutines(db, userId);
   const dayNum = Number(query.day);
   const day: IsoDay =
     dayNum >= 1 && dayNum <= 7
@@ -46,23 +43,27 @@ export default async function AddSessionPage({
       : rawWeekId === today.weekId
         ? today.day
         : 1;
-  const time =
-    query.time && /^\d{2}:\d{2}$/.test(query.time) ? query.time : null;
+  const time = query.time && isValidTime(query.time) ? query.time : null;
   const untimed = query.untimed === "1" || query.untimed === "true";
+  // ?template=<slug> is the legacy Schedule link; it names a seeded GLOBAL routine.
+  const requested =
+    query.routine ?? (query.template ? await findGlobalRoutineIdBySlug(db, query.template) : null);
+  const initialRoutineId = routines.some((r) => r.id === requested) ? requested! : null;
 
   return (
     <div className="mx-auto max-w-xl px-3 py-4 sm:px-4">
       <h1 className="text-xl font-semibold">Add session</h1>
       <p className="mt-1 text-sm text-stone-600">
-        Place a template or a one-off session on this week.
+        Put a routine or a one-off session on this week. A routine is copied into the session, so
+        later changes to the routine do not affect it.
       </p>
       <div className="mt-6">
         <AddSessionForm
           weekId={rawWeekId}
-          templates={templates}
+          routines={routines}
           initialDay={day}
-          initialTime={untimed ? null : time ?? "07:00"}
-          initialTemplateId={query.template ?? null}
+          initialTime={untimed ? null : (time ?? "07:00")}
+          initialRoutineId={initialRoutineId}
         />
       </div>
     </div>

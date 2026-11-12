@@ -48,9 +48,11 @@ select results_eq(
   'item order is preserved'
 );
 select is(
-  (select count(*)::int from public.workout_items
-    where instruction ~* '^\s*(rest|target|intensity|equipment|video)\s*:'
-       or notes ~* '(^|\n)\s*(rest|target|intensity|equipment|video)\s*:'),
+  (select count(*)::int from public.workout_items wi
+     join public.routines r on r.id = wi.routine_id
+    where r.scope = 'GLOBAL' and r.slug is not null
+      and (wi.instruction ~* '^\s*(rest|target|intensity|equipment|video)\s*:'
+           or wi.notes ~* '(^|\n)\s*(rest|target|intensity|equipment|video)\s*:')),
   0, 'no metadata line was left inside instructions or notes'
 );
 

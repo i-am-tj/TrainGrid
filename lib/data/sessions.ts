@@ -1,4 +1,4 @@
-import { addDays, weekDateRange, weeksBetween } from "@/lib/calendar-date";
+import { addDays, weekDateRange, weekDayOfDate, weeksBetween } from "@/lib/calendar-date";
 import type { Json } from "@/lib/database.types";
 import {
   copySnapshot,
@@ -60,6 +60,34 @@ export async function listSessionsForWeek(
     .order("created_at");
   if (error) throw new Error("Could not load the week.");
   return data.map(sessionFromRow);
+}
+
+/** How many of the caller's sessions fall in each of the given weeks. */
+export async function countSessionsByWeek(
+  db: Db,
+  userId: string,
+  rawWeekIds: unknown[],
+): Promise<Record<string, number>> {
+  const weekIds = rawWeekIds.map((weekId) => validate(weekIdSchema, weekId));
+  if (weekIds.length === 0) return {};
+  const ranges = weekIds.map((weekId) => weekDateRange(weekId));
+  const start = ranges.map((range) => range.start).sort()[0]!;
+  const end = ranges.map((range) => range.end).sort().at(-1)!;
+
+  const { data, error } = await db
+    .from("scheduled_sessions")
+    .select("date")
+    .eq("user_id", userId)
+    .gte("date", start)
+    .lte("date", end);
+  if (error) throw new Error("Could not load the calendar.");
+
+  const counts: Record<string, number> = Object.fromEntries(weekIds.map((weekId) => [weekId, 0]));
+  for (const row of data) {
+    const { weekId } = weekDayOfDate(row.date);
+    if (weekId in counts) counts[weekId]! += 1;
+  }
+  return counts;
 }
 
 export async function getSession(

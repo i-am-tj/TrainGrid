@@ -1,10 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { addWorkoutItem, resetData, saveTemplate, scheduleTemplate } from "./helpers";
 import { signInAsNewLocalMember } from "./local-supabase";
+import { createRoutine, fillItem } from "./planner-helpers";
 
-// The planner is private: every test runs as a signed-in member.
+// Every test runs as a brand-new member, so each starts with an empty calendar.
 test.beforeEach(async ({ context, baseURL }) => {
-  await resetData();
   await signInAsNewLocalMember(context, baseURL!);
 });
 
@@ -21,49 +20,10 @@ test("planner shows seven days Monday to Sunday", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Week of");
 });
 
-test("library filters use plyometrics not mobility", async ({ page }) => {
-  await page.goto("/library");
-  await expect(page.getByRole("link", { name: "Plyometrics" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Other" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Mobility" })).toHaveCount(0);
-});
-
-test("library template opens read-only details then edit", async ({ page }) => {
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Lower A");
-  await page.getByLabel("Type").selectOption("strength");
-  await addWorkoutItem(page, 0, "Back Squat", "3 × 6–8");
-  await saveTemplate(page);
-
-  await page.goto("/library");
-  await page.getByRole("link", { name: /Lower A/ }).click();
-  await expect(page).toHaveURL(/\/library\/lower-a$/);
-  await expect(page.getByRole("heading", { name: "Lower A" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Back Squat" })).toBeVisible();
-  await expect(page.getByText("3 × 6–8")).toBeVisible();
-  await expect(page.getByRole("textbox", { name: /^Workout item/ })).toHaveCount(0);
-  await expect(page.getByRole("textbox", { name: /^Details/ })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Add workout item" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Delete template" })).toHaveCount(0);
-
-  await page.getByRole("link", { name: "Edit template" }).click();
-  await expect(page).toHaveURL(/\/library\/lower-a\/edit$/);
-  await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Add workout item" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Delete template" })).toBeVisible();
-  await expect(page.getByRole("textbox", { name: /^Workout item 1/ })).toHaveValue(
-    "Back Squat",
-  );
-
-  await page.getByRole("link", { name: "Cancel" }).click();
-  await expect(page).toHaveURL(/\/library\/lower-a$/);
-  await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
-
-  await page.getByRole("link", { name: "Edit template" }).click();
-  await page.getByRole("link", { name: "Back to library" }).click();
-  await expect(page).toHaveURL(/\/library$/);
-  await expect(page.getByRole("link", { name: "Lower A" })).toBeVisible();
+test("story 14: no read-only or 'clone this repo' notice remains", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText(/read-only|clone this repo|peeking at/i)).toHaveCount(0);
+  await expect(page.getByText("Published", { exact: false })).toHaveCount(0);
 });
 
 test("empty states offer a way to add", async ({ page }) => {
@@ -71,49 +31,66 @@ test("empty states offer a way to add", async ({ page }) => {
   await expect(page.getByText("No sessions this week.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Add session" }).first()).toBeVisible();
   await page.goto("/library");
-  await expect(page.getByText("No templates yet.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "New template" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "New routine" })).toBeVisible();
 });
 
-test("deleting a template keeps the scheduled session", async ({ page }) => {
+test("library filters use plyometrics not mobility", async ({ page }) => {
+  await page.goto("/library");
+  await expect(page.getByRole("link", { name: "Plyometrics", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Other", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Mobility", exact: true })).toHaveCount(0);
+});
+
+test("D-05: GLOBAL routines are readable, structured and not editable", async ({ page }) => {
+  await page.goto("/library");
+  await page.getByRole("link", { name: /^Lower A/ }).click();
+  await expect(page.getByRole("heading", { name: "Lower A", level: 1 })).toBeVisible();
+  await expect(page.getByText("TrainGrid library · read-only")).toBeVisible();
+
+  const squat = page.locator("section").filter({ has: page.getByRole("heading", { name: "Back Squat" }) });
+  await expect(squat.getByText("4 × 5–6")).toBeVisible();
+  await expect(squat.getByText("2–3 min")).toBeVisible();
+  await expect(squat.getByText("RPE 7–8")).toBeVisible();
+  await expect(squat.getByLabel("Equipment").getByText("Barbell")).toBeVisible();
+
+  await expect(page.getByRole("link", { name: "Edit routine" })).toHaveCount(0);
+  const response = await page.goto(`${page.url()}/edit`);
+  expect(response?.status()).toBe(404);
+});
+
+test("D9: a member creates, views, edits and deletes their own routine", async ({ page }) => {
   page.on("dialog", (dialog) => dialog.accept());
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Lower A");
-  await page.getByLabel("Type").selectOption("strength");
-  await addWorkoutItem(page, 0, "Back Squat", "3 × 6–8");
-  await saveTemplate(page);
-  await scheduleTemplate(page, "Lower A", "1", "08:00");
+  await createRoutine(page, "My Lower", "strength", [
+    ["Back Squat", "3 × 6–8", { rest: "2 min", target: "RPE 7", equipment: ["Barbell"] }],
+  ]);
+  await expect(page.getByText("Your routine")).toBeVisible();
+  await expect(page.getByText("3 × 6–8")).toBeVisible();
+  await expect(page.getByRole("textbox")).toHaveCount(0);
 
-  await page.goto("/library/lower-a/edit");
-  await page.getByRole("button", { name: "Delete template" }).click();
-  await expect(page.getByText("No templates yet.")).toBeVisible();
+  await page.getByRole("link", { name: "Edit routine" }).click();
+  await expect(page.getByRole("textbox", { name: "Workout item 1", exact: true })).toHaveValue("Back Squat");
+  await expect(page.getByRole("textbox", { name: "Rest" })).toHaveValue("2 min");
+  await page.getByRole("textbox", { name: "Instruction" }).first().fill("4 × 5");
+  await fillItem(page, 1, "Calf Raise", "3 × 12");
+  await page.getByRole("button", { name: "Save" }).click();
+  await page.waitForURL(/\/library\/[0-9a-f-]{36}$/);
+  await expect(page.getByText("4 × 5", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Calf Raise" })).toBeVisible();
 
-  await page.goto("/");
-  await page.getByRole("link", { name: "Lower A, 08:00" }).click();
-  await expect(page.getByRole("heading", { name: "Back Squat" })).toBeVisible();
-  await expect(
-    page.getByText(/own copy|Not linked to a template/),
-  ).toBeVisible();
+  await page.getByRole("link", { name: "Edit routine" }).click();
+  await page.getByRole("button", { name: "Delete routine" }).click();
+  await expect(page).toHaveURL(/\/library$/);
+  await expect(page.getByText("My Lower")).toHaveCount(0);
 });
 
-test("editing a template body updates a live-linked session only", async ({ page }) => {
-  await page.goto("/library/new");
-  await page.getByLabel("Name").fill("Lower A");
-  await page.getByLabel("Type").selectOption("strength");
-  await addWorkoutItem(page, 0, "Back Squat", "3 × 6–8");
-  await saveTemplate(page);
-  await scheduleTemplate(page, "Lower A", "1", "08:00");
-
-  await page.goto("/library/lower-a/edit");
-  await page.getByRole("textbox", { name: /^Details/ }).first().fill("4 × 5–6");
-  await page.getByRole("button", { name: "Save" }).click();
-  await page.waitForURL(/\/library\/lower-a$/);
-  await expect(page.getByRole("textbox", { name: /^Details/ })).toHaveCount(0);
-  await expect(page.getByText("4 × 5–6")).toBeVisible();
-
-  await page.goto("/");
-  await page.getByRole("link", { name: "Lower A, 08:00" }).click();
-  await expect(page.getByText("4 × 5–6")).toBeVisible();
+test("D6: structured fields stay apart; 'Rest:' typed in notes stays in notes", async ({ page }) => {
+  await createRoutine(page, "My Notes Test", "other", [
+    ["Plank", "3 × 45 s", { notes: "Rest: whenever" }],
+  ]);
+  await expect(page.getByText("Rest: whenever")).toBeVisible();
+  await page.getByRole("link", { name: "Edit routine" }).click();
+  await expect(page.getByRole("textbox", { name: "Rest" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Notes" })).toHaveValue("Rest: whenever");
 });
 
 test("mobile agenda is used at a phone width", async ({ page }) => {
@@ -125,4 +102,28 @@ test("mobile agenda is used at a phone width", async ({ page }) => {
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 4,
   );
   expect(overflow).toBe(false);
+});
+
+test("legacy library links still reach the seeded routine", async ({ page }) => {
+  await page.goto("/library/lower-a");
+  await expect(page).toHaveURL(/\/library\/[0-9a-f-]{36}$/);
+  await expect(page.getByRole("heading", { name: "Lower A", level: 1 })).toBeVisible();
+  await expect(page.getByText("TrainGrid library · read-only")).toBeVisible();
+
+  // The old edit link shows the read-only routine instead of an editor.
+  await page.goto("/library/lower-a/edit");
+  await expect(page).toHaveURL(/\/library\/[0-9a-f-]{36}$/);
+  await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
+
+  // The old Schedule link preselects the routine.
+  await page.goto("/week/current/add?template=lower-a");
+  await expect(page.locator("select").filter({ has: page.locator("optgroup") })).toHaveValue(
+    /[0-9a-f-]{36}/,
+  );
+  await expect(
+    page.locator("select").filter({ has: page.locator("optgroup") }).locator("option:checked"),
+  ).toHaveText("Lower A");
+
+  const unknown = await page.goto("/library/not-a-real-template");
+  expect(unknown?.status()).toBe(404);
 });

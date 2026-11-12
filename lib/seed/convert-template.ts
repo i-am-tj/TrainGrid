@@ -112,6 +112,21 @@ export function convertSection(slug: string, index: number, title: string, body:
   };
 }
 
+/** Splits a Markdown body into "## " sections, each one structured item. */
+export function convertBody(key: string, markdown: string): SeedItem[] {
+  return markdown
+    .replace(/\r\n/g, "\n")
+    .split(/^## /m)
+    .slice(1)
+    .map((chunk) => {
+      const newline = chunk.indexOf("\n");
+      return newline === -1
+        ? { title: chunk, body: "" }
+        : { title: chunk.slice(0, newline), body: chunk.slice(newline + 1) };
+    })
+    .map((section, index) => convertSection(key, index, section.title, section.body));
+}
+
 export function convertTemplate(fileSlug: string, markdown: string): SeedRoutine {
   const parsed = matter(markdown);
   const data = parsed.data as Record<string, unknown>;
@@ -127,20 +142,7 @@ export function convertTemplate(fileSlug: string, markdown: string): SeedRoutine
 
   const description = typeof data.description === "string" ? data.description.trim() : "";
 
-  const sections = parsed.content
-    .replace(/\r\n/g, "\n")
-    .split(/^## /m)
-    .slice(1)
-    .map((chunk) => {
-      const newline = chunk.indexOf("\n");
-      return newline === -1
-        ? { title: chunk, body: "" }
-        : { title: chunk.slice(0, newline), body: chunk.slice(newline + 1) };
-    });
-
-  const items = sections.map((section, index) =>
-    convertSection(slug, index, section.title, section.body),
-  );
+  const items = convertBody(slug, parsed.content);
   for (const item of items) {
     if (!item.name) throw new Error(`Template ${fileSlug}: a section has no title`);
   }

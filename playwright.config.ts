@@ -6,8 +6,6 @@ import { defineConfig, devices } from "@playwright/test";
 const envFile = path.join(__dirname, ".env.local");
 if (existsSync(envFile)) process.loadEnvFile(envFile);
 
-export const e2eDataDir = path.join(__dirname, "e2e", ".data");
-
 export default defineConfig({
   testDir: "e2e",
   fullyParallel: false,
@@ -25,7 +23,6 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       ...process.env,
-      TRAINGRID_DATA_DIR: e2eDataDir,
       // Fixed id of the local E2E admin (see e2e/local-supabase.ts).
       TRAINGRID_ADMIN_USER_IDS: "e2e00000-0000-4000-8000-00000000ad01",
     },

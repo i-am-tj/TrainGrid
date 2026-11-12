@@ -1,30 +1,22 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { EditSessionForm } from "@/components/session/EditSessionForm";
-import { getSession } from "@/lib/schedule";
-import { listTemplates } from "@/lib/templates";
-import { isPublishedReadonly } from "@/lib/runtime";
-import { requireMember } from "@/lib/auth/session";
+import { memberData } from "@/lib/data/server";
+import { getSession } from "@/lib/data/sessions";
 
-export default async function EditSessionPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  await requireMember();
+export default async function EditSessionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { db, userId } = await memberData();
   const { id } = await params;
-  if (isPublishedReadonly()) redirect(`/session/${id}`);
-  const session = await getSession(id);
+  const session = await getSession(db, userId, id);
   if (!session) notFound();
-  const templates = await listTemplates();
 
   return (
     <div className="mx-auto max-w-xl px-3 py-4 sm:px-4">
       <h1 className="text-xl font-semibold">Edit session</h1>
       <p className="mt-1 text-sm text-stone-600">
-        Changing day, time, name, or notes does not rewrite the template file.
+        Changes the day, time, name or notes of this session only.
       </p>
       <div className="mt-6">
-        <EditSessionForm session={session} templates={templates} />
+        <EditSessionForm session={session} />
       </div>
     </div>
   );

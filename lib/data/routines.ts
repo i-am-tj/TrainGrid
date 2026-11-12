@@ -93,3 +93,24 @@ export async function deletePersonalRoutine(db: Db, userId: string, rawId: unkno
   if (error) throw new Error("Could not delete the routine.");
   if (data.length === 0) throw new DataError("not_found", "Routine not found.");
 }
+
+const LEGACY_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/**
+ * Old links named routines by their template slug (e.g. /library/lower-a).
+ * Only seeded GLOBAL routines have slugs (a database constraint forbids them
+ * on PERSONAL routines), and the lookup is restricted to GLOBAL as well, so
+ * it can never reveal a member's own routine. It runs as the caller, so a
+ * visitor who is not a member finds nothing.
+ */
+export async function findGlobalRoutineIdBySlug(db: Db, raw: unknown): Promise<string | null> {
+  if (typeof raw !== "string" || raw.length > 100 || !LEGACY_SLUG.test(raw)) return null;
+  const { data, error } = await db
+    .from("routines")
+    .select("id")
+    .eq("scope", "GLOBAL")
+    .eq("slug", raw)
+    .maybeSingle();
+  if (error) throw new Error("Could not load the routine.");
+  return data?.id ?? null;
+}

@@ -1,9 +1,7 @@
 import Link from "next/link";
-import type { SessionTemplate, SessionType } from "@/lib/domain";
-import { SESSION_TYPE_LABELS } from "@/lib/domain";
-import { TYPE_SHORT } from "@/lib/ui";
-import { btnPrimary, btnSecondary } from "@/lib/ui";
-import { isPublishedReadonly } from "@/lib/runtime";
+import type { RoutineSummary } from "@/lib/data/model";
+import { SESSION_TYPE_LABELS, type SessionType } from "@/lib/domain";
+import { btnPrimary, btnSecondary, TYPE_SHORT } from "@/lib/ui";
 
 const FILTERS: Array<{ id: "all" | SessionType; label: string }> = [
   { id: "all", label: "All" },
@@ -13,18 +11,16 @@ const FILTERS: Array<{ id: "all" | SessionType; label: string }> = [
   { id: "other", label: SESSION_TYPE_LABELS.other },
 ];
 
-export function TemplateList({
-  templates,
+const GROUPS: SessionType[] = ["running", "strength", "plyometrics", "other"];
+
+export function RoutineList({
+  routines,
   filter,
 }: {
-  templates: SessionTemplate[];
+  routines: RoutineSummary[];
   filter: "all" | SessionType;
 }) {
-  const readonly = isPublishedReadonly();
-  const visible =
-    filter === "all" ? templates : templates.filter((t) => t.type === filter);
-
-  const groups: SessionType[] = ["running", "strength", "plyometrics", "other"];
+  const visible = filter === "all" ? routines : routines.filter((r) => r.category === filter);
 
   return (
     <div>
@@ -44,12 +40,12 @@ export function TemplateList({
 
       {visible.length === 0 ? (
         <p className="mt-8 rounded-lg border border-dashed border-line bg-card px-3 py-10 text-center text-sm text-stone-600">
-          No templates yet.
+          No routines yet.
         </p>
       ) : (
         <div className="mt-6 space-y-6">
-          {groups.map((type) => {
-            const items = visible.filter((t) => t.type === type);
+          {GROUPS.map((type) => {
+            const items = visible.filter((r) => r.category === type);
             if (items.length === 0) return null;
             return (
               <section key={type}>
@@ -57,26 +53,28 @@ export function TemplateList({
                   {type}
                 </h2>
                 <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-card">
-                  {items.map((t) => (
+                  {items.map((r) => (
                     <li
-                      key={t.id}
+                      key={r.id}
                       className="flex flex-wrap items-center justify-between gap-2 px-3 py-3"
                     >
-                      <Link href={`/library/${t.id}`} className="min-w-0">
-                        <div className="font-medium">{t.name}</div>
+                      <Link href={`/library/${r.id}`} className="min-w-0">
+                        <div className="font-medium">
+                          {r.name}
+                          {r.isOwn ? (
+                            <span className="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
+                              Mine
+                            </span>
+                          ) : null}
+                        </div>
                         <div className="text-xs text-stone-500">
-                          {TYPE_SHORT[t.type]}
-                          {t.description ? ` · ${t.description}` : ""}
+                          {TYPE_SHORT[r.category]}
+                          {r.description ? ` · ${r.description}` : ""}
                         </div>
                       </Link>
-                      {readonly ? null : (
-                        <Link
-                          href={`/week/current/add?template=${t.id}`}
-                          className={btnSecondary}
-                        >
-                          Schedule
-                        </Link>
-                      )}
+                      <Link href={`/week/current/add?routine=${r.id}`} className={btnSecondary}>
+                        Schedule
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -86,13 +84,11 @@ export function TemplateList({
         </div>
       )}
 
-      {readonly ? null : (
-        <div className="mt-6">
-          <Link href="/library/new" className={btnPrimary}>
-            New template
-          </Link>
-        </div>
-      )}
+      <div className="mt-6">
+        <Link href="/library/new" className={btnPrimary}>
+          New routine
+        </Link>
+      </div>
     </div>
   );
 }
