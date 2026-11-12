@@ -73,7 +73,7 @@ manual, on production, and are recorded with date and outcome.
 | --- | --- | --- | --- |
 | S1 | Secret key absent from client bundles | search `.next/static` after build | — |
 | S2 | No credentials in Git history | secret scan of full history | — |
-| S3 | `.env.example` contains placeholders only | review | — |
+| S3 | `.env.example` contains placeholders only | review | PASS 2026-11-12 |
 | S4 | RLS enabled on every table in `public`, each with policies, all scoped to `authenticated` | Database | PASS 2026-11-12 (local, 4 tables; re-checked as tables are added) |
 | S5 | No filesystem writes in production code paths | search for `fs` writes outside `scripts/` | — |
 
