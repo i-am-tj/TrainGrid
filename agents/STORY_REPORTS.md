@@ -85,8 +85,8 @@ Status:                DONE — merged to main 2026-11-12 (2bf9e9f)
 Story:                 1 Supabase infrastructure; 18 environment variable contract;
                        19 repository secrets; 21 protect Supabase secrets (guards)
 Branch:                epic-1/04-supabase-ssr
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/5
+Commit:                2190622
 Schema impact:         None.
 RLS impact:            None. Verified through the app: an anonymous request is refused by
                        the database (42501) and a signed-in non-member reads zero rows.
