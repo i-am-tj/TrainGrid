@@ -23,13 +23,14 @@
     "seed:generate": "tsx scripts/generate-global-seed.ts",
     "import:legacy": "tsx scripts/import-legacy-schedule.ts",
     "typecheck": "next typegen && tsc --noEmit",
-    "test:all": "npm run lint && npm run typecheck && npm test && npm run db:test && npm run test:integration && npm run test:e2e && npm run build"
+    "test:all": "npm run lint && npm run typecheck && npm test && npm run db:test && npm run test:integration && npm run test:e2e && npm run build",
+    "scan:secrets": "tsx scripts/scan-secrets.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.0",
     "gray-matter": "^4.0.3",
-    "next": "16.3.3",
+    "next": "16.4.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
@@ -42,11 +43,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.3",
+    "eslint-config-next": "16.4.6",
     "supabase": "^3.1.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   }
 }

@@ -11,6 +11,7 @@ Project documentation lives here so the repository root stays focused on the app
 | [MVP_CHECKLIST.md](./MVP_CHECKLIST.md) | MVP acceptance checklist |
 | [TEST_PLAN.md](./TEST_PLAN.md) | Test strategy |
 | [TEST_RESULTS.md](./TEST_RESULTS.md) | Latest validation notes |
+| [SECURITY.md](./SECURITY.md) | Credentials, dev/prod separation, release checks, incident steps |
 | [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) | Local Supabase stack, production project, environment variables |
 | [adr/](./adr/) | Architecture decision records |
 | [images/](./images/) | Screenshots used in the root README (mobile + desktop) |

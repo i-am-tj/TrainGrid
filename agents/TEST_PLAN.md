@@ -103,10 +103,12 @@ Every layer runs with one command: `npm run test:all` (needs Docker and the loca
 | # | Check | How | Result |
 | --- | --- | --- | --- |
 | S1 | Secret key absent from client bundles | search `.next/static` after build | PASS 2026-11-12 (local build: neither the key value nor its variable name appears) |
-| S2 | No credentials in Git history | secret scan of full history | — |
+| S2 | No credentials in Git history | secret scan of full history | PASS 2026-11-12 (`npm run scan:secrets -- --history`: 56 commits, all branches, nothing found; scanner verified on a planted key) |
 | S3 | `.env.example` contains placeholders only | review | PASS 2026-11-12 |
 | S4 | RLS enabled on every table in `public`; member-facing tables have policies scoped to `authenticated`; `invitations` has none | Database | PASS 2026-11-12 (local, 5 tables) |
 | S5 | No filesystem writes in production code paths | search for `fs` writes outside `scripts/` | PASS 2026-11-12 (no fs reads or writes in app/, components/, lib/ outside seed tooling and tests) |
+| S6 | No known vulnerabilities in production dependencies | `npm audit --omit=dev` | PASS 2026-11-12 (after D-76) |
+| S7 | Preview deployments cannot reach production data | Signed-out requests to a preview; Vercel settings review | Previews protected by Vercel Authentication: PASS 2026-11-12. Variable scoping: Tanuj to confirm |
 
 ### Approved model decisions
 
