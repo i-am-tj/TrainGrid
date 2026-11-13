@@ -19,7 +19,7 @@ Formal architecture decision records live in `docs/adr/`.
 
 - One branch and one PR per roadmap step: `epic-<n>/NN-short-slug`, branched from `main`.
 - Each epic's records are appended under its own heading; earlier epics' history is never rewritten.
-  Specifications: `EPIC-1.md` (complete), `EPIC-2.md` (in progress).
+  Specifications: `EPIC-1.md` (complete), `EPIC-2.md` (complete).
 - A step is done only when its PR is merged and its report is appended to `STORY_REPORTS.md`.
 - Status values: `TODO`, `IN PROGRESS`, `BLOCKED`, `IN REVIEW`, `DONE`.
 - Owner values: `Agent` (code/docs in this repo) or `Tanuj` (console work an agent must not do:

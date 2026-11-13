@@ -38,25 +38,26 @@ Security regression checks:
 - no runtime file access
 - a forged source id sent to the real copy action is refused
 
-### Production smoke test (owner, after the release PR is merged)
+### Production smoke test
 
-Signed in on production. Tick each line; record the date in `agents/TEST_PLAN.md` (G11).
+**Result: PASS, 13 Nov 2026.** Verified by the owner on production, signed in; all eight checks
+passed. Recorded in `agents/TEST_PLAN.md` (G11). No production change was needed.
 
-- [ ] `/library` shows 18 routines in **TrainGrid**. Search “lower” and filter Strength + Barbell;
+- [x] `/library` shows 18 routines in **TrainGrid**. Search “lower” and filter Strength + Barbell;
       the URL keeps the filters on refresh and back.
-- [ ] Open Lower A: readable, no Edit; `/library/lower-a` redirects to it; `/library/lower-a/edit`
+- [x] Open Lower A: readable, no Edit; `/library/lower-a` redirects to it; `/library/lower-a/edit`
       shows no editor.
-- [ ] **Copy to My Library** on Lower A → lands on the copy with the confirmation → Edit the copy's
+- [x] **Copy to My Library** on Lower A → lands on the copy with the confirmation → Edit the copy's
       name → Lower A itself is unchanged.
-- [ ] Schedule Lower A and the copy; open both sessions; edit the copy again; both sessions keep
+- [x] Schedule Lower A and the copy; open both sessions; edit the copy again; both sessions keep
       their workout.
-- [ ] A second invited member (for example the phone account, once its own) sees the TrainGrid
+- [x] A second invited member (for example the phone account, once its own) sees the TrainGrid
       routines but **not** the first member's copy, in All or Mine.
-- [ ] Signed out, `/library` redirects to sign-in. The admin invitation page still lists and revokes
+- [x] Signed out, `/library` redirects to sign-in. The admin invitation page still lists and revokes
       invitations.
-- [ ] On a phone: the menu button opens the links; library controls stack without sideways
+- [x] On a phone: the menu button opens the links; library controls stack without sideways
       scrolling.
-- [ ] Supabase: still 18 GLOBAL routines and 96 items; the security advisor shows only the two
+- [x] Supabase: still 18 GLOBAL routines and 96 items; the security advisor shows only the two
       accepted warnings (D-80); no seed was applied for this release.
 
 ---
