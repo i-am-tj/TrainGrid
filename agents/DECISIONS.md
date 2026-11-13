@@ -186,3 +186,29 @@ No exercise catalogue in Epic 1. To keep the door open for a later `exercises` t
 | D-82 | Supabase Auth keeps `disable_signup = false`: OAuth must be able to create an invited friend's account on first sign-in. Email, phone and anonymous sign-in are disabled, so an auth account can only come from Google or GitHub, and it grants nothing without an invitation. | Satisfies "public signup is impossible" at the TrainGrid level; blocking at the auth layer stays deferred (D-02). |
 | D-83 | Documentation closure: README, REQUIREMENTS, TECHNICAL_DESIGN, DATA_FORMAT, TEST_PLAN and TEST_RESULTS are rewritten for the current app; UX_SPEC is updated section by section (layout and time rules unchanged); MVP_CHECKLIST is kept as a dated historical record with a note; the ADR context keeps its description of the old design as history. README screenshots are regenerated from the app as a local test member. Nothing from Epics 2–4 is described as shipped. | Story 33. Rewriting history would lose the record of the MVP; screenshots must not show the removed published mode. |
 | D-16 | REVISED at step 11: GLOBAL routines are seeded from a generated, committed `supabase/seed.sql`, applied locally by `db reset` and on production by `supabase db push --remote --include-seed`. It is generic content and not a schema migration. No secret key and no extra script are needed to apply it. | D-05 excludes a management UI; the epic keeps seed data separate from migrations. |
+
+
+---
+
+# Epic 2 decisions
+
+All Epic 2 decisions below were approved by Tanuj on 2026-11-13 ("Approve all"), together with the
+Step 01 plan.
+
+| ID | Decision | Status | Reason |
+| --- | --- | --- | --- |
+| E2-D01 | `/library` defaults to **All**; `scope=global` (TrainGrid) and `scope=mine` add explicit views. | APPROVED (spec default) | Keeps Epic 1 behaviour and links. |
+| E2-D02 | Search and filters use existing routine and item fields only; no new metadata or search service. | APPROVED (spec default) | Zero cost; honest content. |
+| E2-D03 | GLOBAL authoring stays seed- and code-review-managed. No admin editing UI; no wider secret-key use. | APPROVED (spec default) | Keeps the privileged surface to invitations only. |
+| E2-D04 | Copy runs as the member through `save_personal_routine()`; copies get new UUIDs and no slug. | APPROVED (spec default) | One transaction, no RLS exception. |
+| E2-D05 | Scheduling and snapshot rules are unchanged. | APPROVED (spec default) | Epic 1 D-03. |
+| E2-D06 | Epic 3 may redesign `Mine`; Epic 2 keeps existing personal CRUD working. | APPROVED (spec default) | Scope boundary. |
+| E2-D07 | Library list data: **one** query of visible routines with an embedded selection of item `name` and `equipment` (no N+1), capped at 500 routines (GLOBAL first); search and filters run in a pure, unit-tested TypeScript function on that result. If the cap is ever reached, the page says so rather than hiding it. | APPROVED | 18 GLOBAL routines and a friends-only group make SQL full-text search unnecessary; a pure function is easy to test; the cap makes the read bounded. |
+| E2-D08 | Equipment filter is **single-select** in Epic 2 (`equipment=barbell`): a routine matches if any item has that tag. Multi-select is deferred. | APPROVED | Matches the spec's URL example and keeps the UI simple on phones. |
+| E2-D09 | Query contract: `scope` = `all` (default, omitted) / `global` / `mine`; `q` = free text, trimmed, whitespace collapsed, max 100 characters; `type` = category; `equipment` = equipment id. Unknown or malformed values fall back silently to the default for that parameter only. Filters are a plain GET form, so they work without JavaScript and survive refresh and back. Switching scope keeps `q`, `type` and `equipment`. | APPROVED | The spec's proposed names, made precise; no client-state library. |
+| E2-D10 | A copy keeps the source's exact name (the "Mine" badge distinguishes it). After copying, the member lands on the new routine with a one-time confirmation (`?copied=1`, shown only for their own routine). | APPROVED | The spec asks for exact content and clear feedback; a query flag needs no cookies or new state. |
+| E2-D11 | **Seed item identity.** Item ids are `uuidV5(routine-item:<slug>:<index>)`, so inserting or reordering items reassigns existing ids to different exercises. Proposed rule for Step 07: existing ids never move. Items may be edited in place or appended at the end. Inserting, reordering or removing items requires an optional explicit `key` per item (new items only), and a check that fails the freshness test if an existing id's exercise name changes position. Removing a whole routine stays a separate, reviewed retirement procedure. | APPROVED | Spec §2.8 requires preserved ids; Epic 1 D-04B made item ids the future exercise identity; snapshots record `source_item_id`. |
+| E2-D12 | Fold Step 06 (scheduling links) into Step 04. The Schedule actions already exist on list and detail with the existing add form; 06 would only polish them and add regression tests. Step 05 (copy) and Step 08 (release) stay separate. | APPROVED | Spec §7 allows combining adjacent low-risk steps if explained. |
+| E2-D13 | No database migration is planned for Epic 2. If one becomes necessary, it is raised as a decision before it is written. | APPROVED | Reads use existing RLS; copy uses the existing RPC. |
+| E2-D14 | Library gets a `loading.tsx` skeleton; errors use the existing error page; empty and zero-result states are distinct ("nothing matched — Clear filters" vs "no routines yet"). | APPROVED | Spec E2-02 and §4. |
+| E2-D15 | Video links get an accessible name with the item name and "(opens in a new tab)", keep `rel="noopener noreferrer"`, and no embedding. | APPROVED | Spec E2-03. |

@@ -76,3 +76,50 @@ Each item gets step-by-step instructions in the PR that needs it.
 - Hosted import (D-06)
 - All 18 files in `data/templates/` are generic training content with equipment tags; they are the
   seed input for GLOBAL routines.
+
+
+---
+
+# Epic 2 backlog — Global workout library
+
+Last updated: 2026-11-13. Specification: [EPIC-2.md](EPIC-2.md). Story ids are prefixed `E2-` so Epic 1's
+story numbers 1–33 above stay unchanged.
+
+| Story | Title | Step | Owner | Status |
+| --- | --- | --- | --- | --- |
+| E2-01 | Switch between library scopes (All / TrainGrid / Mine) | 02 | Agent | TODO |
+| E2-02 | Find and filter routines (search, category, equipment) | 03 | Agent | TODO |
+| E2-03 | Assess shared routine content (cards and detail) | 04 | Agent | TODO |
+| E2-04 | Copy a GLOBAL routine to a PERSONAL routine | 05 | Agent | TODO |
+| E2-05 | Schedule directly from the library | 04 (06 folded in, E2-D12) | Agent | TODO |
+| E2-06 | Maintain shared content safely | 07 | Agent + Tanuj | TODO (rule E2-D11 approved) |
+| E2-R | Release: docs, regression, production smoke test | 08 | Agent + Tanuj | TODO |
+
+## What already exists (reuse, do not rebuild)
+
+| Need | Already in place | Gap for Epic 2 |
+| --- | --- | --- |
+| Member-only reads under RLS | `memberData()`, `requireMember()`, RLS on routines/items (Epic 1) | None |
+| GLOBAL read-only to members | RLS + E2E + forged-request tests (Epic 1) | None; extend tests to new views |
+| List of visible routines | `listRoutines()`: one query, routine columns only | Needs item names, equipment and item count for search, filters and cards (03/04) |
+| Routine detail with items | `getRoutine()` + `RoutineDetail` + `WorkoutItemsView` | Copy action; video link label; item count |
+| Category filter | `?type=` links in `RoutineList` | Becomes part of the validated query contract (02/03) |
+| "Mine" marker | `isOwn` on `RoutineSummary`, "Mine" badge | Scope views (02) |
+| Atomic personal save | `savePersonalRoutine()` → `save_personal_routine()` (one transaction) | Copy uses it as-is (05) |
+| Scheduling from the library | `/week/current/add?routine=<uuid>` from list and detail; legacy `?template=<slug>` | CTA polish and regression tests only (04) |
+| Legacy slug URLs | `findGlobalRoutineIdBySlug()` redirects | Regression tests only |
+| Seed pipeline | `npm run seed:generate`, freshness test, idempotent `seed.sql` | Item-id stability rule and workflow docs (07) |
+
+## Findings from the Epic 2 audit that affect scope
+
+- **Seed item ids are positional.** `routine-item:<slug>:<index>` means inserting or reordering items
+  in a template gives existing ids to different exercises. Existing ids must be preserved (spec §2.8),
+  so Step 07 needs a rule before any content edit. See E2-D11 (approval needed).
+- **No templates have video links today.** The video path in detail views is exercised only by
+  personal routines and tests; no content claims are added (spec E2-06).
+- **The video link is not fully accessible.** It reads "▶ Watch demo" with no item name and no
+  new-tab notice. Fixed in Step 04.
+- **`listRoutines()` has no row bound.** Fine for 18 GLOBAL routines, but a member's personal
+  routines are unbounded. Step 03 adds an explicit cap (E2-D07).
+- **There is no loading state for the library.** Step 02 adds `app/library/loading.tsx`.
+- **`agents/EPIC-1.md`** is in an open PR (#20) and not yet on `main`. Unrelated to Epic 2.
