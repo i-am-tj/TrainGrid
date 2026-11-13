@@ -532,8 +532,8 @@ EPIC 1 COMPLETE — SECURE INVITE-ONLY MULTI-USER CLOUD FOUNDATION LIVE
 ```
 Story:                 Planning for E2-01 … E2-06 (no story delivered)
 Branch:                epic-2/01-audit-and-plan
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/21
+Commit:                56fee82
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: None.
