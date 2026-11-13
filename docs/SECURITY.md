@@ -92,6 +92,42 @@ Deleting the line in a new commit is not enough: it stays in Git history and may
    step 1 is what actually protects you; history cleanup only limits further copies.
 4. Record what happened, when, and what was rotated.
 
+## Known limitation: linked sign-in identities
+
+Supabase Auth automatically **links** a Google or GitHub sign-in to an existing user when its
+verified email matches the email of any identity that user already has. This cannot be switched
+off. The sign-in then becomes that user, with their full access, including through Supabase's API
+directly. **The invitation check does not prevent this.** It only decides who becomes a member,
+not which identity an existing member's session came from.
+
+In practice this needs control of a mailbox that is on one of the member's linked identities,
+usually the member's own other address. To keep it that way:
+
+- Each member signs in with the address they were invited with.
+- On GitHub, keep the invited address as the account's primary email, and do not list addresses
+  you share with anyone.
+- Do not invite, as a separate person, an address that is already on someone's Google or GitHub
+  sign-in. It would be linked into that person's account.
+
+**One-off cleanup** (13 Nov 2026 incident: an admin's GitHub identity carried a second address, and
+a phone sign-in with that address was linked into the admin account). The owner runs it in a
+controlled window, with the other device signed out:
+
+1. Turn **Manual Linking** on (Authentication → Sign In / Providers). Supabase requires it for
+   removing identities.
+2. Signed in as the member, call Supabase Auth's own endpoints:
+   1. sign out other sessions (`POST /auth/v1/logout?scope=others`)
+   2. remove each unwanted identity (`DELETE /auth/v1/user/identities/{id}`)
+   3. sign out other sessions again
+3. Turn **Manual Linking** off. Check that `auth.identities` has only the identities you meant to
+   keep, and that `auth.sessions` has one session for that user.
+4. Wait one access-token lifetime (Authentication → Sessions, JWT expiry). Access tokens issued
+   earlier stay valid until they expire, though they cannot be refreshed.
+
+No TrainGrid data is changed by the cleanup. A removed identity reappears only if someone signs in
+with it again while it could still link. Turning Manual Linking off does not stop automatic
+linking, so the conventions above still matter.
+
 ## Dependencies
 
 - `npm audit --omit=dev` must report no vulnerabilities before a release.

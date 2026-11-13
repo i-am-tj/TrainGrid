@@ -1,6 +1,6 @@
 # TrainGrid — Requirements
 
-Status: current as of Epic 1 (secure invite-only multi-user foundation), November 2026.
+Status: current as of Epic 2 (global workout library), November 2026.
 Later epics (global library, personal library, per-user calendar and scheduling improvements) will
 extend this document when they ship.
 
@@ -79,12 +79,17 @@ Use these terms only.
 
 ### Routines and library
 
-- FR-L1. The library lists every GLOBAL routine and the member’s own PERSONAL routines, filterable by session type. The member’s own routines are marked.
+- FR-L1. The library lists every GLOBAL routine and the member’s own PERSONAL routines. It has three views: **All** (default), **TrainGrid** (GLOBAL only) and **Mine** (own only). Every card says, in text, whether it is **TrainGrid** or **Mine**.
 - FR-L2. GLOBAL routines are read-only to members: they can be opened and scheduled, not edited or deleted.
 - FR-L3. A member can **create**, **view**, **edit** and **delete** their own PERSONAL routines.
 - FR-L4. A routine has a name, type, optional description, and ordered workout items.
 - FR-L5. A workout item has a name and, optionally, an instruction, rest, target, notes, equipment tags and a YouTube link. These are separate fields; text such as “Rest: 2 min” typed into notes stays in notes.
 - FR-L6. Old library links that named a shared routine by slug (for example `/library/lower-a`) still open that routine.
+- FR-L7. The library can be searched and filtered. Search matches every word, ignoring case, in a routine's name, description or exercise names. Filters: session type, and one equipment tag (a routine matches if any item uses it). All of these combine, and live in the URL (`scope`, `q`, `type`, `equipment`), so refresh, back and shared links keep them. Invalid values fall back to the default. A search with no results says what was searched and offers **Clear filters**.
+- FR-L8. Each card shows the routine's item count and the equipment its items use. Equipment is shown only when the content names it.
+- FR-L9. A member can **copy** a GLOBAL routine to their own library. The copy keeps the exact name, type, description and ordered items, is PERSONAL and owned by the member, and has new ids. The original is unchanged. Copying another member's routine, or one's own, is refused.
+- FR-L10. A routine can be scheduled from its card or its detail page. **Schedule** opens the add-session form with the routine selected.
+- FR-L11. Shared routines are maintained as Markdown templates. An item's id never starts to mean a different exercise (see `docs/CONTENT.md`).
 
 ### Scheduling and snapshots
 

@@ -1,6 +1,6 @@
 # TrainGrid — UX specification
 
-Low-fidelity behaviour only. No visual design system. Current as of Epic 1, November 2026.
+Low-fidelity behaviour only. No visual design system. Current as of Epic 2, November 2026.
 
 Canonical terms: **routine** (GLOBAL or PERSONAL), **scheduled session**, **snapshot**, **workout item**. See `docs/REQUIREMENTS.md`.
 
@@ -11,19 +11,23 @@ Sign in                   /login                     public
 App (members only)
 ├── Planner               /  and  /week/[weekId]
 ├── Scheduled session     /session/[id]   (+ /edit, /customize)
-├── Library               /library
-│   └── Routine           /library/[routineId]   (+ /edit for own routines)
+├── Library               /library   (?scope=global|mine &q= &type= &equipment=)
+│   └── Routine           /library/[routineId]   (+ /edit for own routines; ?copied=1 once after a copy)
 │                         /library/new
 └── Invitations           /admin/invitations      admins only
 ```
 
 ### Header
 
-`TrainGrid · Planner · Library · Export · [Invitations] · Sign out`
+`[logo] TrainGrid (Beta) · Planner · Library · Export · [Invitations] · Sign out`
 
+- The logo is decorative; the link's name is "TrainGrid". **Beta** is plain text, not a control.
 - Planner, Library and Export appear for members only; Invitations for admins only.
+- Below 768 px the links sit behind a menu button ("Open menu" / "Close menu") and open as a
+  vertical list under the header. The list closes after navigating, on Escape (focus returns to the
+  button) and on a tap outside. It works without JavaScript.
 - Sign out shows “Signing out…” immediately while it works.
-- The header wraps on narrow screens; no horizontal scrolling.
+- No horizontal scrolling at any width.
 
 Primary entry: **Planner**. Secondary: **Library**.
 
@@ -193,23 +197,62 @@ Controlled descent.
 
 ```text
 Library
-Reusable routines. Schedule them onto any week from here or from the planner.
+Shared TrainGrid routines and your own. Schedule one onto any week, or open it to see the workout.
 
-[ All ] [ Running ] [ Strength ] [ Plyometrics ] [ Other ]
+             ╭───────────────────────────╮
+             │  All  │ TrainGrid │ Mine  │      (one sliding pill)
+             ╰───────────────────────────╯
+Search routines                         Equipment
+[ Name, description or exercise ]       [ Any equipment ▾ ]  [Search]
+[All types] [Running] [Strength] [Plyometrics] [Other]
 
-RUNNING
-Easy Run                         [Schedule]
-My Tempo   (Mine)                [Schedule]
+4 routines · Clear filters                              [+ New routine]
+──────────────────────────────────────────────────────────────────────
 STRENGTH
-Lower A                          [Schedule]
-
-[New routine]
+Lower A  TrainGrid                                          [Schedule]
+Lift · Squat-pattern lower body.
+6 items · Dumbbell, Barbell, Bench
+My Lower  Mine                                              [Schedule]
 ```
 
-- Lists the shared TrainGrid routines and the member’s own, which are marked **Mine**.
-- Click a row → routine detail. Shared routines show “TrainGrid library · read-only” and have no
-  Edit. The member’s own show “Your routine” and **Edit**.
-- **Schedule** opens the add-session form with that routine selected.
+- **View** (All / TrainGrid / Mine): a centred segmented control. The selected pill is light and
+  slides between tabs (instant with reduced motion). The tabs are links with `aria-current`.
+- **Search and filters**: a plain GET form, so it works without JavaScript and every state is a
+  shareable URL. Search matches every word in a name, description or exercise. Equipment is one
+  tag. Type chips keep the search, and view tabs keep everything.
+- Every card says **TrainGrid** or **Mine** in text, and shows its item count and the equipment
+  used (only when the content names any).
+- **+ New routine** (outlined) is in the results toolbar in every view, and always creates a
+  personal routine. Black is kept for **Search** and the selected type.
+- Empty states: a search with no results says what was searched, for example “No TrainGrid
+  routines matching “zzzz” with Kettlebell.”, and offers **Clear filters**. An empty **Mine**
+  explains that personal routines are private and offers **Browse TrainGrid routines**.
+- Phone: the controls stack, the toolbar wraps, cards keep **Schedule** beside the text.
+
+### Routine detail
+
+```text
+← Back to Library
+Lower A  TrainGrid
+Strength · Squat-pattern lower body.
+6 items · Dumbbell, Barbell, Bench
+TrainGrid library · read-only
+
+[Schedule]  [Copy to My Library]          (own routine: [Schedule] [Edit])
+
+Back Squat
+4 × 5–6     Rest: 2–3 min   Target: RPE 7–8
+Controlled descent. …
+[Barbell]
+▶ Watch demo                              (screen readers: “… of Back Squat on YouTube (opens in a new tab)”)
+```
+
+- **Schedule** is the primary action and opens the add-session form with the routine selected.
+- **Copy to My Library** (TrainGrid routines only) shows “Copying…” and is disabled while
+  saving. It opens the copy, which shows once: “Copied to My Library. This copy is yours to edit;
+  the TrainGrid routine is unchanged.” The copy has **Edit**, as any own routine does.
+- Items are shown in order, including advisory ones such as Progression or Recovery; nothing is
+  dropped or made up.
 
 ### Routine editor (own routines only)
 
@@ -291,7 +334,7 @@ Untimed
 - Same-hour sessions appear as consecutive list rows (both visible).
 - Tap row → session detail (full screen).
 - **+ Add** → same add form, day prefilled.
-- Duplicate week and Library remain available (header or overflow).
+- Duplicate week and Library remain available (header menu on phones).
 
 Desktop vs mobile is **layout only**; same data and routes.
 
@@ -303,7 +346,8 @@ Desktop vs mobile is **layout only**; same data and routes.
 | --- | --- |
 | Empty week | “No sessions this week.” + Add session |
 | Empty day (mobile) | “Nothing planned.” Add session |
-| Empty library filter | “No routines yet.” + New routine (the shared library is never empty) |
+| Library search or filter with no results | “No … matching “…” …” naming what was searched, + Clear filters |
+| Mine with no routines yet | “You haven’t created any routines yet.” + Browse TrainGrid routines (New routine is in the toolbar) |
 | Missing scheduled session | “Session not found.” Link to planner |
 | Duplicate onto empty week | No extra empty-state; just copy |
 | Duplicate destination has sessions | Confirm append, as above |
@@ -355,4 +399,7 @@ old@example.com        … · Access revoked, data kept Revoked
 
 - Cards/links have accessible names including session name, weekday, and time (or “no time”).
 - Forms labelled; delete and duplicate-into-non-empty-week use confirmation.
+- Library: labelled search box and equipment select; view tabs and type chips are links with
+  `aria-current`; every action is reachable by Tab and Enter with a visible focus ring; video links
+  name the exercise and say they open a new tab; the view pill honours reduced motion.
 - Type colour/accent is not the only identifier.

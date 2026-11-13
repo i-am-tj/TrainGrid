@@ -1,6 +1,6 @@
 # TrainGrid data format
 
-Current as of Epic 1, November 2026. All application data lives in Supabase PostgreSQL; the schema
+Current as of Epic 2, November 2026. All application data lives in Supabase PostgreSQL; the schema
 is defined by `supabase/migrations/`. This page describes the shapes; the access rules are in
 [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md).
 
@@ -160,9 +160,17 @@ Video: https://www.youtube.com/watch?v=…
 ```
 
 Within each `## ` section: `Rest:` → rest; `Target:` or `Intensity:` → target; `Equipment:` → tags;
-`Video:` → YouTube link; the first paragraph → instruction; later paragraphs → notes. Each routine
-and item gets a fixed id derived from the slug and position, so re-seeding updates the same rows.
-A unit test fails if `seed.sql` does not match the templates.
+`Video:` → YouTube link; `Key:` → the item's id (below); the first paragraph → instruction; later
+paragraphs → notes.
+
+Each routine gets a fixed id from its slug. Each item's id comes from the slug and its position
+(`routine-item:<slug>:<index>`), unless it has a `Key:`. A word key (`Key: good-morning`) gives a
+position-independent id, for new items placed anywhere. A number key (`Key: 3`) pins an existing
+item to the id of its original position, for reordering or removing items before it. Re-seeding
+therefore updates the same rows. `data/templates/seed-ids.json` records which exercise every item
+id belongs to, and `npm run seed:generate` refuses any change that would move an id to a different
+exercise. Unit tests fail if `seed.sql` or `seed-ids.json` does not match the templates. Workflow:
+[CONTENT.md](CONTENT.md).
 
 ## Legacy schedule file (one-time import)
 

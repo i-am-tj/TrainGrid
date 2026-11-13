@@ -775,6 +775,74 @@ Tests:                 test:all pass: lint, typecheck, unit 174 (13 new), databa
                        integration 30, E2E 98, build; secret scan clean. Manual: inserting an exercise
                        into lower-b without a Key made seed:generate refuse and list five moved
                        ids, writing nothing; with a Key and pinned later items it added one id.
+Status:                DONE — merged to main 2026-11-13
+```
+
+### Step 08 — Release and docs
+
+```
+Stories:               all (E2-01 … E2-06)
+Branch:                epic-2/08-release-docs
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/32
+Commit:                2427344
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None.
+Changes:               README (library views, search and filters, copy, schedule; links to the
+                       content guide) and its four screenshots regenerated. docs/REQUIREMENTS.md
+                       (FR-L1 updated; FR-L7 … FR-L11), docs/UX_SPEC.md (header and phone menu,
+                       library and detail wireframes, empty states, accessibility),
+                       docs/TECHNICAL_DESIGN.md (code map, copyRoutineAction, library list and
+                       URL contract, routes, seed id rules), docs/DATA_FORMAT.md (Key lines and
+                       the id lock), docs/TEST_PLAN.md (coverage), docs/TEST_RESULTS.md (Epic 2
+                       results and the production smoke-test checklist), docs/SECURITY.md (known
+                       limitation: linked sign-in identities, and the one-off cleanup).
+Checks:                test:all pass: unit 174, database 191, integration 35, E2E 103, lint,
+                       typecheck, build. scan:secrets clean. Browser bundle free of secret keys.
+                       npm audit --omit=dev 0. No migration changed during Epic 2; secret key
+                       still used only for admin invitations; no runtime file access.
+                       Local and production schemas and shared content compared read-only:
+                       identical (two expected platform differences, recorded).
+Deployment impact:     Docs only. No migration, no seed run.
 Status:                IN REVIEW
 ```
+
+## Epic 2 completion report
+
+Written 2026-11-13 at step 08. Evidence: agents/TEST_PLAN.md (G1–G11), docs/TEST_RESULTS.md.
+
+```
+Stories
+  E2-01 Library views (All / TrainGrid / Mine): DONE — steps 02, 04a
+  E2-02 Search and filters: DONE — step 03
+  E2-03 Shared routine content (cards and detail): DONE — step 04
+  E2-04 Copy to My Library: DONE — step 05
+  E2-05 Schedule from the library: DONE — step 04 (step 06 folded in, E2-D12)
+  E2-06 Maintain shared content safely: DONE — step 07
+
+Security
+  GLOBAL read-only, member-only: PASS (G1)
+  Cross-member isolation, including copy: PASS (G2, G4; forged ids via the real server action)
+  Snapshots independent of GLOBAL and copied sources: PASS (G5)
+  No new migration, no new secret-key use, clean bundle and history: PASS (G8)
+  Known limitation recorded: linked sign-in identities (docs/SECURITY.md)
+
+Validation
+  Unit: PASS (174)
+  Database: PASS (191)
+  Integration: PASS (35)
+  E2E: PASS (103)
+  Build: PASS
+  Phone and desktop: PASS (E2E at 360 px and desktop; screenshots checked)
+  Production smoke test: PENDING — owner, checklist in docs/TEST_RESULTS.md
+
+Cost
+  Additional paid services: NONE
+```
+
+Also delivered in Epic 2, at Tanuj's request: library UI refinement (04a), header logo and Beta
+badge, phone header menu (04b, race fix in #29). PR #28 (linked-identity architecture) was closed
+unmerged in favour of a documented limitation and a one-off owner cleanup.
+
+Epic 2 is complete once this PR is merged and the production smoke test passes.
 

@@ -29,7 +29,7 @@ It is **not** a workout logger. Keep Strava / Hevy for that.
 
 - **Invite-only.** Sign in with **Google** or **GitHub**. Signing in proves who you are; only email addresses the admin has invited get in. Everyone else sees a polite “invite-only” note.
 - **Your calendar is yours.** Each member sees and edits only their own sessions and routines — enforced by the database, not just the app.
-- **A shared library.** The TrainGrid routines (runs, lifts, plyometrics, warm-ups, cooldowns) are read-only for everyone. Create your own routines alongside them.
+- **A shared library.** The TrainGrid routines (runs, lifts, plyometrics, warm-ups, cooldowns) are read-only for everyone. Browse them in **All**, **TrainGrid** or **Mine**, search by name, description or exercise, and filter by type and equipment. Like one? **Copy it to My Library** and make it yours, or create your own from scratch.
 - **Scheduling copies.** Putting a routine on the calendar copies it into the session, so later changes to the routine never rewrite a past or planned session. Tweak one session without touching the routine.
 
 ---
@@ -38,11 +38,13 @@ It is **not** a workout logger. Keep Strava / Hevy for that.
 
 - **7-day planner** with timed and untimed sessions, several per day, and a mobile day view
 - **Routines** with structured workout items: instruction, rest, target, notes, **equipment** tags and **YouTube** demo links
+- **Library search and filters** (shareable URLs), item count and equipment at a glance, and **Schedule** straight from a card or a routine
+- **Copy to My Library**: an editable copy of any TrainGrid routine, leaving the original untouched
 - **Duplicate a week** onto another week
 - **Export** your own routines and sessions as JSON
 - **Admin page** to invite people, see who joined, and revoke access (their data is kept)
 
-More detail: [docs/](docs/README.md)
+More detail: [docs/](docs/README.md). Maintaining the shared routines: [docs/CONTENT.md](docs/CONTENT.md).
 
 ### Sign-in providers
 
@@ -106,7 +108,7 @@ traingrid/
 │   ├── migrations/       # schema, Row Level Security, functions
 │   ├── tests/database/   # pgTAP tests
 │   └── seed.sql          # the shared routines (generated)
-├── data/templates/       # source Markdown for the shared routines
+├── data/templates/       # source Markdown for the shared routines (+ seed-ids.json, the id lock)
 ├── tests/integration/
 ├── e2e/
 ├── docs/
