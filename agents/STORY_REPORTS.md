@@ -439,8 +439,8 @@ Status:                DONE — merged to main 2026-11-13 (e3ec8d0)
 ```
 Story:                 33 update existing documentation
 Branch:                epic-1/16-docs-closure
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/19
+Commit:                9b77393
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: None.
