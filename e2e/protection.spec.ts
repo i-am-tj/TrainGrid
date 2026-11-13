@@ -128,6 +128,8 @@ test("the header fits a phone-width screen for an admin, the widest case", async
 
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
+  // On phones the links are behind the menu button (E2-D21).
+  await page.getByRole("banner").getByLabel("Open menu").click();
   await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("link", { name: "Invitations" })).toBeVisible();
 

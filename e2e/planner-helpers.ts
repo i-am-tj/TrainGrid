@@ -13,8 +13,9 @@ export async function fillItem(
   await page.getByRole("textbox", { name: "Instruction" }).nth(index).fill(instruction);
 
   if (Object.keys(details).length === 0) return;
-  const more = page.getByText("More details").nth(index);
-  const box = page.locator("details").nth(index);
+  // Scoped to main: the header's phone menu is a <details> too.
+  const more = page.locator("main").getByText("More details").nth(index);
+  const box = page.locator("main details").nth(index);
   if (!(await box.evaluate((el) => (el as HTMLDetailsElement).open))) await more.click();
   if (details.rest) await box.getByRole("textbox", { name: "Rest" }).fill(details.rest);
   if (details.target) await box.getByRole("textbox", { name: "Target" }).fill(details.target);
