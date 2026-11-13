@@ -699,3 +699,20 @@ Deployment impact:     UI only.
 Status:                IN REVIEW
 ```
 
+### Fix — Phone menu closes reliably (follow-up to Step 04b)
+
+```
+Branch:                fix/mobile-menu-race
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/29
+Commit:                a29243c
+Problem:               An outside tap or Escape right after opening the phone menu could arrive
+                       before React had processed the native <details> toggle, so closing was a
+                       no-op and the menu stayed open (about 1 run in 3 under repetition).
+Change:                components/MobileMenu.tsx closes the <details> element itself; listeners
+                       stay attached and check the element at event time. Header tests wait for
+                       hydration before interacting.
+Schema/RLS/config:     None.
+Tests:                 Lint, typecheck; header tests 20/20 (--repeat-each=4, one worker).
+Status:                IN REVIEW
+```
+
