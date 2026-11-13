@@ -716,3 +716,34 @@ Tests:                 Lint, typecheck; header tests 20/20 (--repeat-each=4, one
 Status:                IN REVIEW
 ```
 
+### Step 07 — Content workflow (E2-06)
+
+```
+Story:                 E2-06 maintain shared content safely (rule E2-D11)
+Branch:                epic-2/07-content-workflow
+PR:                    (not yet opened)
+Commit:                (not yet committed)
+Schema impact:         None. supabase/seed.sql is byte-identical (no content changed), so no
+                       production seed run is needed for this step.
+RLS impact:            None.
+Secrets/config impact: None.
+Changes:               lib/seed/convert-template.ts: optional per-item Key — a word key gives a
+                       position-independent id (new items), a number key pins an existing item
+                       to its original position's id (reorder, remove before it); invalid,
+                       repeated or colliding keys are rejected; items without a Key keep their
+                       ids. lib/seed/id-lock.ts + data/templates/seed-ids.json: the id lock
+                       (id → routine, exercise name). scripts/generate-global-seed.ts refuses
+                       moved ids outright, renames without --accept-renames and removals
+                       without --accept-removals, and writes nothing when it refuses.
+                       docs/CONTENT.md: the maintainer workflow (template format, id rules,
+                       review of SQL effects, local testing, deliberate production apply with
+                       --include-seed; plain db push does not apply the seed; never db reset
+                       production; seed never touches personal data; snapshots unchanged by
+                       design; routine retirement needs its own procedure).
+Tests:                 test:all pass: lint, typecheck, unit 174 (13 new), database 189,
+                       integration 30, E2E 98, build; secret scan clean. Manual: inserting an exercise
+                       into lower-b without a Key made seed:generate refuse and list five moved
+                       ids, writing nothing; with a Key and pinned later items it added one id.
+Status:                IN REVIEW
+```
+

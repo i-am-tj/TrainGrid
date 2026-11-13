@@ -16,8 +16,21 @@ import { parseYouTubeUrl } from "../youtube";
  *   Target: … / Intensity: → target
  *   Equipment: …           → equipment tags
  *   Video: …               → video_url (YouTube only)
+ *   Key: …                 → stable item id (optional; see below)
  *   first paragraph        → instruction (the planned work)
  *   later paragraphs       → notes
+ *
+ * Item ids (E2-D11). Without a Key, an item's id comes from its position:
+ * routine-item:<slug>:<index>. That is how every existing item got its id, so
+ * existing ids never change. Two kinds of Key keep ids stable when items move:
+ *   Key: hip-thrust  → routine-item:<slug>:key:hip-thrust (a NEW item placed
+ *                      anywhere; independent of position)
+ *   Key: 3           → routine-item:<slug>:3, pinning an EXISTING item to the
+ *                      id it got at original position 3 (for reordering, or
+ *                      removing an item before it)
+ * The id lock
+ * (data/templates/seed-ids.json, lib/seed/id-lock.ts) refuses any change that
+ * would move an existing id to a different exercise.
  */
 
 export type SeedItem = {
@@ -54,7 +67,7 @@ export function uuidV5(name: string, namespace = NAMESPACE): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-const META = /^\s*(rest|target|intensity|equipment|video)\s*:\s*(.*)$/i;
+const META = /^\s*(rest|target|intensity|equipment|video|key)\s*:\s*(.*)$/i;
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 function joinValues(values: string[]): string {
@@ -66,6 +79,7 @@ export function convertSection(slug: string, index: number, title: string, body:
   const target: string[] = [];
   const equipment: string[] = [];
   const videos: string[] = [];
+  const keys: string[] = [];
   const kept: string[] = [];
 
   for (const line of body.replace(/\r\n/g, "\n").split("\n")) {
@@ -89,6 +103,9 @@ export function convertSection(slug: string, index: number, title: string, body:
       case "video":
         videos.push(value);
         break;
+      case "key":
+        keys.push(value);
+        break;
     }
   }
 
@@ -99,9 +116,22 @@ export function convertSection(slug: string, index: number, title: string, body:
     .filter(Boolean);
 
   const videoUrl = videos.map(parseYouTubeUrl).find((url): url is string => url !== null) ?? null;
+  if (keys.length > 1) throw new Error(`Template ${slug}: "${title.trim()}" has more than one Key`);
+  const key = keys[0];
+  if (key !== undefined && !SLUG.test(key) && !/^\d+$/.test(key)) {
+    throw new Error(
+      `Template ${slug}: "${title.trim()}" has an invalid Key "${key}" (a position number, or lower-case words joined by hyphens)`,
+    );
+  }
+  const idName =
+    key === undefined
+      ? `routine-item:${slug}:${index}`
+      : /^\d+$/.test(key)
+        ? `routine-item:${slug}:${Number(key)}`
+        : `routine-item:${slug}:key:${key}`;
 
   return {
-    id: uuidV5(`routine-item:${slug}:${index}`),
+    id: uuidV5(idName),
     name: title.trim(),
     instruction: paragraphs[0] ?? "",
     rest: joinValues(rest),
@@ -145,6 +175,10 @@ export function convertTemplate(fileSlug: string, markdown: string): SeedRoutine
   const items = convertBody(slug, parsed.content);
   for (const item of items) {
     if (!item.name) throw new Error(`Template ${fileSlug}: a section has no title`);
+  }
+  const ids = items.map((item) => item.id);
+  if (new Set(ids).size !== ids.length) {
+    throw new Error(`Template ${fileSlug}: two items share an id (a repeated Key, or a Key that repeats a position)`);
   }
 
   return {

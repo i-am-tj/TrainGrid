@@ -1,0 +1,386 @@
+{
+  "c524a19a-9188-5e3e-b374-42fe40834240": {
+    "routine": "easy-run",
+    "name": "Warm-up"
+  },
+  "25c1334d-e5b6-579f-9dd9-64f095d70f57": {
+    "routine": "easy-run",
+    "name": "Main"
+  },
+  "7bf6e183-f300-52a8-9b13-592509ffac72": {
+    "routine": "easy-run",
+    "name": "Recovery"
+  },
+  "ed875a7f-f1b1-58c7-9107-c3dc7f05ad44": {
+    "routine": "easy-run",
+    "name": "Cooldown"
+  },
+  "0ac34507-a597-5164-befd-152a2d9e067f": {
+    "routine": "easy-run",
+    "name": "Progression"
+  },
+  "e6966dcb-31f5-5f66-b469-56c59fc74257": {
+    "routine": "long-run",
+    "name": "Warm-up"
+  },
+  "c501beb1-4ae0-5a58-bd9c-2b75b87ee260": {
+    "routine": "long-run",
+    "name": "Main"
+  },
+  "cbe16aa6-36db-50f1-92ca-e8c101596b8a": {
+    "routine": "long-run",
+    "name": "Recovery"
+  },
+  "884a8b7a-a3d3-5ba8-839b-e32c55e30e6e": {
+    "routine": "long-run",
+    "name": "Cooldown"
+  },
+  "a1003266-a828-52fd-a78a-ab6cd22ab612": {
+    "routine": "long-run",
+    "name": "Progression"
+  },
+  "346f0bcc-ca37-5c2f-8c21-d443e81f416b": {
+    "routine": "lower-a",
+    "name": "Back Squat"
+  },
+  "fe26e89d-3ea6-57a1-9d2e-a38028ca337d": {
+    "routine": "lower-a",
+    "name": "Pause Squat"
+  },
+  "e04f059a-271b-5eba-91bb-301e5c1b32d5": {
+    "routine": "lower-a",
+    "name": "Romanian Deadlift"
+  },
+  "7d57dcba-e9bc-50f9-8fc0-6d3df0c1abc9": {
+    "routine": "lower-a",
+    "name": "Bulgarian Split Squat"
+  },
+  "9cbb73bd-f51b-5a64-a97b-b6dc25050379": {
+    "routine": "lower-a",
+    "name": "Walking Lunge"
+  },
+  "46d0aaf4-1104-5747-a094-11e9259019f4": {
+    "routine": "lower-a",
+    "name": "Calf Raise"
+  },
+  "3664a567-9b2a-575f-a87e-130a213489ab": {
+    "routine": "lower-b",
+    "name": "Deadlift"
+  },
+  "7ef2e817-3574-5112-a51a-52aee4f8688e": {
+    "routine": "lower-b",
+    "name": "Front Squat"
+  },
+  "2520529a-8fe1-5cc3-986c-dc1f1f3de97d": {
+    "routine": "lower-b",
+    "name": "Hip Thrust"
+  },
+  "6385996b-d101-5f2b-b19d-e59e30cc8b70": {
+    "routine": "lower-b",
+    "name": "Bulgarian Split Squat"
+  },
+  "9983cd95-b471-5f7b-bf61-675d9eb72ff5": {
+    "routine": "lower-b",
+    "name": "Hamstring Curl"
+  },
+  "3b1298ce-6919-57ca-aaf3-ccdc2b77ddef": {
+    "routine": "lower-b",
+    "name": "Back Extension"
+  },
+  "40242401-ab90-594b-916c-cb35c737f022": {
+    "routine": "lower-cooldown",
+    "name": "Easy walk"
+  },
+  "d627b31f-ed48-55b9-a4e4-513bb636e4c3": {
+    "routine": "lower-cooldown",
+    "name": "Hip Flexor Stretch"
+  },
+  "223b008e-151c-5d2a-a5b1-e2819fb990ec": {
+    "routine": "lower-cooldown",
+    "name": "Figure-4 Glute Stretch"
+  },
+  "8643d1a5-6edd-5bcf-a628-ff899dead8ba": {
+    "routine": "lower-cooldown",
+    "name": "Hamstring Stretch"
+  },
+  "d91f0ab7-9ba2-5555-ac8d-b6d8db5452d5": {
+    "routine": "lower-cooldown",
+    "name": "Couch Stretch or Quad Stretch"
+  },
+  "a1c495aa-7b23-5f50-ab57-ddd4de16e851": {
+    "routine": "lower-warmup",
+    "name": "Bodyweight Squat"
+  },
+  "c51cd980-3047-5708-bac8-3b00c5a4c1d0": {
+    "routine": "lower-warmup",
+    "name": "Reverse Lunge"
+  },
+  "ac4a64f6-4d93-5f7e-9e78-96cd13bdbacf": {
+    "routine": "lower-warmup",
+    "name": "Glute Bridge"
+  },
+  "92d8ae6d-4c6a-530c-9bf1-49d3510bfd76": {
+    "routine": "lower-warmup",
+    "name": "Leg Swings"
+  },
+  "4107726f-7629-5016-8f80-874f2a6e18c5": {
+    "routine": "lower-warmup",
+    "name": "Ankle Rocks"
+  },
+  "9b5758ce-e78d-55cc-9663-d7c58082301c": {
+    "routine": "lower-warmup",
+    "name": "Ramp-up sets"
+  },
+  "05bf94d0-2a98-5839-a1d2-be6c4dd37581": {
+    "routine": "plyometrics-a",
+    "name": "Pogo Jumps"
+  },
+  "ab9f2267-3bdf-55de-bf7c-ac25539044af": {
+    "routine": "plyometrics-a",
+    "name": "Countermovement Jumps"
+  },
+  "717f0428-5073-5659-a4be-d87e9f866d2d": {
+    "routine": "plyometrics-a",
+    "name": "Box Jumps"
+  },
+  "c69fa335-3c05-5961-9daa-dbf46b444ac6": {
+    "routine": "plyometrics-a",
+    "name": "Split-Squat Jumps"
+  },
+  "7bd4335a-c8d8-5e59-b1f0-62f07716e200": {
+    "routine": "plyometrics-a",
+    "name": "Broad Jumps"
+  },
+  "318c58be-df15-574a-8c56-63462cb53c37": {
+    "routine": "plyometrics-b",
+    "name": "A-Skips"
+  },
+  "65ec1771-0156-5753-94fd-302c63f9fd04": {
+    "routine": "plyometrics-b",
+    "name": "Bounds"
+  },
+  "24f76a3f-117a-59a8-8011-aebb2dad183a": {
+    "routine": "plyometrics-b",
+    "name": "Single-Leg Pogos"
+  },
+  "3172bd16-8dc0-522f-981e-3beed4578a87": {
+    "routine": "plyometrics-b",
+    "name": "Lateral Bounds"
+  },
+  "5f68e26f-1bed-5545-aa4f-e60a6ba9b7e9": {
+    "routine": "plyometrics-b",
+    "name": "Acceleration Strides"
+  },
+  "f71207aa-3582-5b45-a1be-e9fa340a63d0": {
+    "routine": "recovery-run",
+    "name": "Warm-up"
+  },
+  "6e7b23f2-8932-56fb-86ad-e7843d6bb3cd": {
+    "routine": "recovery-run",
+    "name": "Main"
+  },
+  "53c06b85-566f-5ae6-8617-e1e12096053c": {
+    "routine": "recovery-run",
+    "name": "Recovery"
+  },
+  "222d8940-9c71-5163-8400-1296c97a7e65": {
+    "routine": "recovery-run",
+    "name": "Cooldown"
+  },
+  "8631775f-93cb-5a62-9617-8f07f9e32f20": {
+    "routine": "recovery-run",
+    "name": "Progression"
+  },
+  "9613097c-d688-5bb6-a857-739a0433a910": {
+    "routine": "running-cooldown",
+    "name": "Easy walk/jog"
+  },
+  "863f7c32-cddb-5b4e-a99d-a0cc75f49223": {
+    "routine": "running-cooldown",
+    "name": "Calf Stretch"
+  },
+  "07b13e3e-37b7-5fb2-8b72-ef094951bf55": {
+    "routine": "running-cooldown",
+    "name": "Hip Flexor Stretch"
+  },
+  "3df387ef-c9ee-5815-9489-46d21a9d87c3": {
+    "routine": "running-cooldown",
+    "name": "Hamstring Stretch"
+  },
+  "e31b1cd2-b624-512a-8fdd-2b549ab9c2cd": {
+    "routine": "running-cooldown",
+    "name": "Easy breathing"
+  },
+  "be0250ff-b6c4-5d5a-b474-7efb93ab714a": {
+    "routine": "running-warmup",
+    "name": "Easy Jog"
+  },
+  "46a70ca0-0e38-547c-b1a2-a1cb0638d55c": {
+    "routine": "running-warmup",
+    "name": "Leg Swings"
+  },
+  "0efee137-2ba2-53a8-9576-dae4bacea85e": {
+    "routine": "running-warmup",
+    "name": "Walking Lunges"
+  },
+  "8828924e-b049-5fb1-ab38-6d1113e4142f": {
+    "routine": "running-warmup",
+    "name": "A-Skips"
+  },
+  "3ee59f1a-b5d1-5e22-9862-a90d30885550": {
+    "routine": "running-warmup",
+    "name": "High Knees"
+  },
+  "14f0ab97-4a03-5b05-9545-0d19ded4d2d0": {
+    "routine": "running-warmup",
+    "name": "Strides"
+  },
+  "3b7cdaf7-6812-54db-bc36-eea327922dab": {
+    "routine": "speed-run",
+    "name": "Warm-up"
+  },
+  "e07792e0-9ea1-5e30-8f31-6010a1b743bd": {
+    "routine": "speed-run",
+    "name": "Main"
+  },
+  "8acc8e6f-1bbd-540a-a620-cb9e208c1e4f": {
+    "routine": "speed-run",
+    "name": "Recovery"
+  },
+  "68ec8364-8d45-54a2-be06-b1eb7fed4512": {
+    "routine": "speed-run",
+    "name": "Cooldown"
+  },
+  "4897652e-b008-530c-973f-33e057a748d6": {
+    "routine": "speed-run",
+    "name": "Progression"
+  },
+  "103a1baa-f7ba-5a0b-9cdd-6e1f1faa7c22": {
+    "routine": "tempo-run",
+    "name": "Warm-up"
+  },
+  "0ad58148-bfe2-559b-86c3-8be915b41749": {
+    "routine": "tempo-run",
+    "name": "Main"
+  },
+  "7f31dfc5-d089-5a30-b64e-adfdf9ad0370": {
+    "routine": "tempo-run",
+    "name": "Recovery"
+  },
+  "9c1f6099-0eab-571d-b2c3-caa7b45588d5": {
+    "routine": "tempo-run",
+    "name": "Cooldown"
+  },
+  "cb24dbbb-3b2a-55fc-8632-add5ef87b226": {
+    "routine": "tempo-run",
+    "name": "Progression"
+  },
+  "45a53158-b505-5ab8-adcd-8cfd37a33582": {
+    "routine": "upper-a",
+    "name": "Bench Press"
+  },
+  "11d2747e-86bf-5107-9f25-06cdb57fe462": {
+    "routine": "upper-a",
+    "name": "Bent-over Row"
+  },
+  "66793e58-cb86-5291-bf22-cc40477f054c": {
+    "routine": "upper-a",
+    "name": "Overhead Press"
+  },
+  "2d98afb9-1e7b-5696-b083-b245e3e331da": {
+    "routine": "upper-a",
+    "name": "Chest-supported Row"
+  },
+  "2631b2bc-86da-5c19-8c50-052bd8f4e83b": {
+    "routine": "upper-a",
+    "name": "Push-up"
+  },
+  "8653c875-cd9a-57c5-bc06-7aa213de3dee": {
+    "routine": "upper-a",
+    "name": "Face Pull"
+  },
+  "6716406d-13fe-5f27-9718-295c82302dc1": {
+    "routine": "upper-b",
+    "name": "Overhead Press"
+  },
+  "81c57b29-ccb2-535d-bec3-cfc8054ab4e3": {
+    "routine": "upper-b",
+    "name": "Pull-up"
+  },
+  "1f8cfcba-4e93-5441-b754-225641e27dbe": {
+    "routine": "upper-b",
+    "name": "Incline Dumbbell Press"
+  },
+  "915b180f-91cd-5337-9575-e7c41a3d665e": {
+    "routine": "upper-b",
+    "name": "One-arm Dumbbell Row"
+  },
+  "89aff619-6185-5c1c-9805-10b47ede76f4": {
+    "routine": "upper-b",
+    "name": "Dip"
+  },
+  "f04a8d62-1067-5f8f-9143-e9b6a241defe": {
+    "routine": "upper-b",
+    "name": "Lateral Raise"
+  },
+  "59d9e252-ad22-5fbb-ace1-1efdcc8f79af": {
+    "routine": "upper-cooldown",
+    "name": "Easy walk or easy breathing"
+  },
+  "f800bd97-c34f-5c32-9ec0-c1a638618f30": {
+    "routine": "upper-cooldown",
+    "name": "Doorway Chest Stretch"
+  },
+  "b8fcae80-34cd-5770-8178-7ba1b6c3dc61": {
+    "routine": "upper-cooldown",
+    "name": "Lat Stretch"
+  },
+  "8d956444-88e8-5ebb-bf7f-65a57423a178": {
+    "routine": "upper-cooldown",
+    "name": "Cross-body Shoulder Stretch"
+  },
+  "1d0bce05-5541-566d-bed5-a9b5033c50ab": {
+    "routine": "upper-cooldown",
+    "name": "Wrist Extension Stretch"
+  },
+  "9de9a6dd-d5ee-5d4c-8485-9455a9fc5b41": {
+    "routine": "upper-warmup",
+    "name": "Arm Circles"
+  },
+  "6c5a9907-3ce1-5454-bd87-f58a9bdcb8b2": {
+    "routine": "upper-warmup",
+    "name": "Scapular Push-up"
+  },
+  "10e3b59a-1020-5cc2-b956-be559f9e20e0": {
+    "routine": "upper-warmup",
+    "name": "Band Pull-apart"
+  },
+  "de2854b4-b896-5b03-9692-9c55ee39b929": {
+    "routine": "upper-warmup",
+    "name": "Y-T-W Raise"
+  },
+  "dba6c354-e8e1-57be-a31d-9bbe34842d8b": {
+    "routine": "upper-warmup",
+    "name": "Ramp-up sets"
+  },
+  "9dacfe42-0680-5cf9-bd8c-6921dc4aac3f": {
+    "routine": "vo2-run",
+    "name": "Warm-up"
+  },
+  "099d2ae5-648f-57f0-974d-366be9991b2e": {
+    "routine": "vo2-run",
+    "name": "Main"
+  },
+  "d09f0fe4-dff7-5967-99cb-1cd59b7a0293": {
+    "routine": "vo2-run",
+    "name": "Recovery"
+  },
+  "60be9955-da6a-54f7-967e-a97756f50036": {
+    "routine": "vo2-run",
+    "name": "Cooldown"
+  },
+  "afd335fd-d428-5e30-98bf-7338a9ed7d89": {
+    "routine": "vo2-run",
+    "name": "Progression"
+  }
+}

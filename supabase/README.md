@@ -55,6 +55,9 @@ them.
 npm run seed:generate      # after changing a template; a unit test fails if you forget
 ```
 
+How to add or change a routine, and the rule that item ids never move (keys, the id lock
+`data/templates/seed-ids.json`, renames and removals), is in [docs/CONTENT.md](../docs/CONTENT.md).
+
 - **Locally** it runs automatically on `npm run db:reset`.
 - **On production** it is applied deliberately, with the migrations:
 
