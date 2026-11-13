@@ -38,3 +38,43 @@ body {
     outline-offset: 2px;
   }
 }
+
+/*
+ * Hover underlines from iamtj.dev. A 1px underline sweeps in from the left.
+ * The footer credit has two segments that skip the emoji; each runs its own
+ * slice of one curve so together they read as a single sweep.
+ */
+@layer components {
+  .underline-reveal {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    transition: background-size 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .underline-reveal:hover {
+    background-size: 100% 1px;
+  }
+  .credit-underline > .underline-reveal:first-child {
+    transition: background-size 205ms cubic-bezier(0.202, 0.577, 0.502, 1) 195ms;
+  }
+  .credit-underline > .underline-reveal:last-child {
+    transition: background-size 174ms cubic-bezier(0.572, 0, 0.61, 0.57);
+  }
+  .credit-underline:hover > .underline-reveal {
+    background-size: 100% 1px;
+  }
+  .credit-underline:hover > .underline-reveal:first-child {
+    transition: background-size 101ms cubic-bezier(0.507, 0, 0.772, 0.423);
+  }
+  .credit-underline:hover > .underline-reveal:last-child {
+    transition: background-size 287ms cubic-bezier(0.152, 0.43, 0.306, 1) 113ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .underline-reveal,
+  .credit-underline > .underline-reveal {
+    transition: none !important;
+  }
+}
