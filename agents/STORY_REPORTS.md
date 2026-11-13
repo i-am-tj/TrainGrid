@@ -783,8 +783,8 @@ Status:                DONE — merged to main 2026-11-13
 ```
 Stories:               all (E2-01 … E2-06)
 Branch:                epic-2/08-release-docs
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/32
+Commit:                2427344
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: None.
