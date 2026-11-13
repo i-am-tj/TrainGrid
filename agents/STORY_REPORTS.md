@@ -602,5 +602,35 @@ Found and fixed:       Test expectations initially assumed some words were uniqu
                        routine ("bulgarian", "back squat"); the seeded data has them in two.
                        The tests now use phrases checked against the templates.
 Deployment impact:     UI only. No migration, no seed change.
+Status:                DONE — merged to main 2026-11-13
+```
+
+### Step 04 — GLOBAL cards and detail, scheduling (E2-03, E2-05; Step 06 folded in)
+
+```
+Stories:               E2-03 assess shared routine content; E2-05 schedule from the library
+Branch:                epic-2/04-global-details
+PR:                    (not yet opened)
+Commit:                (not yet committed)
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None.
+Changes:               lib/library/summary.ts: equipment aggregation (shared with the list
+                       read), item count text, "6 items · Barbell, Bench" summary that names
+                       equipment only when the content does. Cards: that summary under the
+                       description; Schedule stays beside the text on phones. Detail:
+                       TrainGrid/Mine label, summary line, Schedule as the primary action
+                       (labelled with the routine name), Edit only on own routines, header
+                       stacks on phones. Video links: named "Watch demo of <item> on YouTube
+                       (opens in a new tab)" for screen readers, and the stored URL is parsed
+                       again before rendering (E2-D15). SourceLabel moved to its own component.
+Tests:                 test:all pass: lint, typecheck, unit 161 (3 new), database 189,
+                       integration 30 (1 new), E2E 84 (8 new), build. Secret scan clean.
+                       Mutation checks: Edit shown on GLOBAL detail failed 2 E2E; equipment not
+                       de-duplicated failed 1 unit and 1 E2E. Phone (360 px) and desktop
+                       screenshots of list and detail checked.
+Found and fixed:       The longer card text pushed Schedule onto its own row on phones; the
+                       button now stays beside the text and the text wraps.
+Deployment impact:     UI only. No migration, no seed change.
 Status:                IN REVIEW
 ```

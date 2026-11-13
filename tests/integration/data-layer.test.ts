@@ -293,6 +293,36 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
       expect(after!.items.map((item) => item.name)).toEqual(["Easy run"]);
     });
 
+    it("E2-05: a scheduled GLOBAL routine survives later seed edits and the routine's removal", async () => {
+      const sourceId = await createGlobalRoutine("IT Global Snapshot", ["Deadlift", "Hip Thrust"]);
+      try {
+        const session = await scheduleRoutine(a.db, a.id, { routineId: sourceId, date: MONDAY });
+        const source = await getRoutine(a.db, a.id, sourceId);
+        expect(session.sourceRoutineId).toBe(sourceId);
+        expect(session.items.map((item) => item.sourceItemId)).toEqual(source!.items.map((item) => item.id));
+        // Fresh item ids: the snapshot is a copy, not a reference.
+        for (const item of session.items) expect(source!.items.map((s) => s.id)).not.toContain(item.id);
+
+        // Seed maintenance rewrites the shared content (only possible with the secret key).
+        const admin = service();
+        await admin.from("routines").update({ name: "IT Global Snapshot v2" }).eq("id", sourceId);
+        await admin.from("workout_items").update({ name: "Sumo Deadlift", instruction: "5 × 3" }).eq("routine_id", sourceId);
+        const edited = await getSession(a.db, a.id, session.id);
+        expect(edited!.name).toBe("IT Global Snapshot");
+        expect(edited!.items.map((item) => [item.name, item.instruction])).toEqual([
+          ["Deadlift", "3 × 8"],
+          ["Hip Thrust", "3 × 8"],
+        ]);
+
+        await deleteGlobalRoutine(sourceId);
+        const removed = await getSession(a.db, a.id, session.id);
+        expect(removed!.sourceRoutineId).toBeNull();
+        expect(removed!.items.map((item) => item.name)).toEqual(["Deadlift", "Hip Thrust"]);
+      } finally {
+        await deleteGlobalRoutine(sourceId);
+      }
+    });
+
     it("schedules a GLOBAL routine and an ad-hoc session; untimed sorts first", async () => {
       const timed = await scheduleRoutine(a.db, a.id, { routineId: globalId, date: WEDNESDAY, startTime: "18:00" });
       expect(timed.items.map((item) => item.name)).toEqual(["Back Squat", "Romanian Deadlift"]);

@@ -88,10 +88,10 @@ story numbers 1–33 above stay unchanged.
 | Story | Title | Step | Owner | Status |
 | --- | --- | --- | --- | --- |
 | E2-01 | Switch between library scopes (All / TrainGrid / Mine) | 02 | Agent | IN REVIEW |
-| E2-02 | Find and filter routines (search, category, equipment) | 03 | Agent | IN REVIEW |
-| E2-03 | Assess shared routine content (cards and detail) | 04 | Agent | TODO |
+| E2-02 | Find and filter routines (search, category, equipment) | 03 | Agent | DONE |
+| E2-03 | Assess shared routine content (cards and detail) | 04 | Agent | IN REVIEW |
 | E2-04 | Copy a GLOBAL routine to a PERSONAL routine | 05 | Agent | TODO |
-| E2-05 | Schedule directly from the library | 04 (06 folded in, E2-D12) | Agent | TODO |
+| E2-05 | Schedule directly from the library | 04 (06 folded in, E2-D12) | Agent | IN REVIEW |
 | E2-06 | Maintain shared content safely | 07 | Agent + Tanuj | TODO (rule E2-D11 approved) |
 | E2-R | Release: docs, regression, production smoke test | 08 | Agent + Tanuj | TODO |
 
@@ -118,7 +118,8 @@ story numbers 1–33 above stay unchanged.
 - **No templates have video links today.** The video path in detail views is exercised only by
   personal routines and tests; no content claims are added (spec E2-06).
 - **The video link is not fully accessible.** It reads "▶ Watch demo" with no item name and no
-  new-tab notice. Fixed in Step 04.
+  new-tab notice. Fixed in Step 04: it now names the item, YouTube and the new tab to screen
+  readers, and the stored link is re-validated before it is rendered.
 - **`listRoutines()` has no row bound.** Fine for 18 GLOBAL routines, but a member's personal
   routines are unbounded. Step 03 adds an explicit cap (E2-D07). Done: the library list now
   uses `listLibraryRoutines()`, capped at 500 with a visible notice.

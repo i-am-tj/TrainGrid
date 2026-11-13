@@ -1,4 +1,5 @@
 import { EQUIPMENT_LABELS } from "@/lib/domain";
+import { parseYouTubeUrl } from "@/lib/youtube";
 import type { PlannedItem } from "@/lib/data/model";
 
 /** Read-only view of planned workout items. Plain text; no Markdown. */
@@ -46,20 +47,33 @@ export function WorkoutItemsView({ items }: { items: PlannedItem[] }) {
               ))}
             </ul>
           ) : null}
-          {item.videoUrl ? (
-            <p className="mt-2">
-              <a
-                href={item.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium text-stone-900 underline"
-              >
-                ▶ Watch demo
-              </a>
-            </p>
-          ) : null}
+          <VideoLink item={item} />
         </section>
       ))}
     </div>
+  );
+}
+
+/**
+ * A labelled, new-tab link to the item's YouTube video (E2-D15). Stored links
+ * were validated on save; parsing again here means a bad row can never
+ * become a link to anywhere but YouTube.
+ */
+function VideoLink({ item }: { item: PlannedItem }) {
+  const href = item.videoUrl ? parseYouTubeUrl(item.videoUrl) : null;
+  if (!href) return null;
+  return (
+    <p className="mt-2">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm font-medium text-stone-900 underline"
+      >
+        <span aria-hidden="true">▶ </span>
+        Watch demo
+        <span className="sr-only"> of {item.name} on YouTube (opens in a new tab)</span>
+      </a>
+    </p>
   );
 }
