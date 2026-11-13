@@ -396,10 +396,97 @@ Changes:               scripts/scan-secrets.ts (npm run scan:secrets); next 16.4
 Tests:                 test:all on the new versions: lint, typecheck, unit 131/131, database
                        186/186, integration 26/26, E2E 53/53, build all pass. Scanner verified
                        on planted values.
-Deployment impact:     Next.js minor upgrade ships to production on merge.
-Status:                IN REVIEW — waiting on Tanuj: GitHub settings, Vercel scoping review
+Deployment impact:     Next.js minor upgrade shipped; production checked after deploy:
+                       /api/health ok, signed-out / redirects to /login.
+Owner actions:         GitHub (read back via API 2026-11-12): dependency graph, Dependabot
+                       alerts, Dependabot security updates, secret scanning, push protection
+                       all enabled; 0 open Dependabot or secret-scanning alerts. Vercel
+                       variables Production-only, secret key type Secret, previews protected:
+                       confirmed by Tanuj.
+Status:                DONE — merged to main 2026-11-12 (ce1cc73)
+```
+
+### Step 15 — Production rollout (stories 30, 31)
+
+```
+Story:                 30 Vercel production configuration; 31 free-tier constraint
+Branch:                epic-1/15-rollout
+PR:                    not opened yet
+Commit:                not committed yet
+Schema impact:         One migration, 20261112050000_lock_down_definer_functions.sql: revokes
+                       API access to Supabase's rls_auto_enable() where it exists.
+RLS impact:            None to policies. New database test 07: no SECURITY DEFINER function
+                       callable by anon; only accept_invitation by authenticated.
+Secrets/config impact: None.
+Production checks:     Read-only (D-81): schema, RLS, grants, seed, snapshots, auth providers,
+                       signed-out routes, served JavaScript, security advisor. See P1–P8 in
+                       agents/TEST_PLAN.md. One advisor finding fixed by the migration above.
+Tests:                 test:all pass: lint, typecheck, unit 131/131, database 189/189 (3 new),
+                       integration 26/26, E2E 53/53, build. Secret scans clean (files and
+                       history). npm audit --omit=dev: 0. New test shown to fail against a
+                       simulated exposed function and pass after the migration.
+Deployment impact:     The migration must be applied to production (supabase db push --remote).
+Status:                IN REVIEW — waiting on Tanuj: apply the migration; confirm Vercel Hobby
 ```
 
 ## Epic completion report
 
-Filled in at step 15. Until then every line is unverified.
+Written 2026-11-12 at step 15. Evidence: agents/TEST_PLAN.md (A, I, M, R, S, P rows).
+
+```
+Infrastructure
+  Vercel Hobby: PASS pending confirmation — production runs on Vercel; plan not readable
+                 without a Vercel token, Tanuj to confirm "Hobby"
+  Supabase Free: PASS — organisation shown as FREE at project creation
+
+OAuth
+  Google: PASS — signed in on production (Tanuj)
+  GitHub: PASS — signed in on production (Tanuj)
+  Public signup blocked: PASS — only Google and GitHub enabled; no email, phone or
+                         anonymous sign-in; an OAuth account without an invitation gets
+                         nothing (D-82)
+
+Invite-only Access
+  Admin invitation: PASS — invite, view, revoke, revoke accepted member (production + E2E)
+  Invited user access: PASS — production (Tanuj)
+  Non-invited access: BLOCKED — production (Tanuj) + database + E2E
+
+Data Isolation
+  User A → User A: PASS
+  User A → User B: BLOCKED — database, integration, and forged requests to the app
+  User B → User A: BLOCKED — database, integration, E2E
+
+RLS
+  Profiles: PASS
+  Personal routines: PASS
+  Scheduled sessions: PASS
+
+Secrets
+  Git repository clean: PASS — full history scan; GitHub secret scanning and push
+                        protection enabled, 0 alerts
+  Vercel environment configured: PASS — four variables, Production only, secret typed
+                                 Secret (Tanuj)
+  Service secret absent from browser: PASS — local build and production JavaScript
+
+Validation
+  Lint: PASS
+  Unit: PASS (131)
+  Integration: PASS (26)
+  RLS: PASS (189 database tests, including 52 RLS and 33 revocation)
+  E2E: PASS (53)
+  Build: PASS
+  Production smoke: PASS — signed-out checks (P5, P6) and member UI (Tanuj)
+
+Cost
+  Vercel Hobby: $0 (plan to be confirmed)
+  Supabase Free: $0
+  Google OAuth: $0
+  GitHub OAuth: $0
+  Additional paid services: NONE
+```
+
+Release blockers: none of the epic's release-blocker conditions is true.
+
+Verdict: not yet complete. Open items: (1) apply migration 20261112050000 to production;
+(2) confirm the Vercel plan is Hobby; (3) story 33, documentation closure (step 16): the
+README and docs/ still describe the file-backed, read-only app.
