@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { dateOfWeekDay, isRealWeekId } from "@/lib/calendar-date";
 import { DataError } from "@/lib/data/model";
-import { deletePersonalRoutine, savePersonalRoutine } from "@/lib/data/routines";
+import { copyGlobalRoutine, deletePersonalRoutine, savePersonalRoutine } from "@/lib/data/routines";
 import type { WorkoutItemInput } from "@/lib/data/schemas";
 import { memberData } from "@/lib/data/server";
 import {
@@ -199,6 +199,18 @@ export async function upsertRoutineAction(formData: FormData) {
   });
   revalidateAll();
   redirect(`/library/${id}`);
+}
+
+/**
+ * Copies a TrainGrid (GLOBAL) routine into the member's own library and opens
+ * the copy with a one-time confirmation (E2-04, E2-D10). Only the source id
+ * is read from the form; the data layer insists the source is GLOBAL.
+ */
+export async function copyRoutineAction(formData: FormData) {
+  const { db, userId } = await memberData();
+  const id = await copyGlobalRoutine(db, userId, text(formData, "routineId"));
+  revalidateAll();
+  redirect(`/library/${id}?copied=1`);
 }
 
 /** Deletes one of the member's own routines. Scheduled sessions keep their copy. */

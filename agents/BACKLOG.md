@@ -90,7 +90,7 @@ story numbers 1–33 above stay unchanged.
 | E2-01 | Switch between library scopes (All / TrainGrid / Mine) | 02; presentation refined in 04a | Agent | DONE |
 | E2-02 | Find and filter routines (search, category, equipment) | 03 | Agent | DONE |
 | E2-03 | Assess shared routine content (cards and detail) | 04 | Agent | DONE |
-| E2-04 | Copy a GLOBAL routine to a PERSONAL routine | 05 | Agent | TODO |
+| E2-04 | Copy a GLOBAL routine to a PERSONAL routine | 05 | Agent | IN REVIEW |
 | E2-05 | Schedule directly from the library | 04 (06 folded in, E2-D12) | Agent | DONE |
 | E2-06 | Maintain shared content safely | 07 | Agent + Tanuj | TODO (rule E2-D11 approved) |
 | E2-R | Release: docs, regression, production smoke test | 08 | Agent + Tanuj | TODO |

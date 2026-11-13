@@ -3,7 +3,7 @@
 
 begin;
 
-select plan(20);
+select plan(22);
 
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-00000000000a', 'user-a@example.test'),
@@ -151,6 +151,23 @@ select throws_ok(
 select throws_ok(
   $$select public.save_personal_routine(null, '   ', 'other', '', '[]'::jsonb)$$,
   '23514', null, 'table constraints still apply (blank name)'
+);
+
+-- E2-04: copying a GLOBAL routine creates through this function, so a copy that
+-- fails part-way must leave nothing behind: not the routine, not the first items.
+create temporary table before_count on commit drop as
+  select count(*) as n from public.routines where owner_user_id = '00000000-0000-4000-8000-00000000000a';
+grant select on before_count to authenticated;
+select throws_ok(
+  $$select public.save_personal_routine(null, 'Copy of Global Lower', 'strength', '',
+      '[{"name": "Back Squat", "instruction": "3 × 8", "equipment": ["barbell"]},
+        {"name": "Hip Thrust", "equipment": ["trampoline"]}]'::jsonb)$$,
+  '23514', null, 'a create that fails on its second item is refused'
+);
+select is(
+  (select count(*) from public.routines where owner_user_id = '00000000-0000-4000-8000-00000000000a'),
+  (select n from before_count),
+  'and leaves no routine (or items) behind: the save is one transaction'
 );
 
 reset role;
