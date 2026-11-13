@@ -677,8 +677,8 @@ Status:                IN REVIEW
 ```
 Report:                Routines "created by someone else" visible in Mine (production).
 Branch:                fix/linked-identity-invite-gate
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/28
+Commit:                43123cc
 Finding:               Not a cross-user leak. The rows' owner was the viewer's own user id
                        (RLS and "Mine" were correct). A Google sign-in for an address the
                        admin had just invited as a separate person was linked by Supabase
