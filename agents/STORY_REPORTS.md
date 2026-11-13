@@ -721,8 +721,8 @@ Status:                IN REVIEW
 ```
 Story:                 E2-06 maintain shared content safely (rule E2-D11)
 Branch:                epic-2/07-content-workflow
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/31
+Commit:                67d22f1
 Schema impact:         None. supabase/seed.sql is byte-identical (no content changed), so no
                        production seed run is needed for this step.
 RLS impact:            None.
