@@ -13,9 +13,11 @@ test("a member sees their sign-in on the invited address, with nothing to remove
   await page.goto("/account/sign-in-methods");
   await expect(page.getByRole("heading", { name: "Sign-in methods" })).toBeVisible();
   await expect(page.getByText(email, { exact: true }).first()).toBeVisible();
+  // Test members have an email identity and a Google one, both on the invited address.
   const rows = page.locator("main li");
-  await expect(rows).toHaveCount(1);
-  await expect(rows.first()).toContainText("Your email");
+  await expect(rows).toHaveCount(2);
+  await expect(rows.filter({ hasText: "Google" })).toContainText("Your email");
+  await expect(rows.filter({ hasText: "Different email" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Remove/ })).toHaveCount(0);
   await expect(page.locator("main").getByRole("alert")).toHaveCount(0);
 });

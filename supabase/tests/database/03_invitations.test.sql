@@ -13,13 +13,22 @@ begin;
 
 select plan(31);
 
--- E2-D22: is_member() needs the token's session to exist in auth.sessions.
--- Gives every test user one, with session id = user id.
+-- E2-D22: is_member() needs the token's session to exist in auth.sessions and
+-- a Google/GitHub identity on the member's canonical email. Gives every test
+-- user a session (id = user id) and every member such an identity.
 create function pg_temp.bind_sessions() returns void
 language sql security definer as $bind$
   insert into auth.sessions (id, user_id)
   select u.id, u.id from auth.users u
   on conflict (id) do nothing;
+  insert into auth.identities (provider_id, user_id, provider, identity_data)
+  select 'g-member-' || p.id, p.id, 'google', jsonb_build_object('email', p.canonical_email)
+    from public.profiles p
+   where p.canonical_email is not null
+     and not exists (select 1 from auth.identities i
+                      where i.user_id = p.id and i.provider in ('google', 'github')
+                        and lower(i.email) = p.canonical_email)
+  on conflict do nothing;
 $bind$;
 
 -- ---------------------------------------------------------------------------

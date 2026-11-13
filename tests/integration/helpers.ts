@@ -45,6 +45,9 @@ export async function createTestUser(label: string, { member = true } = {}): Pro
   if (member) {
     const profile = await admin.from("profiles").insert({ id: data.user.id });
     if (profile.error) throw new Error(`profile insert failed: ${profile.error.message}`);
+    // Members sign in with Google or GitHub on their invited address, and
+    // membership requires such an identity (E2-D22).
+    if (!linkGoogleIdentity(data.user.id, email)) throw new Error("Could not link a Google identity (database container?)");
   }
 
   const db = createClient<Database>(url, publishableKey, {

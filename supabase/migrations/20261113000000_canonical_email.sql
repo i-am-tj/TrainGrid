@@ -10,8 +10,9 @@
 -- Rule. Each member has a canonical email: the invitation address they
 -- accepted, stored here and never read from auth.users.email (users can ask
 -- to change that). Every identity linked to the account must carry exactly
--- that address. If any does not, the WHOLE account is locked for every
--- session, whichever identity it came from, until the identity is removed.
+-- that address, and at least one Google or GitHub identity must be on it. If
+-- not, the WHOLE account is locked for every session, whichever identity it
+-- came from, until the account is put right.
 -- This needs no attribution: it depends only on account state the user
 -- cannot edit. Linking a different address is not supported (deferred).
 --
@@ -71,10 +72,12 @@ create trigger profiles_default_canonical_email
 -- ---------------------------------------------------------------------------
 
 -- Why the caller's account is or is not usable right now.
---   member           : profile live, every identity on the canonical email, session current
+--   member           : profile live, session current, every identity on the
+--                      canonical email and at least one Google/GitHub one on it
 --   not_member       : no profile
 --   revoked          : profile revoked
---   identity_mismatch: an identity with another (or no) email is linked to the account
+--   identity_mismatch: an identity with another (or no) email is linked, or no
+--                      Google/GitHub identity carries the canonical email
 --   session_ended    : the token's session no longer exists (signed out)
 create function public.account_status()
 returns text
@@ -102,6 +105,12 @@ as $$
         select 1 from auth.identities i
          where i.user_id = (select auth.uid())
            and coalesce(lower(btrim(i.email)), '') <> (select canonical_email from me)
+      )
+      or not exists (
+        select 1 from auth.identities i
+         where i.user_id = (select auth.uid())
+           and i.provider in ('google', 'github')
+           and lower(btrim(i.email)) = (select canonical_email from me)
       ) then 'identity_mismatch'
     else 'member'
   end;
@@ -124,7 +133,18 @@ as $$
 $$;
 
 comment on function public.is_member() is
-  'True only when account_status() is member: live profile, every linked identity on the canonical email, current session.';
+  'True only when account_status() is member: live profile, current session, every linked identity on the canonical email and at least one Google/GitHub identity on it.';
+
+-- The profile row itself: readable by its owner only while the account is
+-- usable (or revoked, so the app can say so). A locked or signed-out session
+-- reads nothing, not even its own profile. Every other member-data policy
+-- already requires is_member().
+drop policy profiles_select_own on public.profiles;
+create policy profiles_select_own
+  on public.profiles
+  for select
+  to authenticated
+  using (id = (select auth.uid()) and (select public.account_status()) in ('member', 'revoked'));
 
 -- The caller's canonical email, for the account page (only their own).
 create function public.my_canonical_email()

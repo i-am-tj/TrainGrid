@@ -79,10 +79,27 @@ export async function signInAsNewLocalUser(context: BrowserContext, baseURL: str
  * covered by the database tests, since it needs a Google or GitHub identity.
  */
 export async function makeLocalMember(userId: string, displayName = "E2E Member") {
-  const { error } = await serviceClient()
-    .from("profiles")
-    .upsert({ id: userId, display_name: displayName });
+  const admin = serviceClient();
+  const { error } = await admin.from("profiles").upsert({ id: userId, display_name: displayName });
   if (error) throw new Error(`Could not create local profile: ${error.message}`);
+  // Real members sign in with Google or GitHub on their invited address, and
+  // membership requires such an identity (E2-D22). Give test members one.
+  const user = await admin.auth.admin.getUserById(userId);
+  const email = user.data.user?.email?.toLowerCase();
+  if (!email || !ensureLocalGoogleIdentity(userId, email)) {
+    throw new Error("Could not give the local member a Google identity (is the database container running?)");
+  }
+}
+
+/** Adds a Google identity on `email` unless the user already has an OAuth identity on it. */
+function ensureLocalGoogleIdentity(userId: string, email: string): boolean {
+  if (!/^[0-9a-f-]{36}$/.test(userId) || !/^[\w.+-]+@[\w.-]+$/.test(email)) throw new Error("Bad fixture input");
+  return localSql(
+    `insert into auth.identities (provider_id, user_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+     select 'e2e-g-${userId}', '${userId}', 'google', '{"email": "${email}"}', now(), now(), now()
+      where not exists (select 1 from auth.identities
+                         where user_id = '${userId}' and provider in ('google', 'github') and email = '${email}');`,
+  );
 }
 
 /** Creates a throwaway member and signs the browser in as them. */

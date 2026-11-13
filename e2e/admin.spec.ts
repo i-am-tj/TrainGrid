@@ -187,7 +187,7 @@ test("an address already linked to a member's sign-in cannot be invited as someo
 
 test("the sign-in page explains a refused sign-in on another address without naming anyone", async ({ page }) => {
   await page.goto("/login?error=linked");
-  await expect(page.getByRole("alert")).toHaveText(
+  await expect(page.locator("main").getByRole("alert")).toHaveText(
     "This account has a sign-in with a different email address linked to it. TrainGrid only accepts sign-ins that use the invited email address. Ask the person who invited you for help.",
   );
 });

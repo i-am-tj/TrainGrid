@@ -105,66 +105,111 @@ the user, and with concurrent sign-ins the last one to write it wins. Both were 
 So TrainGrid does not try (decision E2-D22).
 
 **Rule:** every identity linked to a member's account must carry the member's **canonical email**,
-the invitation address they accepted. It is stored in `profiles.canonical_email` (members cannot
-change it) and never read from `auth.users.email`, which a user can ask to change. If any identity
-has another address, or none, the **whole account** is locked, for every session, until the
-identity is removed. Linking a different address is not supported (deferred).
+the invitation address they accepted, and at least one **Google or GitHub** identity must be on
+it. The canonical email is stored in `profiles.canonical_email` (members cannot change it) and is
+never read from `auth.users.email`, which a user can ask to change. If any identity has another
+address or none, or no Google/GitHub identity carries the canonical email, the **whole account is
+locked**, for every session, until it is put right. Linking a different address is not supported
+(deferred).
 
 | Where | What it does |
 | --- | --- |
-| `account_status()` / `is_member()` | `member` only if the profile is live, every identity is on the canonical email, **and** the token's `session_id` still exists in `auth.sessions`. Every member-data policy uses `is_member()`, so this applies to direct REST calls and to tokens issued earlier. A signed-out session's token stops working on the next query. |
+| `account_status()` / `is_member()` | `member` only if the profile is live, the token's `session_id` still exists in `auth.sessions`, every identity is on the canonical email, and a Google/GitHub identity is on it. Every policy on `routines`, `workout_items`, `scheduled_sessions` and `profiles` (update) requires `is_member()`. Reading one's own profile requires `account_status()` to be `member` or `revoked`. So the rule covers direct REST calls, tokens issued earlier and refreshed tokens (a database test checks the policies). A signed-out session's token stops working on the next query. |
 | `accept_invitation()` | Does not make a member of an account that also has an identity on another address. Records the canonical email. |
-| App | A locked member is sent to **Sign-in methods**. It reads identities from Supabase Auth's own account API, offers **Remove** (`unlinkIdentity()`) only for identities on another address, and **Sign out of other devices**. |
+| App | A locked member is sent to **Sign-in methods**. It reads identities from Supabase Auth's own account API, offers **Remove** (`unlinkIdentity()`) only for identities on another address, and **Sign out of other devices**. The export answers 401. |
 | Invite check | The admin page refuses to invite an address that is already a linked identity of another account. |
 
-No auth hook and no Supabase Auth setting is involved. While locked, the holder of a stray identity
-still gets a session but reads nothing. They can still use Supabase's self-service account
-endpoints, so two production settings matter:
+No auth hook and no Supabase Auth setting is involved.
 
-- **Email sign-in must stay off** (Authentication → Sign In / Providers → Email). Otherwise a stray
-  session could set a password and use it after the cleanup.
-- **Secure email change must stay on.** An email change then needs confirmation from both addresses.
+### What a locked session can still do (residual risk)
 
-**Manual Linking stays off** except during a supervised cleanup. `unlinkIdentity()` needs it, and
-while it is on, a stray session could also unlink identities (denial of service only).
+A locked account reads and writes **no TrainGrid data**. But Supabase Auth still accepts that
+session on its own account endpoints, because they do not consult our tables. A person holding a
+stray identity can:
+
+| Through Supabase Auth | Effect | Condition / mitigation |
+| --- | --- | --- |
+| Refresh the session | Gets new tokens that read nothing. | Ended by "Sign out of other devices". |
+| `getUser()`, `getUserIdentities()` | Sees the account email and the email of every linked identity, including the owner's. | Not preventable without an auth hook; accepted. |
+| `updateUser({ data })` | Edits user metadata. | Harmless: TrainGrid never uses metadata for access. |
+| `updateUser({ password })` | Sets a password on the account. | A way back in after cleanup **only if the Email provider is on**. Keep it **off**, and the preflight checks that no account has a password. |
+| `updateUser({ email })` | Asks to change the account email. | Needs confirmation from both addresses while **Secure email change** is on (keep it on). It does not affect the rule, which uses the stored canonical email. |
+| `signOut({ scope: 'global' })` | Ends the owner's sessions too. | Denial of service only. |
+| `unlinkIdentity()`, `linkIdentity()` | Removes or adds identities on the account. | Only while **Manual Linking** is on, so keep it off outside a cleanup. Removing the owner's Google identity would leave the account locked (no Google/GitHub identity on the canonical email), not open it. |
+| MFA enrolment | Adds a factor to the account. | If MFA is enabled for the project, a stray factor could get in the owner's way. The preflight lists factors. TrainGrid does not use MFA. |
 
 ### Deploying the rule (owner)
 
-1. Read-only pre-checks in the SQL editor:
+1. **Read-only preflight** in the SQL editor. `canonical` below is the **same expression the
+   migration stores** (`20261113000000_canonical_email.sql`, the backfill): the most recent
+   accepted invitation, live ones first, else the account email.
    ```sql
-   select p.id, p.revoked_at is not null as revoked,
-     (select count(*) from public.invitations i where i.accepted_by = p.id) as accepted_invitations,
-     coalesce(u.encrypted_password, '') <> '' as has_password,
+   with c as (
+     select p.id, p.revoked_at,
+            coalesce(
+              (select i.email from public.invitations i
+                where i.accepted_by = p.id
+                order by i.revoked_at is null desc, i.accepted_at desc nulls last
+                limit 1),
+              (select lower(btrim(u.email)) from auth.users u where u.id = p.id and u.email like '%@%')
+            ) as canonical
+       from public.profiles p
+   )
+   select c.id, c.revoked_at is not null as revoked, c.canonical is not null as has_canonical,
      (select count(*) from auth.identities x
-       where x.user_id = p.id and lower(coalesce(x.email, '')) <> lower(coalesce(u.email, ''))) as identities_on_other_address
-   from public.profiles p join auth.users u on u.id = p.id;
+       where x.user_id = c.id and coalesce(lower(btrim(x.email)), '') <> coalesce(c.canonical, '')) as identities_off_canonical,
+     (select count(*) from auth.identities x
+       where x.user_id = c.id and x.provider in ('google', 'github')
+         and lower(btrim(x.email)) = c.canonical) as oauth_on_canonical,
+     (select coalesce(u.encrypted_password, '') <> '' from auth.users u where u.id = c.id) as has_password,
+     (select count(*) from auth.mfa_factors f where f.user_id = c.id) as mfa_factors,
+     (select count(*) from auth.sessions s where s.user_id = c.id) as sessions
+   from c;
    ```
-   Expect `has_password = false` everywhere. An account with `identities_on_other_address > 0`
-   is locked by the deploy until it is cleaned up.
-2. Check that the Email provider is off and Secure email change is on.
+   After deploy, a live member works only with `has_canonical`, `identities_off_canonical = 0`
+   and `oauth_on_canonical >= 1`. Any other live row is **locked by the deploy** until it is
+   cleaned up. Expect `has_password = false` and `mfa_factors = 0` everywhere. Investigate before
+   deploying if not.
+2. Check that the Email provider is **off**, Secure email change is **on**, and Manual Linking is
+   **off**.
 3. Dry run, then apply: `npx supabase db push --remote --dry-run`, then without `--dry-run`.
    Deploy the app at the same time (merging to `main` does this).
-4. Smoke test: an ordinary member signs in and sees their data. A locked account lands on
+4. Post-deploy check: the same query against the stored value. Replace the `c` CTE with
+   `select id, revoked_at, canonical_email as canonical from public.profiles`.
+5. Smoke test: an ordinary member signs in and sees their data. A locked account lands on
    Sign-in methods.
 
-Rollback: restore `is_member()` and `accept_invitation()` from
-`20261112040000_revoke_members.sql` in a new migration. The added column and functions are
-harmless.
+Rollback: restore `is_member()`, `accept_invitation()` and `profiles_select_own` from the
+earlier migrations in a new migration. The added column and functions are harmless.
 
-### Cleaning up a locked account (owner, supervised)
+### Cleaning up a locked account (owner, controlled window)
 
-1. Turn **Manual Linking on**, for the cleanup only.
-2. Sign in with the identity on the canonical email. The account is locked, so the app opens
-   Sign-in methods.
-3. **Remove** every identity with a different address. Check afterwards: an address left on any
-   remaining identity would let the same sign-in **link back** automatically, and the account
-   would lock again.
-4. **Sign out of other devices.** Removing the stray identity unlocks the account for *every*
-   session, including any the stray sign-in opened. Signing out others deletes those sessions, so
-   their access tokens fail at once (session check) and cannot refresh. This step is required.
-5. Turn **Manual Linking off**.
-6. Read-only checks: one identity per address, one session, `has_password = false`.
-7. Delete anything created through the stray identity, and record what happened.
+**The cleanup is not atomic.** It is several separate calls to Supabase Auth, and between them a
+new sign-in through the stray identity can open a fresh session. A session opened while the
+account is locked reads nothing, **but it regains full access the moment the last stray identity
+is removed**. So:
+
+- Do it in a **controlled window**. Sign out the stray device first if you can (or switch it off),
+  and allow no sign-ins on the account other than the one doing the cleanup.
+- Follow this order exactly. It is covered by
+  `tests/integration/linked-identity.test.ts` ("cleanup in the runbook's order").
+
+1. Run the preflight query and note the account's `sessions` count.
+2. Turn **Manual Linking on**, for the cleanup only.
+3. Sign in with a Google/GitHub identity on the canonical email. The account is locked, so the
+   app opens Sign-in methods.
+4. **Sign out of other devices first**, while the account is still locked. This ends every stray
+   session before anything is unlocked.
+5. **Remove** the identities with a different address, the last one last. Also remove any
+   identity on another address that could relink the stray sign-in: Supabase links by email
+   across *all* of the account's identities.
+6. **Sign out of other devices again** straight away, to end any session that slipped in during
+   steps 4–5.
+7. Turn **Manual Linking off**.
+8. **Verify** with the preflight query (stored-value version): `identities_off_canonical = 0`,
+   `oauth_on_canonical >= 1`, `sessions = 1` (the cleanup session only), `has_password = false`.
+   If `sessions` is higher, repeat step 6 and check again.
+9. Delete anything created through the stray identity, and record what happened.
 
 A provider account that knows both addresses (GitHub lists all of an account's verified emails)
 may later link to either account, or be refused as ambiguous. Keep one address on it, or do not
@@ -188,9 +233,11 @@ with a second Gmail address that the admin had invited as a separate member. Rea
 
   Both were reproduced in tests and replaced by the canonical email rule.
 
-Owner follow-up after deploying: on Sign-in methods, remove the phone's Google identity **and** the
-GitHub identity (both carry the second address), then sign out of other devices. Sign in on the
-phone again to create the separate account, and delete the duplicate routines.
+Owner follow-up after deploying, in a controlled window (phone signed out or switched off first):
+Sign-in methods → sign out of other devices → remove the phone's Google identity **and** the GitHub
+identity (both carry the second address) → sign out of other devices again → verify (one identity,
+one session). Then sign in on the phone again to create the separate account, and delete the
+duplicate routines.
 
 ## Dependencies
 

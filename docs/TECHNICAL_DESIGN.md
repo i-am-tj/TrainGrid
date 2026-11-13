@@ -49,7 +49,8 @@ Every private record is protected in layers, and no layer relies on another.
 
 3. **Linked identities.** Supabase Auth links sign-ins by verified email and issues sessions per
    user. `is_member()` therefore also requires every identity on the account to carry the
-   member's canonical (invited) email, and the token's session to still exist (decision E2-D22).
+   member's canonical (invited) email, at least one Google/GitHub identity on it, and the
+   token's session to still exist (decision E2-D22).
    Details: [SECURITY.md](SECURITY.md#linked-sign-in-identities-the-canonical-email-rule).
 
 Membership means “has a `profiles` row that is not revoked”. That row is created only by

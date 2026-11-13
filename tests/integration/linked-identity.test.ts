@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { savePersonalRoutine } from "@/lib/data/routines";
+import { scheduleRoutine } from "@/lib/data/sessions";
 import {
   createTestUser,
   deleteTestUsers,
@@ -47,8 +48,18 @@ describe.skipIf(!integrationReady)("canonical email rule: direct Supabase access
   };
   const ownRoutine = async (client: ReturnType<typeof fresh>) =>
     (await client.from("routines").select("id").eq("id", routineId)).data ?? [];
+  /** Puts the account back: only identities on the invited address remain. */
   const removeIdentitiesExceptEmail = () =>
-    localSql(`delete from auth.identities where user_id = '${member.id}' and provider <> 'email';`);
+    localSql(`delete from auth.identities where user_id = '${member.id}' and email <> lower('${member.email}');`);
+  /** What a session can read through REST, table by table. */
+  const visible = async (client: ReturnType<typeof fresh>) => ({
+    routines: ((await client.from("routines").select("id").eq("owner_user_id", member.id)).data ?? []).length,
+    items: ((await client.from("workout_items").select("id").eq("routine_id", routineId)).data ?? []).length,
+    sessions: ((await client.from("scheduled_sessions").select("id").eq("user_id", member.id)).data ?? []).length,
+    profiles: ((await client.from("profiles").select("id").eq("id", member.id)).data ?? []).length,
+  });
+  const ALL = { routines: 1, items: 1, sessions: 1, profiles: 1 };
+  const NONE = { routines: 0, items: 0, sessions: 0, profiles: 0 };
 
   beforeAll(async () => {
     member = await createTestUser("canonical");
@@ -57,6 +68,7 @@ describe.skipIf(!integrationReady)("canonical email rule: direct Supabase access
       category: "strength",
       items: [{ name: "Squat", instruction: "5 × 5" }],
     });
+    await scheduleRoutine(member.db, member.id, { routineId, date: "2026-11-16" });
     password = `local-${crypto.randomUUID()}`;
     await service().auth.admin.updateUserById(member.id, { password });
   });
@@ -124,6 +136,49 @@ describe.skipIf(!integrationReady)("canonical email rule: direct Supabase access
     const refresh = await stray.client.auth.refreshSession();
     expect(refresh.data.session).toBeNull();
     expect(await ownRoutine(owner.client)).toHaveLength(1);
+  });
+
+  it("cleanup in the runbook's order: REST on every member table, before and after", async ({ skip }) => {
+    const owner = await signIn();
+    expect(await visible(owner.client)).toEqual(ALL);
+
+    // A stray identity is linked and a session is opened through it.
+    const providerId = linkGoogleIdentity(member.id, `cleanup-${crypto.randomUUID()}@example.test`);
+    if (!providerId) skip();
+    const stray = await signIn();
+    expect(await visible(owner.client)).toEqual(NONE);
+    expect(await visible(stray.client)).toEqual(NONE);
+
+    // 1. While still locked, sign out every other device: the stray session ends.
+    await owner.client.auth.signOut({ scope: "others" });
+    expect(await visible(withToken(stray.token))).toEqual(NONE);
+    expect((await stray.client.auth.refreshSession()).data.session).toBeNull();
+
+    // A sign-in that slips in during the window (why the window must be controlled) ...
+    const late = await signIn();
+
+    // 2. Remove the last mismatched identity.
+    const identities = await owner.client.auth.getUserIdentities();
+    const linked = identities.data!.identities.find((i) => i.id === providerId)!;
+    expect((await owner.client.auth.unlinkIdentity(linked)).error).toBeNull();
+    expect(await visible(owner.client)).toEqual(ALL);
+    // ... regains access once the account is consistent:
+    expect(await visible(withToken(late.token))).toEqual(ALL);
+
+    // 3. Verify and revoke other sessions again.
+    await owner.client.auth.signOut({ scope: "others" });
+    expect(await visible(withToken(late.token))).toEqual(NONE);
+    expect(await visible(withToken(stray.token))).toEqual(NONE);
+    expect(await visible(owner.client)).toEqual(ALL);
+  });
+
+  it("an account with no Google or GitHub identity on its invited address is locked", async ({ skip }) => {
+    if (!localSql(`delete from auth.identities where user_id = '${member.id}' and provider in ('google', 'github');`)) skip();
+    const { client } = await signIn();
+    expect((await client.rpc("account_status")).data).toBe("identity_mismatch");
+    expect(await visible(client)).toEqual(NONE);
+    if (!linkGoogleIdentity(member.id, member.email)) skip();
+    expect(await visible(client)).toEqual(ALL);
   });
 
   it("a linked identity on the same address is fine", async ({ skip }) => {

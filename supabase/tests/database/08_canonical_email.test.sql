@@ -12,7 +12,7 @@
 
 begin;
 
-select plan(27);
+select plan(36);
 
 insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
   ('00000000-0000-4000-8000-0000000000e1', 'owner@example.test', now(), '{}'),
@@ -130,6 +130,72 @@ reset role;
 delete from auth.identities where id = '30000000-0000-4000-8000-000000000007';
 update auth.users set email = 'owner@example.test' where id = '00000000-0000-4000-8000-0000000000e1';
 set local role authenticated;
+
+-- A locked session cannot read even its own profile row.
+reset role;
+insert into auth.identities (id, provider_id, user_id, provider, identity_data) values
+  ('30000000-0000-4000-8000-000000000005', 'g-alias3', '00000000-0000-4000-8000-0000000000e1', 'google', '{"email": "alias@example.test"}');
+set local role authenticated;
+select is((select count(*)::int from public.profiles), 0, 'a locked session cannot read its own profile');
+reset role;
+delete from auth.identities where id = '30000000-0000-4000-8000-000000000005';
+set local role authenticated;
+select is((select count(*)::int from public.profiles), 1, 'once consistent again, it can');
+
+-- ---------------------------------------------------------------------------
+-- At least one Google/GitHub identity on the canonical email
+-- ---------------------------------------------------------------------------
+
+reset role;
+delete from auth.identities where id = '30000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select is(public.account_status(), 'identity_mismatch', 'an account with no identities at all is locked');
+select is((select count(*)::int from public.routines where id = '40000000-0000-4000-8000-000000000001'), 0,
+  'and reads nothing');
+
+reset role;
+insert into auth.identities (id, provider_id, user_id, provider, identity_data) values
+  ('30000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-0000000000e1', '00000000-0000-4000-8000-0000000000e1', 'email', '{"email": "owner@example.test"}');
+set local role authenticated;
+select is(public.account_status(), 'identity_mismatch',
+  'an email/password identity on the canonical address is not enough: Google or GitHub is required');
+
+reset role;
+insert into auth.identities (id, provider_id, user_id, provider, identity_data) values
+  ('30000000-0000-4000-8000-000000000001', 'g-owner', '00000000-0000-4000-8000-0000000000e1', 'google', '{"email": "Owner@Example.Test"}');
+delete from auth.identities where id = '30000000-0000-4000-8000-000000000004';
+set local role authenticated;
+select is(public.account_status(), 'member', 'with its Google identity back, the account works');
+
+-- ---------------------------------------------------------------------------
+-- Every member-data policy carries the restriction
+-- ---------------------------------------------------------------------------
+
+reset role;
+select is(
+  (select count(*)::int from pg_policies
+    where schemaname = 'public'
+      and tablename in ('routines', 'workout_items', 'scheduled_sessions', 'profiles')
+      and not (policyname = 'profiles_select_own')
+      and not (coalesce(qual, '') like '%is_member()%' or coalesce(with_check, '') like '%is_member()%')),
+  0,
+  'every policy on member data requires is_member()'
+);
+select ok(
+  (select qual like '%account_status()%' from pg_policies
+    where schemaname = 'public' and policyname = 'profiles_select_own'),
+  'reading one''s own profile requires a usable (or revoked) account'
+);
+select is(
+  (select count(*)::int from pg_policies p
+    where p.schemaname = 'public' and p.cmd in ('INSERT', 'UPDATE')
+      and p.tablename in ('routines', 'workout_items', 'scheduled_sessions', 'profiles')
+      and coalesce(p.with_check, '') not like '%is_member()%'),
+  0,
+  'every write policy checks is_member() on the new row too'
+);
+set local role authenticated;
+select pg_temp.as_user('00000000-0000-4000-8000-0000000000e1', '50000000-0000-4000-8000-000000000001');
 
 -- ---------------------------------------------------------------------------
 -- Sessions

@@ -734,6 +734,16 @@ Tests:                 test:all pass: lint, typecheck, unit 161, database 216 (2
                        checks: ignoring mismatched identities failed 8 database, 3 integration
                        and 1 E2E test; ignoring session existence failed 4 database and 2
                        integration tests.
+Corrections (review 3):  at least one Google/GitHub identity on the canonical email is required
+                       (zero identities and email-only are locked); own-profile read needs a
+                       usable account; policy audit test; REST before/after cleanup on all
+                       member tables in the runbook's order; preflight uses the migration's own
+                       canonical expression; cleanup: sign out others first, remove, sign out
+                       again, verify; documented as not atomic; residual Supabase Auth account
+                       endpoints listed with conditions. test:all after corrections: unit
+                       161, database 225, integration 39, E2E 104, build; secret scan clean.
+                       Mutation: dropping the OAuth-identity requirement failed 3 database and
+                       1 integration test.
 Not verified:          Production backfill inputs (the Supabase connector was down); the runbook
                        has the read-only query. Real Google/GitHub linking (simulated locally).
 Owner actions:         Pre-checks and settings (Email provider off, Secure email change on),
