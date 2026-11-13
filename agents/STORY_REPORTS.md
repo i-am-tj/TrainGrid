@@ -579,8 +579,8 @@ Status:                DONE — merged to main 2026-11-13
 ```
 Story:                 E2-02 find and filter routines (search, category, equipment)
 Branch:                epic-2/03-search-filters
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/24
+Commit:                cc452de
 Schema impact:         None.
 RLS impact:            None. One read of what the member's RLS already allows, narrowed to
                        GLOBAL plus their own user id.
