@@ -804,12 +804,13 @@ Checks:                test:all pass: unit 174, database 191, integration 35, E2
                        Local and production schemas and shared content compared read-only:
                        identical (two expected platform differences, recorded).
 Deployment impact:     Docs only. No migration, no seed run.
-Status:                IN REVIEW
+Status:                DONE — production smoke test PASS 2026-11-13; closes Epic 2 on merge
 ```
 
 ## Epic 2 completion report
 
-Written 2026-11-13 at step 08. Evidence: agents/TEST_PLAN.md (G1–G11), docs/TEST_RESULTS.md.
+Written 2026-11-13 at step 08; finalised 2026-11-13 after the owner's production smoke test.
+Evidence: agents/TEST_PLAN.md (G1–G11), docs/TEST_RESULTS.md.
 
 ```
 Stories
@@ -834,7 +835,7 @@ Validation
   E2E: PASS (103)
   Build: PASS
   Phone and desktop: PASS (E2E at 360 px and desktop; screenshots checked)
-  Production smoke test: PENDING — owner, checklist in docs/TEST_RESULTS.md
+  Production smoke test: PASS 2026-11-13 — all eight checks, verified by Tanuj on production (G11)
 
 Cost
   Additional paid services: NONE
@@ -844,5 +845,8 @@ Also delivered in Epic 2, at Tanuj's request: library UI refinement (04a), heade
 badge, phone header menu (04b, race fix in #29). PR #28 (linked-identity architecture) was closed
 unmerged in favour of a documented limitation and a one-off owner cleanup.
 
-Epic 2 is complete once this PR is merged and the production smoke test passes.
+All six stories delivered; G1–G11 pass; documentation, backlog, roadmap and these reports are
+current (spec §9). No production migration or seed run was needed for Epic 2.
+
+EPIC 2 COMPLETE — GLOBAL WORKOUT LIBRARY LIVE
 
