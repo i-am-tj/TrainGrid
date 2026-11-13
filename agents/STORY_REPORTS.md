@@ -545,5 +545,31 @@ Findings:              Positional seed item ids (E2-D11); unbounded list read (E
 Tests:                 None run for this step (records only; no application change).
 Deployment impact:     None.
 Approval:              Plan and decisions E2-D01 … E2-D15 approved by Tanuj on 2026-11-13.
-Status:                IN REVIEW — approved; ready to commit and open as a PR
+Status:                DONE — merged to main 2026-11-13
+```
+
+### Step 02 — Library scope (E2-01)
+
+```
+Story:                 E2-01 switch between library scopes
+Branch:                epic-2/02-library-scope
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/23
+Commit:                7ec720b
+Schema impact:         None.
+RLS impact:            None. Views filter what the member's own RLS-governed query returns.
+Secrets/config impact: None.
+Changes:               lib/library/query.ts: validated URL state (scope, type), canonical links,
+                       scope filtering and empty-state selection (pure). Library list: All /
+                       TrainGrid / Mine tabs, TrainGrid and Mine labels on every card, result
+                       count, distinct empty states, "All types" category chip, New routine
+                       placement by view. Library list page and its loading state moved into the
+                       app/library/(list) route group (E2-D16).
+Tests:                 test:all pass: lint, typecheck, unit 148 (17 new), database 189,
+                       integration 26, E2E 65 (11 new), build. Secret scan clean. The new tests
+                       were shown to fail with the Mine filter broken (2 E2E, 2 unit).
+Found and fixed:       A library-wide loading boundary made detail pages stream, so another
+                       member's routine returned 200 instead of 404 and legacy slug redirects
+                       broke; caught by existing authorization and legacy-link tests.
+Deployment impact:     UI only. No migration, no seed change.
+Status:                IN REVIEW
 ```

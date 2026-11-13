@@ -159,13 +159,13 @@ investigated (spec §8.9).
 
 | # | Check (spec §8) | Layer | Step | Result |
 | --- | --- | --- | --- | --- |
-| G1 | Every GLOBAL routine readable by an active member, not editable or deletable by any ordinary member, invisible to anonymous, uninvited and revoked identities | Database (exists: I9–I11, R2) + E2E per view | 02 | — |
-| G2 | `Mine` and `All` show only the member's own PERSONAL routines; A can neither read nor copy B's | Integration + E2E | 02, 05 | — |
+| G1 | Every GLOBAL routine readable by an active member, not editable or deletable by any ordinary member, invisible to anonymous, uninvited and revoked identities | Database (exists: I9–I11, R2) + E2E per view | 02 | PASS 2026-11-13 (step 02: database rows still pass; E2E: TrainGrid view shows exactly the 18 shared routines, signed-out access covered by existing route tests) |
+| G2 | `Mine` and `All` show only the member's own PERSONAL routines; A can neither read nor copy B's | Integration + E2E | 02, 05 | Step 02 part PASS 2026-11-13 (E2E: another member's routine appears in no view; Mine lists only own). Copy part: step 05 |
 | G3 | Search and filters: partial, case-insensitive, whitespace, blank, zero results, item-name matches, equipment aggregation, combined filters (AND), malformed URL values, refresh and back | Unit + integration + E2E | 03 | — |
 | G4 | A copy is owned by the caller, has new routine and item ids, the same ordered content; the source is unchanged; a failed save leaves nothing | Database + integration + E2E | 05 | — |
 | G5 | Scheduling a GLOBAL routine and a copied routine both produce independent snapshots; later source edits change neither | Integration + E2E | 04, 05 | — |
 | G6 | Legacy UUID and slug links (`/library/lower-a`, `/edit`, `?template=`) still resolve safely | E2E (exists) | 04 | — |
-| G7 | Keyboard use, labels, visible focus; phone and desktop layouts without overflow | E2E + screenshots | 02–04, 08 | — |
+| G7 | Keyboard use, labels, visible focus; phone and desktop layouts without overflow | E2E + screenshots | 02–04, 08 | Step 02 part PASS 2026-11-13 (E2E: tabs keyboard-operable with aria-current; no overflow at 360 px in all views; screenshots checked) |
 | G8 | No unexpected migrations, no new secret-key use, no secrets in bundles, no runtime file access | Code search + bundle scan + `scan:secrets` | each step, 08 | — |
 | G9 | Full suite passes: lint, typecheck, unit, database, integration, E2E, build, secret scan | `npm run test:all`, `npm run scan:secrets` | each step | — |
 | G10 | Seed ids are stable: existing item ids keep their exercise; generation is deterministic | Unit (seed) | 07 | — |
