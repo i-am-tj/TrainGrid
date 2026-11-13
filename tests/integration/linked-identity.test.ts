@@ -13,18 +13,14 @@ import {
 } from "./helpers";
 
 /**
- * Identity approval at the authorization boundary (E2-D22, PR #28 review).
+ * Canonical email rule at the authorization boundary (E2-D22).
  *
- * Everything here talks to Supabase directly — the auth server for tokens,
- * the REST API for data, the publishable key only — exactly as a client that
- * never goes through the Next.js callback would. The local stack runs the
- * custom access token hook (supabase/config.toml).
- *
- * Signing in "through a linked identity": Supabase Auth records the identity
- * of every OAuth sign-in in the user's metadata (`sub`) before issuing tokens,
- * and the hook reads that. Real Google cannot run against the local stack, so
- * the tests set the same metadata and take the token from the auth server's
- * password grant; the hook sees the same input either way.
+ * Everything talks to Supabase directly — the auth server for tokens, the REST
+ * API for data, the publishable key only — exactly as a client that never goes
+ * through the Next.js app would. Nothing depends on which identity a session
+ * came from: Supabase Auth issues sessions per user, and the only per-sign-in
+ * signal (user metadata) is user-editable, so the rule looks only at the
+ * account's identities and whether the session still exists.
  */
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -38,23 +34,24 @@ const withToken = (token: string) =>
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
 
-describe.skipIf(!integrationReady)("identity approval: direct Supabase access", () => {
+describe.skipIf(!integrationReady)("canonical email rule: direct Supabase access", () => {
   let member: TestUser;
   let password: string;
   let routineId: string;
 
-  /** Records, as Supabase Auth does, which identity the next sign-in uses. */
-  const signInVia = async (providerId: string) => {
-    await service().auth.admin.updateUserById(member.id, { user_metadata: { sub: providerId } });
+  const signIn = async () => {
     const client = fresh();
     const result = await client.auth.signInWithPassword({ email: member.email, password });
-    return { client, ...result };
+    if (result.error || !result.data.session) throw new Error(`sign-in failed: ${result.error?.message}`);
+    return { client, token: result.data.session.access_token };
   };
   const ownRoutine = async (client: ReturnType<typeof fresh>) =>
     (await client.from("routines").select("id").eq("id", routineId)).data ?? [];
+  const removeIdentitiesExceptEmail = () =>
+    localSql(`delete from auth.identities where user_id = '${member.id}' and provider <> 'email';`);
 
   beforeAll(async () => {
-    member = await createTestUser("approval");
+    member = await createTestUser("canonical");
     routineId = await savePersonalRoutine(member.db, null, {
       name: "Private routine",
       category: "strength",
@@ -68,92 +65,93 @@ describe.skipIf(!integrationReady)("identity approval: direct Supabase access", 
     await deleteTestUsers();
   });
 
-  it("a sign-in through an unapproved linked identity gets no token at all", async ({ skip }) => {
-    const alias = `alias-${crypto.randomUUID()}@example.test`;
-    const providerId = linkGoogleIdentity(member.id, alias);
-    if (!providerId) skip();
-    // An invitation for the alias changes nothing either way (requirement: no
-    // reliance on pending invitations).
-    await service().from("invitations").insert({ email: alias });
-
-    const attempt = await signInVia(providerId!);
-    expect(attempt.data.session).toBeNull();
-    expect(attempt.error?.status).toBe(403);
-    expect(attempt.error?.message).toBe("identity_not_approved");
-
-    await service().from("invitations").delete().eq("email", alias);
+  it("a member whose identities all use the invited address reads their data", async () => {
+    const { client } = await signIn();
+    expect((await client.rpc("account_status")).data).toBe("member");
+    expect(await ownRoutine(client)).toHaveLength(1);
   });
 
-  it("the member's own identity still signs in and reads their data", async () => {
-    const own = await signInVia(member.id); // the email identity's provider id is the user id
-    expect(own.error).toBeNull();
-    expect(await ownRoutine(own.client)).toHaveLength(1);
+  it("a linked identity on another address locks every session, including tokens already issued", async ({ skip }) => {
+    const before = await signIn(); // issued while the account was consistent
+    expect(await ownRoutine(before.client)).toHaveLength(1);
+
+    if (!linkGoogleIdentity(member.id, `alias-${crypto.randomUUID()}@example.test`)) skip();
+
+    // The token issued earlier: refused on the very next query.
+    expect(await ownRoutine(withToken(before.token))).toHaveLength(0);
+    // A brand-new session (whatever identity it came from): refused too.
+    const after = await signIn();
+    expect((await after.client.rpc("account_status")).data).toBe("identity_mismatch");
+    expect(await ownRoutine(after.client)).toHaveLength(0);
+    expect((await after.client.from("routines").select("id").eq("scope", "GLOBAL")).data).toHaveLength(0);
+    // Refresh still issues tokens, but they read nothing either.
+    const refreshed = await after.client.auth.refreshSession();
+    expect(await ownRoutine(withToken(refreshed.data.session!.access_token))).toHaveLength(0);
+
+    removeIdentitiesExceptEmail();
   });
 
-  it("a linked identity with the same address is approved automatically", async ({ skip }) => {
-    const providerId = linkGoogleIdentity(member.id, member.email);
+  it("user metadata cannot talk the database round: no attribution is used", async ({ skip }) => {
+    const providerId = linkGoogleIdentity(member.id, `meta-${crypto.randomUUID()}@example.test`);
     if (!providerId) skip();
-    const same = await signInVia(providerId!);
-    expect(same.error).toBeNull();
-    expect(await ownRoutine(same.client)).toHaveLength(1);
+    const { client } = await signIn();
+    // A session can rewrite its own metadata (Supabase allows it); it makes no difference.
+    const edited = await client.auth.updateUser({ data: { sub: member.id, provider_id: member.id } });
+    expect(edited.error).toBeNull();
+    const again = await client.auth.refreshSession();
+    expect(await ownRoutine(withToken(again.data.session!.access_token))).toHaveLength(0);
+    removeIdentitiesExceptEmail();
   });
 
-  it("approved by the member, a linked identity works; unlinked, its session is cut off at once", async ({ skip }) => {
-    const alias = `github-${crypto.randomUUID()}@example.test`;
-    const providerId = linkGoogleIdentity(member.id, alias);
+  it("removing the stray identity with unlinkIdentity() restores the owner; signing out others ends theirs at once", async ({ skip }) => {
+    const stray = await signIn(); // a session the cleanup must end
+    const providerId = linkGoogleIdentity(member.id, `stray-${crypto.randomUUID()}@example.test`);
     if (!providerId) skip();
 
-    // The member, on their own approved and recent session, approves it.
-    const owner = await signInVia(member.id);
+    const owner = await signIn();
     const identities = await owner.client.auth.getUserIdentities();
-    const linked = identities.data!.identities.find((i) => i.id === providerId || i.identity_data?.sub === providerId)!;
+    const linked = identities.data!.identities.find((i) => i.id === providerId)!;
     expect(linked).toBeDefined();
-    const approval = await owner.client.rpc("approve_my_identity", { p_identity_id: linked.identity_id });
-    expect(approval.data).toBe("approved");
-
-    const viaLinked = await signInVia(providerId!);
-    expect(viaLinked.error).toBeNull();
-    expect(await ownRoutine(viaLinked.client)).toHaveLength(1);
-    const linkedToken = viaLinked.data.session!.access_token;
-
-    // The member removes it with Supabase Auth's own unlinkIdentity().
     const unlinked = await owner.client.auth.unlinkIdentity(linked);
     expect(unlinked.error).toBeNull();
 
-    // The access token is still unexpired, but the database refuses it now...
-    expect(await ownRoutine(withToken(linkedToken))).toHaveLength(0);
-    // ... and the auth server will not refresh it.
-    const refresh = await viaLinked.client.auth.refreshSession();
+    expect(await ownRoutine(owner.client)).toHaveLength(1);
+    // Without the next step the other session would regain access too:
+    expect(await ownRoutine(withToken(stray.token))).toHaveLength(1);
+
+    await owner.client.auth.signOut({ scope: "others" });
+    expect(await ownRoutine(withToken(stray.token))).toHaveLength(0);
+    const refresh = await stray.client.auth.refreshSession();
     expect(refresh.data.session).toBeNull();
-    expect(refresh.error?.status).toBe(403);
+    expect(await ownRoutine(owner.client)).toHaveLength(1);
+  });
+
+  it("a linked identity on the same address is fine", async ({ skip }) => {
+    if (!linkGoogleIdentity(member.id, member.email)) skip();
+    const { client } = await signIn();
+    expect(await ownRoutine(client)).toHaveLength(1);
+    removeIdentitiesExceptEmail();
   });
 
   it("a signed-out session's access token stops working immediately", async () => {
-    const session = await signInVia(member.id);
-    const token = session.data.session!.access_token;
+    const { client, token } = await signIn();
     expect(await ownRoutine(withToken(token))).toHaveLength(1);
-    await session.client.auth.signOut({ scope: "local" });
+    await client.auth.signOut({ scope: "local" });
     expect(await ownRoutine(withToken(token))).toHaveLength(0);
   });
 
-  it("a session with no identity record (as from before this change) is refused and not refreshed", async ({ skip }) => {
-    const session = await signInVia(member.id);
-    const token = session.data.session!.access_token;
-    const sessionId = JSON.parse(Buffer.from(token.split(".")[1]!, "base64url").toString()).session_id as string;
-    if (!/^[0-9a-f-]{36}$/.test(sessionId) || !localSql(`delete from public.session_identities where session_id = '${sessionId}';`)) skip();
-
-    expect(await ownRoutine(withToken(token))).toHaveLength(0);
-    const refresh = await session.client.auth.refreshSession();
-    expect(refresh.error?.status).toBe(403);
-  });
-
-  it("the gate cannot be skipped: no token means no REST access, whatever the client", async ({ skip }) => {
-    const alias = `skip-${crypto.randomUUID()}@example.test`;
-    const providerId = linkGoogleIdentity(member.id, alias);
-    if (!providerId) skip();
-    const attempt = await signInVia(providerId!);
-    expect(attempt.data.session).toBeNull();
-    // Nothing to call the REST API with; the anonymous key alone sees nothing private.
-    expect(await ownRoutine(fresh())).toHaveLength(0);
+  it("the stored canonical email decides, not the account email a user may change", async ({ skip }) => {
+    const alias = `moved-${crypto.randomUUID()}@example.test`;
+    // The account email moves to the alias, and an identity for the alias is linked.
+    await service().auth.admin.updateUserById(member.id, { email: alias, email_confirm: true });
+    if (!linkGoogleIdentity(member.id, alias)) skip();
+    const { client } = await (async () => {
+      const c = fresh();
+      const r = await c.auth.signInWithPassword({ email: alias, password });
+      return { client: c, error: r.error };
+    })();
+    expect(await ownRoutine(client)).toHaveLength(0);
+    removeIdentitiesExceptEmail();
+    await service().auth.admin.updateUserById(member.id, { email: member.email, email_confirm: true });
   });
 });

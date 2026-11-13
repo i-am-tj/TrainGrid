@@ -27,10 +27,10 @@ const LOGIN_ERRORS: Record<LoginErrorCode, string> = {
     "TrainGrid is currently invite-only. Ask the person who invited you to verify the email used for your account.",
   email:
     "We could not get a verified email address from that account. Add and verify a primary email with the provider, or sign in with a different account.",
-  // Supabase linked this sign-in to an existing account whose owner has not
-  // approved it (E2-D22). Says nothing about whose account.
+  // The account has a sign-in on an address other than the invited one
+  // (E2-D22). Says nothing about whose account.
   linked:
-    "This sign-in method is linked to an existing TrainGrid account but has not been approved. Sign in the way you usually do and approve it under Sign-in methods, or ask the person who invited you to use a different address.",
+    "This account has a sign-in with a different email address linked to it. TrainGrid only accepts sign-ins that use the invited email address. Ask the person who invited you for help.",
 };
 
 export function loginErrorMessage(code: unknown): string | null {

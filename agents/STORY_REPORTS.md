@@ -699,38 +699,42 @@ Deployment impact:     UI only.
 Status:                IN REVIEW
 ```
 
-### Fix — Identity approval (bug report and PR #28 review; independent of the step order)
+### Fix — Linked identities: canonical email rule (bug report and two reviews; independent of the step order)
 
 ```
 Report:                Routines from a "second account" visible in Mine (production).
 Branch:                fix/linked-identity-invite-gate
 PR:                    https://github.com/i-am-tj/TrainGrid/pull/28
-Commits:               43123cc (first fix, superseded), 5128f95 (phone menu race), and the
-                       8986e04 (identity approval)
 Finding:               Not a cross-user leak: the rows' owner was the viewer's own user id. The
                        phone's Google sign-in for a second address was linked by Supabase Auth
                        into the admin account through the admin's GitHub identity (same email).
-Review finding:        The first fix (accept_invitation() refusal) was advisory. Reproduced: in
-                       the same session the gate answered linked_identity while the REST API
-                       returned the member's private routine.
-Schema impact:         Migration 20261113000000_identity_approval.sql (replaces the PR's first
-                       migration; never applied outside local): approved_identities,
-                       session_identities, custom_access_token_hook, session_is_approved, is_member
-                       and profiles_select_own updated, list_my_identities, approve_my_identity,
-                       invitation_email_conflict. Not applied to production.
-Config impact:         Local config.toml enables the hook and Manual Linking. Production needs both
-                       set by the owner (docs/SECURITY.md runbook).
-Changes:               Sign-in methods page (approve, remove via unlinkIdentity); callback maps the
-                       hook's refusal to a fixed message; header link; menu breakpoint sm → md.
-Tests:                 test:all pass: lint, typecheck, unit 161, database 221 (32 in the new file;
-                       older files now use recorded sessions), integration 37 (7 new, direct
-                       Supabase), E2E 103 (3 new), build. Secret scan clean. Mutation checks:
-                       hook issuing tokens to unapproved identities failed 5 database and 2
-                       integration tests; session_is_approved() always true failed 6 database and
-                       3 integration tests; is_member() without the session check failed database
-                       tests (the profile policy still blocked data, which is intended).
-Owner actions:         Approve, then deploy in order: Manual Linking, migration, hook. Then on
-                       Sign-in methods remove the phone Google and the GitHub identity, sign in
-                       on the phone again, and delete the duplicate routines.
+Review 1:              accept_invitation() refusal was advisory. Reproduced: the gate said no
+                       while the same session read private data through REST.
+Review 2:              Hook-based per-identity approval used raw_user_meta_data.sub. Reproduced:
+                       a session edited it with updateUser(); a waiting code exchange after the
+                       owner's sign-in got a session attributed to the owner's identity and read
+                       private data. The hook receives no identity id (Supabase docs). Dropped.
+Design:                Canonical email rule (E2-D22): every identity must carry the accepted
+                       invitation address, else the whole account is locked; session must exist.
+                       Enforced in account_status()/is_member() for every query. No hook, no
+                       Supabase Auth setting.
+Schema impact:         Migration 20261113000000_canonical_email.sql (replaces the PR's earlier
+                       migrations; none applied outside local): profiles.canonical_email +
+                       backfill + default trigger, account_status, is_member, my_canonical_email,
+                       accept_invitation, invitation_email_conflict. Not applied to production.
+Config impact:         Local config enables Manual Linking for tests; production keeps it off.
+Changes:               Locked viewer state (pages lead to Sign-in methods; export 401); Sign-in
+                       methods page (remove stray identities, sign out other devices); callback
+                       message for identity_mismatch; header link; menu breakpoint sm → md.
+Tests:                 test:all pass: lint, typecheck, unit 161, database 216 (27 in the new
+                       file; older files give test users real sessions), integration 37 (7
+                       direct-Supabase), E2E 104 (4 new), build. Secret scan clean. Mutation
+                       checks: ignoring mismatched identities failed 8 database, 3 integration
+                       and 1 E2E test; ignoring session existence failed 4 database and 2
+                       integration tests.
+Not verified:          Production backfill inputs (the Supabase connector was down); the runbook
+                       has the read-only query. Real Google/GitHub linking (simulated locally).
+Owner actions:         Pre-checks and settings (Email provider off, Secure email change on),
+                       deploy, then the supervised cleanup in docs/SECURITY.md.
 Status:                IN REVIEW
 ```

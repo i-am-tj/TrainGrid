@@ -18,7 +18,7 @@ export function parseAdminUserIds(raw: string | undefined): ReadonlySet<string> 
   return ids;
 }
 
-type ViewerLike = { status: "anonymous" } | { status: "not_member" | "member"; userId: string };
+type ViewerLike = { status: "anonymous" } | { status: "not_member" | "member" | "locked"; userId: string };
 
 /**
  * An admin is a member whose user id is on the list. A listed id that is not

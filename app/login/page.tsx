@@ -50,6 +50,18 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
               Use Sign out at the top of the page to try a different account.
             </p>
           </div>
+        ) : viewer.status === "locked" ? (
+          <div className="mt-6">
+            <p className="text-sm text-stone-700">
+              Your account has a sign-in with a different email address linked to it, so it is
+              locked for safety.
+            </p>
+            <p className="mt-3 text-sm">
+              <Link href="/account/sign-in-methods" className="underline underline-offset-2">
+                Review sign-in methods
+              </Link>
+            </p>
+          </div>
         ) : viewer.status === "member" ? (
           <div className="mt-6">
             <p className="text-sm text-stone-700">

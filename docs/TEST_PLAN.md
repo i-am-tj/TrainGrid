@@ -32,9 +32,10 @@ against anything but a local URL.
    production.
 2. **Route protection** — every private page redirects anonymous visitors, the export answers 401,
    a deployment without Supabase settings fails closed, signed-in non-members are turned away.
-3. **Identity approval** — a sign-in through an unapproved linked identity gets no token; unlinking
-   or signing out cuts an unexpired token off at once; refresh follows the session's identity;
-   tested directly against Supabase (auth server and REST API), not only through the app.
+3. **Linked identities** — an identity on another address locks the whole account for every
+   session, including tokens issued earlier; metadata edits change nothing; signing out cuts an
+   unexpired token off at once; tested directly against Supabase (auth server and REST API), not
+   only through the app.
 4. **Isolation** — member A cannot read, change, delete, duplicate or plant data for member B:
    in the database (RLS), through the data layer, and with forged form input to the app.
 5. **Admin** — invite, duplicate refused, invalid refused, revoke pending, revoke accepted member;

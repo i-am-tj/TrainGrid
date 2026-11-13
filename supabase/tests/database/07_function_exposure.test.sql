@@ -22,10 +22,9 @@ select results_eq(
        and has_function_privilege('authenticated', p.oid, 'execute')
      order by 1$$,
   $$values ('accept_invitation'::text collate "C"),
-           ('approve_my_identity'),
-           ('list_my_identities'),
-           ('session_is_approved')$$,
-  'signed-in users can call only these SECURITY DEFINER functions (invitation and identity approval, E2-D22)'
+           ('account_status'),
+           ('my_canonical_email')$$,
+  'signed-in users can call only these SECURITY DEFINER functions (invitations; account status, E2-D22)'
 );
 
 select is(

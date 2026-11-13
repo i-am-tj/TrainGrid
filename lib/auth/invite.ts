@@ -1,9 +1,9 @@
 import type { LoginErrorCode } from "@/lib/auth/providers";
 
 /** What `public.accept_invitation()` can return. */
-export type InviteResult = "member" | "not_invited" | "unverified_email";
+export type InviteResult = "member" | "not_invited" | "unverified_email" | "identity_mismatch";
 
-const INVITE_RESULTS: readonly InviteResult[] = ["member", "not_invited", "unverified_email"];
+const INVITE_RESULTS: readonly InviteResult[] = ["member", "not_invited", "unverified_email", "identity_mismatch"];
 
 export function parseInviteResult(value: unknown): InviteResult | null {
   return INVITE_RESULTS.includes(value as InviteResult) ? (value as InviteResult) : null;
@@ -24,6 +24,9 @@ export function loginErrorForInvite(value: unknown): LoginErrorCode | null {
       return "invite";
     case "unverified_email":
       return "email";
+    // E2-D22: the account also has a sign-in on another address.
+    case "identity_mismatch":
+      return "linked";
     default:
       return "signin";
   }

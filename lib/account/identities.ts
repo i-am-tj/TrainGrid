@@ -4,17 +4,21 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
- * The member's own sign-in identities (E2-D22). Everything runs as the member,
- * through functions that check membership and session approval themselves.
+ * The account's sign-in identities (E2-D22). Read from Supabase Auth's own
+ * account API, which works even while the account is locked, so the owner can
+ * always see and fix what is linked.
+ *
+ * The rule: every identity must carry the account's canonical email, the
+ * address the invitation was accepted for. Any other identity locks the whole
+ * account until it is removed.
  */
 
 export type SignInMethod = {
   id: string;
   provider: "google" | "github" | "email" | "other";
   email: string | null;
-  linkedAt: string;
-  approved: boolean;
-  thisSession: boolean;
+  linkedAt: string | null;
+  matches: boolean;
 };
 
 const identityIdSchema = z.string().uuid();
@@ -23,48 +27,45 @@ function provider(value: string): SignInMethod["provider"] {
   return value === "google" || value === "github" || value === "email" ? value : "other";
 }
 
-export async function listSignInMethods(): Promise<SignInMethod[]> {
+const normalise = (email: unknown) => (typeof email === "string" ? email.trim().toLowerCase() : "");
+
+export async function accountSignIns(): Promise<{ canonicalEmail: string | null; methods: SignInMethod[] }> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("list_my_identities");
-  if (error) throw new Error("Could not load sign-in methods.");
-  return (data ?? []).map((row) => ({
-    id: row.identity_id,
-    provider: provider(row.provider),
-    email: row.email ?? null,
-    linkedAt: row.linked_at,
-    approved: row.approved,
-    thisSession: row.this_session,
-  }));
+  const [canonical, identities] = await Promise.all([
+    supabase.rpc("my_canonical_email"),
+    supabase.auth.getUserIdentities(),
+  ]);
+  if (canonical.error || identities.error) throw new Error("Could not load sign-in methods.");
+  const canonicalEmail = typeof canonical.data === "string" ? canonical.data : null;
+  const methods = (identities.data?.identities ?? []).map((i) => {
+    const email = normalise(i.identity_data?.email) || null;
+    return {
+      id: i.identity_id,
+      provider: provider(i.provider),
+      email,
+      linkedAt: i.created_at ?? null,
+      matches: !!canonicalEmail && email === canonicalEmail,
+    };
+  });
+  return { canonicalEmail, methods };
 }
 
-export type IdentityResult = "approved" | "removed" | "reauth" | "current" | "last" | "error";
-
-export async function approveSignInMethod(rawId: unknown): Promise<IdentityResult> {
-  const id = identityIdSchema.safeParse(rawId);
-  if (!id.success) return "error";
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("approve_my_identity", { p_identity_id: id.data });
-  if (error) return "error";
-  if (data === "approved") return "approved";
-  if (data === "reauth_required") return "reauth";
-  return "error";
-}
+export type AccountResult = "removed" | "kept" | "signed_out" | "manual_linking_off" | "error";
 
 /**
- * Unlinks one of the member's identities with Supabase Auth's own
- * unlinkIdentity() (needs Manual Linking enabled). The identity this session
- * was signed in with cannot be removed here, so a member never cuts off the
- * session they are using.
+ * Removes an identity on another address with Supabase Auth's
+ * unlinkIdentity(). Identities on the canonical email are never removed here,
+ * so this page can only take the account back towards the rule. Needs Manual
+ * Linking, which production turns on only during a supervised cleanup.
  */
-export async function removeSignInMethod(rawId: unknown): Promise<IdentityResult> {
+export async function removeMismatchedSignIn(rawId: unknown): Promise<AccountResult> {
   const id = identityIdSchema.safeParse(rawId);
   if (!id.success) return "error";
 
-  const methods = await listSignInMethods();
+  const { methods } = await accountSignIns();
   const target = methods.find((m) => m.id === id.data);
   if (!target) return "error";
-  if (target.thisSession) return "current";
-  if (methods.length < 2) return "last";
+  if (target.matches) return "kept";
 
   const supabase = await createSupabaseServerClient();
   const identities = await supabase.auth.getUserIdentities();
@@ -72,5 +73,13 @@ export async function removeSignInMethod(rawId: unknown): Promise<IdentityResult
   if (identities.error || !identity) return "error";
 
   const { error } = await supabase.auth.unlinkIdentity(identity);
-  return error ? "error" : "removed";
+  if (!error) return "removed";
+  return error.code === "manual_linking_disabled" ? "manual_linking_off" : "error";
+}
+
+/** Ends every other session of this account; their access tokens stop working at once. */
+export async function signOutOtherDevices(): Promise<AccountResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.signOut({ scope: "others" });
+  return error ? "error" : "signed_out";
 }
