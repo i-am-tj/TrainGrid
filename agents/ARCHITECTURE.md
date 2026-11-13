@@ -144,3 +144,34 @@ Rules fixed by the approved decisions (see [DECISIONS.md](DECISIONS.md)):
 
 Pure logic in `week.ts`, `duplicate-week.ts` and `youtube.ts` is kept. The Markdown parsing in
 `workout-items.ts` moves out of the app and into the seed tooling.
+
+
+## 3. Library architecture at the start of Epic 2 (audited 2026-11-13, `main` at `16efa16`)
+
+```
+/library            app/library/page.tsx ── listRoutines(db, userId) ── RoutineList
+                                              one query: routines (no items)
+/library/<uuid>     app/library/[routineId]/page.tsx ── getRoutine() ── RoutineDetail ── WorkoutItemsView
+/library/<slug>     → findGlobalRoutineIdBySlug() → redirect to UUID
+/library/new        RoutineEditor → upsertRoutineAction → savePersonalRoutine() → save_personal_routine()
+/library/<uuid>/edit  own routines only (404 for GLOBAL and others)
+/week/current/add?routine=<uuid> | ?template=<slug>   AddSessionForm → scheduleRoutine() → snapshot
+```
+
+- Every read uses the member's own client (`memberData()`), narrowed by user id and enforced by RLS.
+- `RoutineSummary` carries `scope`, `isOwn`, `slug`, `name`, `category`, `description` — no item data.
+- `RoutineList` groups by category and filters by `?type=` only.
+- `RoutineDetail` shows "TrainGrid library · read-only" or "Your routine", Schedule, and Edit for own.
+- GLOBAL content: `data/templates/*.md` → `npm run seed:generate` → `supabase/seed.sql`
+  (ids `uuidV5("routine:<slug>")`, `uuidV5("routine-item:<slug>:<index>")`).
+
+### Planned changes by step
+
+| Step | Data layer | UI | Tests |
+| --- | --- | --- | --- |
+| 02 | `parseLibraryQuery()` (pure, Zod) for `scope`/`type`; reuse `listRoutines()` | Scope tabs (All / TrainGrid / Mine) with `aria-current`; empty states; `loading.tsx` | Unit: query parsing. E2E: scopes, isolation in Mine, `?type=` links, phone width |
+| 03 | `listLibraryRoutines()`: one query with embedded `workout_items(name, equipment)`, capped; pure `filterRoutines()` for `q`/`type`/`equipment` | GET form: search box, category and equipment selects, Clear filters; zero-result state | Unit: matching rules. Integration: one query, isolation, cap. E2E: combined filters, malformed URLs, back/refresh |
+| 04 | Item count and equipment on summaries (from 03) | Cards: count, equipment, View and Schedule. Detail: Schedule primary; video link labels | E2E: GLOBAL detail has no Edit; legacy links; schedule from list and detail; snapshot isolation; a11y and phone screenshots |
+| 05 | `copyGlobalRoutine(db, userId, sourceId)`: load via member client, require GLOBAL, save via `savePersonalRoutine()` without item ids | "Copy to My Library" (pending state, no double submit); `?copied=1` confirmation | DB: atomic failure leaves nothing. Integration: owner, new ids, exact content, source unchanged, B's routine refused. E2E: forged id, copy-then-edit |
+| 07 | Seed check for id stability (E2-D11) | — | Unit: positions and names unchanged for existing ids; freshness |
+| 08 | — | README, docs, screenshots | `test:all`, `scan:secrets`, phone and desktop, production smoke |

@@ -521,3 +521,29 @@ Documentation (story 33): updated in step 16 and merged with this report.
 All 33 stories delivered; every acceptance criterion met; no release blocker present.
 
 EPIC 1 COMPLETE — SECURE INVITE-ONLY MULTI-USER CLOUD FOUNDATION LIVE
+
+
+---
+
+# Epic 2 — Global workout library
+
+### Step 01 — Audit and plan
+
+```
+Story:                 Planning for E2-01 … E2-06 (no story delivered)
+Branch:                epic-2/01-audit-and-plan
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/21
+Commit:                56fee82
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None.
+Changes:               agents/EPIC-2.md (provided by Tanuj) committed. Epic 2 sections appended
+                       to ROADMAP, BACKLOG, DECISIONS, ARCHITECTURE, TEST_PLAN and this file.
+                       Epic 1 records untouched.
+Findings:              Positional seed item ids (E2-D11); unbounded list read (E2-D07); video
+                       link accessibility; no library loading state; no templates with videos.
+Tests:                 None run for this step (records only; no application change).
+Deployment impact:     None.
+Approval:              Plan and decisions E2-D01 … E2-D15 approved by Tanuj on 2026-11-13.
+Status:                IN REVIEW — approved; ready to commit and open as a PR
+```

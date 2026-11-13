@@ -7,9 +7,35 @@ Last updated: 2026-11-12
 | Epic | Title | Status |
 | --- | --- | --- |
 | 1 | Secure invite-only multi-user cloud foundation | DONE (2026-11-13) |
-| 2 | Global workout library | Not started |
+| 2 | Global workout library | IN PROGRESS — plan approved 2026-11-13 |
 | 3 | Personal workout library | Not started |
 | 4 | Per-user calendar and scheduling | Not started |
+
+## Epic 2 — ordered PR steps
+
+Specification: [EPIC-2.md](EPIC-2.md). Stories E2-01 … E2-06 are in [BACKLOG.md](BACKLOG.md); decisions
+E2-D01 … in [DECISIONS.md](DECISIONS.md). Each step: one branch from current `main`, one PR, merged
+before a dependent step starts. No step changes production configuration or runs production SQL.
+
+| # | Step | Branch | Stories | Depends on | Needs from Tanuj | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| 01 | Audit and plan | `epic-2/01-audit-and-plan` | — | — | — (plan and decisions approved 2026-11-13) | IN REVIEW (merge) |
+| 02 | Library scope (All / TrainGrid / Mine) | `epic-2/02-library-scope` | E2-01 | 01 | — | TODO |
+| 03 | Search and filters | `epic-2/03-search-filters` | E2-02 | 02 | — | TODO |
+| 04 | GLOBAL cards and detail, scheduling CTAs | `epic-2/04-global-details` | E2-03, E2-05 | 03 | — | TODO |
+| 05 | Copy to My Library | `epic-2/05-copy-to-personal` | E2-04 | 04 | — | TODO |
+| 06 | Scheduling links | `epic-2/06-scheduling-links` | E2-05 | — | — | FOLDED into 04 (E2-D12, approved) |
+| 07 | Content workflow | `epic-2/07-content-workflow` | E2-06 | 01 (independent of 02–05) | — | TODO |
+| 08 | Release and docs | `epic-2/08-release-docs` | all | 02–07 | Production smoke test (signed in) | TODO |
+
+### Sequencing notes
+
+- 02 → 03 → 04 → 05 is a chain: each builds on the previous step's list data and components.
+- 07 touches only seed tooling and docs, so it can run in parallel with 02–05 once E2-D11 is decided.
+- 05 (copy, the only new write path) and 08 (release) stay isolated review points, as the spec requires.
+- No database migration is expected (E2-D13). If one turns out to be needed, it is raised as a
+  decision before it is written.
+- Nothing in Epic 2 requires a production seed run unless shared content changes in 07.
 
 ## Epic 1 — ordered PR steps
 
