@@ -858,8 +858,8 @@ EPIC 2 COMPLETE — GLOBAL WORKOUT LIBRARY LIVE
 
 ```
 Branch:                ui/theme-and-footer-ring
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/34
+Commit:                24c51f8
 Schema/RLS/config:     None.
 Changes:               Footer "TJ" ring now matches iamtj.dev (source: ../iamtj-me Footer and
                        Monogram): hairline rgba(28,22,18,0.14) at rest; on hover or focus the
