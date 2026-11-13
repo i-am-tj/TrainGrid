@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState } from "./local-supabase";
 
 /** Global header brand: logo, name and Beta badge. Runs signed out on the sign-in page. */
@@ -47,9 +47,17 @@ test.describe("header menu", () => {
 
   const LINKS = ["Planner", "Library", "Export"];
 
+  /** The menu's close handlers exist only once React has hydrated the header. */
+  const hydrated = async (page: Page) =>
+    page.waitForFunction(() => {
+      const summary = document.querySelector("header summary");
+      return !!summary && Object.keys(summary).some((key) => key.startsWith("__reactFiber"));
+    });
+
   test("on a phone the links sit behind a menu button and open as a vertical list", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 800 });
     await page.goto("/library");
+    await hydrated(page);
     const banner = page.getByRole("banner");
     const toggle = banner.getByLabel("Open menu");
     await expect(toggle).toBeVisible();
@@ -86,6 +94,7 @@ test.describe("header menu", () => {
   test("the phone menu works from the keyboard and closes on Escape or a click outside", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 800 });
     await page.goto("/library");
+    await hydrated(page);
     const banner = page.getByRole("banner");
     await banner.getByLabel("Open menu").focus();
     await page.keyboard.press("Enter");

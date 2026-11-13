@@ -724,6 +724,11 @@ Tests:                 test:all pass: lint, typecheck, unit 161, database 203 (1
                        integration 30, E2E 97 (2 new), build. Secret scan clean. Mutation
                        checks: removing the sign-in refusal failed 4 database tests; skipping
                        the invite-time check failed the new admin E2E.
+Also fixed:            Phone menu race from Step 04b, found when the merged header tests
+                       ran here: an outside tap or Escape right after opening could arrive
+                       before React saw the native toggle, so the menu stayed open (about 1
+                       run in 3 under repeats). MobileMenu now closes the <details> element
+                       itself; header tests 40/40 with --repeat-each=8.
 Owner actions:         Apply the migration to production (dry run first). Then revoke the
                        pending invitation for the linked address, sign out the member's
                        sessions, remove the linked Google identity if it is not the member's,

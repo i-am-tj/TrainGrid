@@ -24,14 +24,24 @@ export function MobileMenu({ children }: { children: ReactNode }) {
     setOpen(false);
   }
 
+  // The <details> element is the source of truth: it opens natively, and React
+  // only hears about it from the (asynchronous) toggle event. So close the
+  // element itself; its toggle event then brings the state along. Setting the
+  // state alone could be a no-op before that event arrives, leaving the menu
+  // open. The listeners stay attached and check the element at event time.
+  const close = () => {
+    if (ref.current) ref.current.open = false;
+    setOpen(false);
+  };
+
   useEffect(() => {
-    if (!open) return;
+    const isOpen = () => ref.current?.open === true;
     const onPointerDown = (event: PointerEvent) => {
-      if (!ref.current?.contains(event.target as Node)) setOpen(false);
+      if (isOpen() && !ref.current?.contains(event.target as Node)) close();
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setOpen(false);
+      if (event.key !== "Escape" || !isOpen()) return;
+      close();
       ref.current?.querySelector("summary")?.focus();
     };
     document.addEventListener("pointerdown", onPointerDown);
@@ -40,11 +50,11 @@ export function MobileMenu({ children }: { children: ReactNode }) {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open]);
+  }, []);
 
   // A link that does not change the URL (Export downloads a file) still closes the menu.
   const onPanelClick = (event: MouseEvent<HTMLElement>) => {
-    if ((event.target as HTMLElement).closest("a")) setOpen(false);
+    if ((event.target as HTMLElement).closest("a")) close();
   };
 
   return (
