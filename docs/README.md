@@ -12,6 +12,7 @@ Project documentation lives here so the repository root stays focused on the app
 | [TEST_PLAN.md](./TEST_PLAN.md) | Test strategy and coverage |
 | [TEST_RESULTS.md](./TEST_RESULTS.md) | Latest results |
 | [SECURITY.md](./SECURITY.md) | Credentials, dev/prod separation, release checks, incident steps |
+| [RELEASING.md](./RELEASING.md) | Versions and how a release is made at the end of each epic |
 | [CONTENT.md](./CONTENT.md) | Maintaining the shared TrainGrid routines: templates, stable item ids, applying the seed |
 | [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) | Local Supabase stack, production project, environment variables |
 | [adr/](./adr/) | Architecture decision records |

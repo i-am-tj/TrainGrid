@@ -44,7 +44,7 @@ It is **not** a workout logger. Keep Strava / Hevy for that.
 - **Export** your own routines and sessions as JSON
 - **Admin page** to invite people, see who joined, and revoke access (their data is kept)
 
-More detail: [docs/](docs/README.md). Maintaining the shared routines: [docs/CONTENT.md](docs/CONTENT.md).
+More detail: [docs/](docs/README.md). Maintaining the shared routines: [docs/CONTENT.md](docs/CONTENT.md). What changed in each release: [CHANGELOG.md](CHANGELOG.md) and [Releases](https://github.com/i-am-tj/TrainGrid/releases).
 
 ### Sign-in providers
 
