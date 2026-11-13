@@ -19,8 +19,8 @@ before a dependent step starts. No step changes production configuration or runs
 
 | # | Step | Branch | Stories | Depends on | Needs from Tanuj | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 01 | Audit and plan | `epic-2/01-audit-and-plan` | — | — | — (plan and decisions approved 2026-11-13) | IN REVIEW (merge) |
-| 02 | Library scope (All / TrainGrid / Mine) | `epic-2/02-library-scope` | E2-01 | 01 | — | TODO |
+| 01 | Audit and plan | `epic-2/01-audit-and-plan` | — | — | — | DONE |
+| 02 | Library scope (All / TrainGrid / Mine) | `epic-2/02-library-scope` | E2-01 | 01 | Review and merge | IN REVIEW |
 | 03 | Search and filters | `epic-2/03-search-filters` | E2-02 | 02 | — | TODO |
 | 04 | GLOBAL cards and detail, scheduling CTAs | `epic-2/04-global-details` | E2-03, E2-05 | 03 | — | TODO |
 | 05 | Copy to My Library | `epic-2/05-copy-to-personal` | E2-04 | 04 | — | TODO |
