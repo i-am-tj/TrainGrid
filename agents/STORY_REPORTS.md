@@ -610,8 +610,8 @@ Status:                DONE — merged to main 2026-11-13
 ```
 Stories:               E2-03 assess shared routine content; E2-05 schedule from the library
 Branch:                epic-2/04-global-details
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/25
+Commit:                eb4962e
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: None.
