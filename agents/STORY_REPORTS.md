@@ -744,7 +744,7 @@ Tests:                 test:all pass: lint, typecheck, unit 161, database 191, i
                        real server action, double click makes one copy, keyboard). Mutation:
                        without the GLOBAL-only check, the refused-sources test fails.
 Deployment impact:     UI and data layer only. No migration.
-Status:                IN REVIEW
+Status:                DONE — merged to main 2026-11-13
 ```
 
 ### Step 07 — Content workflow (E2-06)
