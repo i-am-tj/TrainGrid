@@ -677,8 +677,8 @@ Status:                DONE — merged to main 2026-11-13
 ```
 Story:                 Header presentation (E2-D21); no data or behaviour change elsewhere
 Branch:                epic-2/04b-mobile-nav-menu
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/27
+Commit:                94de022
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: None.
