@@ -721,8 +721,8 @@ Status:                DONE — merged to main 2026-11-13
 ```
 Story:                 E2-04 copy a GLOBAL routine to a PERSONAL routine
 Branch:                epic-2/05-copy-to-personal
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/30
+Commit:                d391ec1
 Schema impact:         None (reuses save_personal_routine(); E2-D13 holds).
 RLS impact:            None. The source is read with the member's own client.
 Secrets/config impact: None. No secret-key client in this flow.
