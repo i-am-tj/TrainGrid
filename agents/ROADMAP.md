@@ -4,12 +4,15 @@ Last updated: 2026-11-13
 
 ## Epics
 
-| Epic | Title | Status |
-| --- | --- | --- |
-| 1 | Secure invite-only multi-user cloud foundation | DONE (2026-11-13) |
-| 2 | Global workout library | DONE (2026-11-13) |
-| 3 | Personal workout library | Not started |
-| 4 | Per-user calendar and scheduling | Not started |
+| Epic | Title | Status | Release |
+| --- | --- | --- | --- |
+| 1 | Secure invite-only multi-user cloud foundation | DONE (2026-11-13) | in `v0.2.0-beta` |
+| 2 | Global workout library | DONE (2026-11-13) | `v0.2.0-beta` |
+| 3 | Personal workout library | Not started | `v0.3.0-beta` (planned) |
+| 4 | Per-user calendar and scheduling | Not started | `v0.4.0-beta` (planned) |
+
+Each epic ends with a release: a tag and a GitHub pre-release while in beta
+([docs/RELEASING.md](../docs/RELEASING.md)). Epics 1 and 2 shipped together as the first release.
 
 ## Epic 2 — ordered PR steps
 
