@@ -672,3 +672,35 @@ Deployment impact:     UI only. No migration, no seed change.
 Status:                IN REVIEW
 ```
 
+### Fix — Linked-identity gate (bug report, independent of the step order)
+
+```
+Report:                Routines "created by someone else" visible in Mine (production).
+Branch:                fix/linked-identity-invite-gate
+PR:                    (not yet opened)
+Commit:                (not yet committed)
+Finding:               Not a cross-user leak. The rows' owner was the viewer's own user id
+                       (RLS and "Mine" were correct). A Google sign-in for an address the
+                       admin had just invited as a separate person was linked by Supabase
+                       Auth onto the existing member, because the member's GitHub identity
+                       has the same email. That session created the routines as the member.
+                       Evidence from read-only production queries; no emails recorded here.
+Schema impact:         Migration 20261113000000_linked_identity_gate.sql: new
+                       invitation_email_conflict() (service_role only); accept_invitation()
+                       gains the linked_identity refusal. Not applied to production.
+RLS impact:            None.
+Secrets/config impact: None.
+Changes:               Admin invite refuses addresses already linked to another user's
+                       sign-in; callback refuses linked_identity with a fixed /login message;
+                       docs/SECURITY.md section and incident record (E2-D22).
+Tests:                 test:all pass: lint, typecheck, unit 161, database 203 (14 new),
+                       integration 30, E2E 97 (2 new), build. Secret scan clean. Mutation
+                       checks: removing the sign-in refusal failed 4 database tests; skipping
+                       the invite-time check failed the new admin E2E.
+Owner actions:         Apply the migration to production (dry run first). Then revoke the
+                       pending invitation for the linked address, sign out the member's
+                       sessions, remove the linked Google identity if it is not the member's,
+                       and delete the three duplicate routines if unwanted.
+Status:                IN REVIEW
+```
+

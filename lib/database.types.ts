@@ -108,6 +108,9 @@ isOneToOne: false
             "accept_invitation":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"invitation_email_conflict":
+{ Args: { "p_email": string }; Returns: boolean
+                           },
 "is_member":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },

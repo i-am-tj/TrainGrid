@@ -45,7 +45,22 @@ export async function createInvitation(rawEmail: unknown): Promise<MutationResul
   const email = invitationEmailSchema.safeParse(rawEmail);
   if (!email.success) return { ok: false, message: "Enter a valid email address." };
 
-  const { error } = await createSupabaseAdminClient()
+  const client = createSupabaseAdminClient();
+
+  // Supabase Auth would link a sign-in with this address to the user who
+  // already has it on a linked identity, so the invitee would land in that
+  // member's account (E2-D22). Refuse rather than create that trap.
+  const conflict = await client.rpc("invitation_email_conflict", { p_email: email.data });
+  if (conflict.error) return { ok: false, message: "The invitation could not be created." };
+  if (conflict.data === true) {
+    return {
+      ok: false,
+      message:
+        "That address already signs in to an existing member's account (it is linked to their Google or GitHub sign-in), so it cannot be invited as a separate person.",
+    };
+  }
+
+  const { error } = await client
     .from("invitations")
     .insert({ email: email.data, invited_by: admin.userId });
 

@@ -92,6 +92,52 @@ Deleting the line in a new commit is not enough: it stays in Git history and may
    step 1 is what actually protects you; history cleanup only limits further copies.
 4. Record what happened, when, and what was rotated.
 
+## Linked sign-in identities
+
+Supabase Auth **links** a new Google or GitHub sign-in to an existing user when its verified email
+matches the email of any identity that user already has. It does not create a separate user.
+Whoever signs in through a linked identity *is* that user: they see that user's routines and
+sessions, because to RLS and the app they are the same person.
+
+So an address that is already a sign-in of one member must never be invited as a separate person.
+Two checks enforce this (decision E2-D22):
+
+- **When inviting**, the admin page refuses an address that is already a linked identity of a
+  user whose account email differs (`invitation_email_conflict()`).
+- **When signing in**, `accept_invitation()` refuses a sign-in made through a linked identity whose
+  address has a live invitation that this user never accepted. The callback signs the session out
+  and `/login` shows a fixed message that names no one.
+
+A sign-in check cannot undo a link that already exists, or end sessions that are already open. If
+it happens:
+
+1. **Revoke the pending invitation** for the address on the admin page.
+2. **End the sessions** of the affected user in Supabase → Authentication → Users → (user) →
+   sign out. That covers anyone still signed in through the linked identity.
+3. **Remove the linked identity** if it belongs to someone else. This is owner-only database
+   work: delete that row from `auth.identities`, after checking its `provider` and `created_at`.
+   While another identity of the member carries the same address (for example their GitHub
+   email), the address cannot have an account of its own. Invite a different address instead.
+4. Review and delete anything created in that window, and record what happened.
+
+### Incident 2026-11-13: routines from "another account" in Mine
+
+In production, three identical routines appeared in a member's **Mine** view. They had been
+created by what was meant to be a different, newly invited account. Reasoning, from read-only
+queries (ids, timestamps and providers only):
+
+- All three rows had the same `owner_user_id`, the member viewing them, and were created within
+  three seconds. RLS and the data layer returned exactly that member's rows. **No other user's
+  data was exposed.**
+- That user had three identities: Google, GitHub, and a **second Google identity linked at
+  11:59:26 UTC**. Its address was the same as the email on the member's GitHub identity.
+- The admin had invited that address as a separate person at 11:58:31. The sign-in at 11:59 was
+  linked onto the existing member, and the invitation was never used.
+- The routines were created at 12:04 in that session, as the existing member.
+
+Fixed by the two checks above (migration `20261113000000_linked_identity_gate.sql`). Follow-up for
+the owner: apply the migration to production, then complete steps 1 to 4 for that identity.
+
 ## Dependencies
 
 - `npm audit --omit=dev` must report no vulnerabilities before a release.

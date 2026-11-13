@@ -4,6 +4,7 @@ import {
   createAcceptedInvitation,
   deleteLocalInvitations,
   hasLocalSecretKey,
+  linkLocalGoogleIdentity,
   makeLocalMember,
   signInAsLocalAdmin,
   signInAsNewLocalUser,
@@ -143,4 +144,50 @@ test("an admin revokes an accepted member's access; the member is locked out at 
     await deleteLocalInvitations([member.email.toLowerCase(), adminEmail]);
     await memberContext.close();
   }
+});
+
+// ---------------------------------------------------------------------------
+// Linked identities (bug 2026-11-13, E2-D22)
+// ---------------------------------------------------------------------------
+
+test("an address already linked to a member's sign-in cannot be invited as someone else", async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  // A member who signed up with one address and also has a Google sign-in
+  // linked under a second address — what Supabase Auth does automatically
+  // when the verified emails match.
+  const { userId } = await signInAsNewLocalUser(context, baseURL!);
+  await makeLocalMember(userId);
+  const alias = `alias-${crypto.randomUUID()}@example.test`;
+  test.skip(!linkLocalGoogleIdentity(userId, alias), "Local database container is not reachable");
+  await context.clearCookies();
+
+  await signInAsLocalAdmin(context, baseURL!);
+  try {
+    await page.goto("/admin/invitations");
+    await page.getByLabel("Email address").fill(alias.toUpperCase());
+    await page.getByRole("button", { name: "Invite" }).click();
+    await expect(page.locator('p[role="alert"]')).toHaveText(
+      /already signs in to an existing member's account.*cannot be invited as a separate person/,
+    );
+    await expect(page.getByRole("listitem").filter({ hasText: alias })).toHaveCount(0);
+
+    // An ordinary new address is still invited normally.
+    const fresh = `fresh-${crypto.randomUUID()}@example.test`;
+    await page.getByLabel("Email address").fill(fresh);
+    await page.getByRole("button", { name: "Invite" }).click();
+    await expect(page.getByRole("status")).toHaveText("Invitation created.");
+    await deleteLocalInvitations([fresh]);
+  } finally {
+    await deleteLocalInvitations([alias]);
+  }
+});
+
+test("the sign-in page explains a refused linked identity without naming anyone", async ({ page }) => {
+  await page.goto("/login?error=linked");
+  await expect(page.getByRole("alert")).toHaveText(
+    "This account's email address is already linked to another TrainGrid member, so it cannot be used for a separate account. Ask the person who invited you to use a different address.",
+  );
 });

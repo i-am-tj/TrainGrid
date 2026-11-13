@@ -1,6 +1,7 @@
 import type { BrowserContext } from "@playwright/test";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import { spawnSync } from "node:child_process";
 
 /**
  * Helpers that create users in the LOCAL Supabase stack for E2E tests.
@@ -188,4 +189,28 @@ export async function readRows(table: "routines" | "scheduled_sessions" | "invit
   const { data, error } = await query;
   if (error) throw new Error(error.message);
   return data as Array<Record<string, unknown>>;
+}
+
+/**
+ * Runs SQL in the LOCAL Supabase database container, for fixtures the API
+ * cannot create (an OAuth identity linked to an existing user). It can only
+ * reach the Docker container of this project's local stack; returns false when
+ * that container is not available, so callers can skip.
+ */
+export function localSql(sql: string): boolean {
+  const result = spawnSync(
+    "docker",
+    ["exec", "-i", "supabase_db_traingrid", "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-q"],
+    { input: sql, encoding: "utf8" },
+  );
+  return result.status === 0;
+}
+
+/** Links a Google identity with `email` to an existing local user, as Supabase Auth would. */
+export function linkLocalGoogleIdentity(userId: string, email: string): boolean {
+  if (!/^[0-9a-f-]{36}$/.test(userId) || !/^[\w.+-]+@[\w.-]+$/.test(email)) throw new Error("Bad fixture input");
+  return localSql(
+    `insert into auth.identities (provider_id, user_id, provider, identity_data)
+     values ('e2e-${crypto.randomUUID()}', '${userId}', 'google', '{"email": "${email}"}');`,
+  );
 }
