@@ -1,8 +1,14 @@
 # TrainGrid — Requirements
 
+Status: current as of Epic 1 (secure invite-only multi-user foundation), November 2026.
+Later epics (global library, personal library, per-user calendar and scheduling improvements) will
+extend this document when they ship.
+
 ## Product purpose
 
-TrainGrid is a lightweight personal **training planner**. It exists so one person can plan a training week and look up what to do in a session — without a paid subscription and without duplicating Strava (running activity) or Hevy (strength logging).
+TrainGrid is a lightweight **training planner** for a small, invited group of friends. Each member
+plans their own training week and looks up what to do in a session, without a paid subscription and
+without duplicating Strava (running activity) or Hevy (strength logging).
 
 It is a **planner and reference tool**, not a workout tracker.
 
@@ -11,82 +17,109 @@ It is a **planner and reference tool**, not a workout tracker.
 1. See the current training week at a glance (days × time slots).
 2. Place training sessions on specific days and times.
 3. Open a planned session and read what to perform.
-4. Keep a reusable library of session templates.
+4. Use a shared library of routines, and keep personal routines.
 5. Check today’s plan on a phone while training.
 6. Plan the week on a desktop or tablet.
 7. Copy one week’s plan onto another week without a recurrence engine.
+8. Keep my plan private to me.
 
 ## Domain terminology
 
-Use these terms only. Do not introduce synonyms in product or implementation docs.
+Use these terms only.
 
 | Term | Meaning |
 | --- | --- |
-| **Session template** | A reusable definition of a training session: `id`, `name`, `type`, and Markdown body. Stored as a file in the library. |
-| **Scheduled session** | A session placed on a particular week, day, and optional start time. Always has its own `id` and `name`. May link to a session template for workout text, or hold a body snapshot / ad-hoc body. |
-| **Workout item** | A piece of instructional content inside a session template or scheduled-session body. Markdown `##` section plus optional equipment tags and an optional YouTube URL. |
+| **Member** | An invited person who has signed in and been accepted. Only members can use TrainGrid. |
+| **Admin** | A member listed in the server-side admin setting. Manages invitations. |
+| **Invitation** | Permission for one email address to become a member. Pending, accepted, or revoked. |
+| **Routine** | A reusable training session definition: name, type, description, ordered workout items. |
+| **GLOBAL routine** | A routine in the shared TrainGrid library. Readable by every member, editable by none. |
+| **PERSONAL routine** | A routine owned by one member. Only that member can see, edit or delete it. |
+| **Workout item** | One planned step of a routine or session: name, instruction, rest, target, notes, equipment, video link. |
+| **Scheduled session** | One entry on a member’s calendar: date, optional start time, name, type, optional duration, notes, and its own copy of the workout items (a snapshot). |
+| **Snapshot** | The workout items stored inside a scheduled session. Copied from the routine when scheduled; never changed by later routine edits. |
 | **Session type** | A filter label: `running`, `strength`, `plyometrics`, `other`. Distinct from equipment. |
-| **Equipment** | Optional tags on a workout item (barbell, dumbbell, bodyweight, …). Not a session category. |
+| **Equipment** | Optional tags on a workout item (barbell, dumbbell, bodyweight, …). |
 | **Week** | Monday–Sunday, identified by ISO week (`YYYY-Www`). |
-| **Time slot** | One hour row on the planner (`00:00`–`23:00`). |
-| **Untimed session** | A scheduled session with a day but **no start time**. Only these belong in the untimed lane. |
+| **Untimed session** | A scheduled session with a date but no start time. Only these belong in the untimed lane. |
 
 ## Functional requirements
+
+### Access
+
+- FR-A1. TrainGrid is **invite-only**. Only an admin can invite someone, by email address.
+- FR-A2. People sign in with **Google** or **GitHub**. There is no email/password sign-in and no public sign-up.
+- FR-A3. After sign-in, the person becomes a member only if the **verified email** from Google or GitHub matches an invitation that has not been revoked. Matching ignores letter case.
+- FR-A4. Anyone else is signed out again and sees: “TrainGrid is currently invite-only. Ask the person who invited you to verify the email used for your account.” No reason is given.
+- FR-A5. If the provider gives no usable verified email, sign-in is refused with an explanation.
+- FR-A6. Every page except sign-in requires a member. Visitors who are not signed in are sent to the sign-in page and returned to the page they asked for afterwards.
+- FR-A7. A member can sign out from any page.
+- FR-A8. The admin page (`/admin/invitations`) lets an admin invite an email address, see each invitation’s status (Pending, Accepted, Revoked), revoke a pending invitation, and revoke an accepted member’s access. It does not send email; it shows the sign-in link to pass on.
+- FR-A9. Revoking a member blocks their access on their next request. Their data is kept. Inviting the same email again restores access with the data. Admins cannot be revoked.
+- FR-A10. People who are not admins never see the admin page; for them it does not exist.
+
+### Privacy
+
+- FR-X1. A member sees and changes only their own scheduled sessions and personal routines.
+- FR-X2. This is enforced in the database (Row Level Security) as well as in the application.
 
 ### Planner
 
 - FR-P1. The primary screen is a **7-day weekly planner** (Mon–Sun) with a time axis. Each day column shows weekday name and date.
-- FR-P2. The user can navigate **previous week**, **next week**, and **this week** (the ISO week that contains today).
+- FR-P2. The member can navigate **previous week**, **next week**, and **this week**.
 - FR-P3. The current day is visually distinguished.
 - FR-P4. A session can be placed on a day **with** or **without** a start time.
-- FR-P5. Multiple sessions may exist on the same day (different times, same time, or mixed timed/untimed).
-- FR-P6. Duration is **optional metadata**. It is never required. It does **not** change card height or span hour rows.
-- FR-P7. The user can **add**, **open**, **reschedule** (day/time), **edit notes and name**, and **delete** a scheduled session via forms. No drag-and-drop.
-- FR-P8. Deleting a scheduled session does **not** delete the session template.
-- FR-P9. Opening a scheduled session shows the workout content to perform.
-- FR-P10. Timed sessions use the hour grid. The grid includes **all 24 hours** and **scrolls**; the initial viewport is approximately 06:00–21:00. Sessions before 06:00 or after 21:00 are **not** moved to the untimed lane.
-- FR-P11. Start times may be on **30-minute** steps (`07:00`, `07:30`). A time of `HH:30` is shown in the `HH:00` hour row.
-- FR-P12. The user can **Duplicate Week**: copy all scheduled sessions from the currently viewed week onto a different destination week (see Duplicate Week).
+- FR-P5. Multiple sessions may exist on the same day.
+- FR-P6. Duration is optional metadata. It does not change card height.
+- FR-P7. The member can **add**, **open**, **reschedule** (day/time), **edit name, type and notes**, and **delete** a scheduled session via forms. No drag-and-drop.
+- FR-P8. Deleting a scheduled session does not affect any routine.
+- FR-P9. Timed sessions use the hour grid. The grid includes all 24 hours and scrolls; the initial view is about 06:00–21:00.
+- FR-P10. Start times are on **30-minute** steps. `HH:30` is shown in the `HH:00` row.
+- FR-P11. The member can **Duplicate Week** (see below).
 
-### Session templates / library
+### Routines and library
 
-- FR-L1. The user can **create**, **read**, **update**, and **delete** session templates.
-- FR-L2. Each session template has: `id`, `name`, `type`, and a Markdown body (workout items as Markdown).
-- FR-L3. Adding a scheduled session can start from an existing session template (from the planner or from the library via Schedule).
-- FR-L4. The user can create an **ad-hoc** scheduled session without a session template. That session stores its own `name`, `type`, and Markdown body.
-- FR-L5. Editing a **session template** updates workout **body** (and template `name` / `type` in the library) for scheduled sessions that still **live-link** that template’s body. It does **not** rewrite `name` or placement on existing scheduled sessions.
-- FR-L6. Customizing workout content on one scheduled session **snapshots** that session’s body so later template edits do not overwrite it.
-- FR-L7. Library listing can be filtered by session type. Nested folder trees are not required.
-- FR-L8. Workout-item create/update/delete is done by editing the Markdown body of the session template (or of a snapshotted/ad-hoc scheduled session). There is no separate exercise schema or item table.
+- FR-L1. The library lists every GLOBAL routine and the member’s own PERSONAL routines, filterable by session type. The member’s own routines are marked.
+- FR-L2. GLOBAL routines are read-only to members: they can be opened and scheduled, not edited or deleted.
+- FR-L3. A member can **create**, **view**, **edit** and **delete** their own PERSONAL routines.
+- FR-L4. A routine has a name, type, optional description, and ordered workout items.
+- FR-L5. A workout item has a name and, optionally, an instruction, rest, target, notes, equipment tags and a YouTube link. These are separate fields; text such as “Rest: 2 min” typed into notes stays in notes.
+- FR-L6. Old library links that named a shared routine by slug (for example `/library/lower-a`) still open that routine.
+
+### Scheduling and snapshots
+
+- FR-S1. Adding a session can start from a routine (GLOBAL or the member’s own) or be blank.
+- FR-S2. Scheduling a routine **copies** its workout items into the session. Later edits to the routine, or deleting it, never change the scheduled session.
+- FR-S3. The session remembers which routine it was copied from, for reference only.
+- FR-S4. Customising a session’s workout changes that session only.
+- FR-S5. A blank session has its own name, type and workout items.
 
 ### Session detail
 
-- FR-D1. Session detail shows: scheduled session `name`, session type, day, time, optional duration, optional notes, live-link vs snapshot banner, and rendered workout Markdown.
-- FR-D2. From detail, the user can change placement (day/time), name, notes, duration, customize content, or delete the scheduled session.
-- FR-D3. From detail, the user can open the source session template if the body is still live-linked.
+- FR-D1. Session detail shows the name, type, day, time, optional duration, optional notes, where it was copied from, and its workout items.
+- FR-D2. From detail, the member can edit placement, name, type, notes and duration, customise the workout, or delete the session.
 
 ### Duplicate Week
 
-- FR-W1. Duplicate Week copies every scheduled session on a **source week** (the week currently shown) onto a **destination week** the user chooses.
-- FR-W2. Destination must be a **different** ISO week from the source.
-- FR-W3. Each copy is a **new scheduled session** (new `id`). Day-of-week, start time, duration, notes, name, type, `templateId`, and `bodySnapshot` are copied as they are. Dates shift by the week offset (Monday maps to Monday of the destination week, and so on).
-- FR-W4. Copies are **independent**: editing or deleting a copy does not change the source week’s sessions. Live-linked copies still reference the same session template.
-- FR-W5. If the destination week already has scheduled sessions, copies are **appended**. Existing destination sessions are not deleted, merged, or replaced. Confirm before appending when the destination is not empty.
+- FR-W1. Duplicate Week copies every session of the week shown onto a destination week the member chooses.
+- FR-W2. The destination must be a different, existing ISO week.
+- FR-W3. Each copy is a new session with its own copy of the workout, on the same weekday and time.
+- FR-W4. Copies are independent of the originals.
+- FR-W5. Existing sessions in the destination week are kept; copies are added alongside them, after a confirmation.
 
-### Persistence
+### Data and export
 
-- FR-S1. Runtime data is stored as local files: Markdown session templates plus one JSON schedule. Editing assumes a **local writable** Next.js process.
-- FR-S1a. Publishing is **Git-based**: commit `data/` and push. Hosted deployments (for example Vercel) are **read-only** and show only committed `data/schedule.json`. The default schedule file is empty until the owner publishes sessions. Visitors who want their own planner must clone/fork and run or deploy their own instance.
-- FR-S2. No account, login, multi-user support, database, or cloud sync.
-- FR-S3. There is no separate import/export feature in MVP. Backup is copying or committing the `data/` folder.
+- FR-E1. All data is stored in the cloud database; nothing is written to the server’s files.
+- FR-E2. A member can **export** their own personal routines and scheduled sessions as JSON. The export contains nothing about other members, invitations or accounts.
+- FR-E3. There is no import feature.
 
 ## Non-functional requirements
 
-- NFR-1. Single-user, low-maintenance. No database server.
-- NFR-2. Desktop: full week grid. Do not squeeze seven hour-columns onto a phone.
-- NFR-3. Mobile: today’s plan reachable in one or two taps from launch.
-- NFR-4. Session templates should be human-editable in a text editor (Markdown) on the machine running the app.
-- NFR-5. Fast to load; planner is a small local dataset.
+- NFR-1. **Zero running cost** for a small group: Vercel Hobby, Supabase Free, Google and GitHub sign-in. No paid services.
+- NFR-2. **Security:** secrets never in Git or the browser; every mutation validated on the server; isolation enforced in the database.
+- NFR-3. Desktop: full week grid. Phone: single-day agenda; no horizontal scrolling.
+- NFR-4. Mobile: today’s plan reachable in one or two taps.
+- NFR-5. Fast to load for a small dataset.
 - NFR-6. TypeScript throughout application code.
 
 ## Explicit non-goals
@@ -94,61 +127,30 @@ Use these terms only. Do not introduce synonyms in product or implementation doc
 Do not implement:
 
 - GPS, distance, heart-rate, pace, or activity tracking
-- Weight/rep logging, set completion, PRs
+- Weight/rep logging, set completion, PRs (routine items describe the **plan** only; see ADR 001)
 - Workout or rest timers
 - Exercise history or training analytics
 - Calories, readiness, recovery scores, or nutrition
 - Garmin, Apple Health, Strava, or Hevy integration
-- Social features, sharing, comments
-- Authentication, multi-user, cloud sync, hosted backend-as-a-service
-- PostgreSQL, Supabase, Firebase, or similar
+- Social features, feeds, following, comments
+- Public registration, email/password sign-in
+- Apple or ChatGPT sign-in (deferred; see the README)
+- Subscriptions, payments, notifications
+- File uploads or cloud file storage
 - AI-generated training plans
-- Subscription or paywall logic
-- Drag-and-drop calendar (MVP)
-- Recurring rules / RRULE (“every Monday 07:00 forever”)
-- Periodization, mesocycles, or training-load models
-- Notifications, print, or ICS export
-
-## MVP scope
-
-In scope:
-
-- File-backed session templates (Markdown + frontmatter)
-- File-backed weekly schedule (JSON)
-- Desktop 7-day hour grid with full-day scroll
-- Mobile single-day agenda with week strip and jump-to-today
-- Add scheduled session from session template or ad-hoc (form)
-- Every scheduled session has a stored `name`
-- Open session detail (rendered Markdown)
-- Edit scheduled session placement, name, notes, duration
-- Live-link body from session template; snapshot body when customized
-- Library CRUD and Schedule-from-library
-- Duplicate Week (shallow copy of scheduled sessions)
-- Week navigation
-
-Out of MVP:
-
-- Drag-and-drop
-- Recurrence / RRULE
-- Variable-height duration blocks or overlap lane-packing
-- Sync between devices (beyond whatever the user does with `data/`)
-- JSON/Markdown import-export UI
-- Search, tags beyond `type`, extra theming
-- Print / ICS / notifications
+- Drag-and-drop calendar, recurring rules (RRULE), periodization models
+- Print or ICS export
 
 ## Assumptions
 
-- One primary user.
+- A small group of invited friends; one or a few admins.
 - Week starts **Monday**.
-- Timezone is the **browser/OS local timezone**. No multi-timezone support.
-- Hour rows, 30-minute start times. No 15-minute grid.
-- Markdown is sufficient for running and strength instructions; no structured sets/reps.
-- The app runs as a **local Next.js server** that can write `data/`. It is not designed for a static/CDN host that cannot write files.
-- “Mobile while training” means the same app in a browser on a reachable host (localhost, LAN IP, or later self-host). No cloud.
-- Rest can be a session template or an untimed scheduled session; no special rest engine.
+- Dates are calendar dates; the planner uses the browser’s local time to decide “today”.
+- Hour rows and 30-minute start times. No 15-minute grid.
+- Rest days are an untimed session or simply an empty day.
 
 ## Guiding question
 
-> Does this feature help the user plan or view their training?
+> Does this feature help a member plan or view their training?
 
 If not, it is out of scope.

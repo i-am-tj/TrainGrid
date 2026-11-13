@@ -245,8 +245,9 @@ Tests:                 Lint pass. Unit 87/87 pass (5 new). Database 121/121 pass
 Deployment impact:     The production site stops being public. Anonymous visitors are sent
                        to /login. Members see the existing file-backed, read-only planner
                        until step 12. The E2E suite now needs the local Supabase stack.
-Status:                MERGED to main 2026-11-12 (7877baa). Production redirect not yet
-                       confirmed.
+Status:                DONE — merged to main 2026-11-12 (7877baa). Production checked
+                       2026-11-12 with signed-out requests: pages redirect to /login,
+                       /api/export answers 401.
 ```
 
 ### Step 8b — Revoke accepted members (extends stories 11, 27)
@@ -271,8 +272,9 @@ Tests:                 Lint pass. Unit 119/119 (4 new). Database 174/174 (33 new
 Deployment impact:     Migration applied to production by Tanuj 2026-11-12 (before merge;
                        inert for the code already deployed). Admin page gains a Revoke
                        access button for accepted non-admin members once merged.
-Status:                MERGED to main 2026-11-12 (29bf41d). Revoke and restore with real
-                       accounts not yet checked on production.
+Status:                DONE — merged to main 2026-11-12 (29bf41d). Revoke and restore
+                       verified locally (database, integration, E2E); not exercised on
+                       production with real accounts.
 ```
 
 ### Step 10 — User-scoped data layer + validation (story 24)
@@ -314,7 +316,7 @@ Tests:                 Lint pass. Unit 148/148 (29 new: converter, every templat
                        23/23. E2E 37/37. Build pass. Seed applied twice more locally: same
                        96 item ids.
                        Production seed: applied by Tanuj 2026-11-12
-                       (supabase db push --remote --include-seed); row counts not yet checked.
+                       (supabase db push --remote --include-seed); counted in step 15: 18 routines, 96 items.
 Deployment impact:     None visible: the app still reads data/templates until step 12.
                        Seed applied to production before merge; inert until step 12.
 Status:                DONE — merged to main 2026-11-12 (02a32eb). Production seeded.
@@ -425,18 +427,44 @@ Tests:                 test:all pass: lint, typecheck, unit 131/131, database 18
                        integration 26/26, E2E 53/53, build. Secret scans clean (files and
                        history). npm audit --omit=dev: 0. New test shown to fail against a
                        simulated exposed function and pass after the migration.
-Deployment impact:     The migration must be applied to production (supabase db push --remote).
-Status:                IN REVIEW — waiting on Tanuj: apply the migration; confirm Vercel Hobby
+Deployment impact:     Migration applied to production by Tanuj 2026-11-13. Read back: 6/6
+                       migrations match; rls_auto_enable() no longer executable by anon or
+                       authenticated; advisor down to the 2 accepted warnings (D-80).
+                       Vercel plan confirmed Hobby by Tanuj.
+Status:                DONE — merged to main 2026-11-13 (e3ec8d0)
+```
+
+### Step 16 — Documentation closure (story 33)
+
+```
+Story:                 33 update existing documentation
+Branch:                epic-1/16-docs-closure
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/19
+Commit:                9b77393
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None.
+Docs:                  README rewritten (invite-only app, providers table with Apple and ChatGPT
+                       deferred, how it runs, local development with Docker, scripts, structure);
+                       screenshots regenerated. REQUIREMENTS, TECHNICAL_DESIGN, DATA_FORMAT,
+                       TEST_PLAN, TEST_RESULTS rewritten. UX_SPEC updated (sign-in, header,
+                       routines, snapshots, editor, admin). MVP_CHECKLIST marked historical.
+                       docs/README index and ADR status updated. Nothing from Epics 2–4
+                       described as shipped. 40 relative links checked, none broken.
+Tests:                 test:all pass: lint, typecheck, unit 131, database 189, integration 26,
+                       E2E 53, build. Secret scans clean. npm audit --omit=dev: 0.
+Deployment impact:     None (documentation and images only).
+Status:                IN REVIEW
 ```
 
 ## Epic completion report
 
-Written 2026-11-12 at step 15. Evidence: agents/TEST_PLAN.md (A, I, M, R, S, P rows).
+Written 2026-11-12 at step 15; finalised 2026-11-13 at step 16. Evidence: agents/TEST_PLAN.md
+(A, I, M, R, S, P rows).
 
 ```
 Infrastructure
-  Vercel Hobby: PASS pending confirmation — production runs on Vercel; plan not readable
-                 without a Vercel token, Tanuj to confirm "Hobby"
+  Vercel Hobby: PASS — production on Vercel; Hobby plan confirmed by Tanuj
   Supabase Free: PASS — organisation shown as FREE at project creation
 
 OAuth
@@ -478,7 +506,7 @@ Validation
   Production smoke: PASS — signed-out checks (P5, P6) and member UI (Tanuj)
 
 Cost
-  Vercel Hobby: $0 (plan to be confirmed)
+  Vercel Hobby: $0
   Supabase Free: $0
   Google OAuth: $0
   GitHub OAuth: $0
@@ -487,6 +515,9 @@ Cost
 
 Release blockers: none of the epic's release-blocker conditions is true.
 
-Verdict: not yet complete. Open items: (1) apply migration 20261112050000 to production;
-(2) confirm the Vercel plan is Hobby; (3) story 33, documentation closure (step 16): the
-README and docs/ still describe the file-backed, read-only app.
+Supabase security advisor (2026-11-13): 2 warnings, both accepted (D-80).
+Documentation (story 33): updated in step 16 and merged with this report.
+
+All 33 stories delivered; every acceptance criterion met; no release blocker present.
+
+EPIC 1 COMPLETE — SECURE INVITE-ONLY MULTI-USER CLOUD FOUNDATION LIVE

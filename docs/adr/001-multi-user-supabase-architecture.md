@@ -1,6 +1,6 @@
 # ADR 001 — Multi-user architecture on Supabase
 
-- Status: Accepted (implementation in progress — Epic 1)
+- Status: Accepted; implemented in Epic 1 (November 2026)
 - Date: 2026-11-12
 
 ## Context
@@ -56,8 +56,11 @@ Signing in with Google or GitHub proves identity; it does not grant access.
   any data.
 - There is no sign-up form, no password login and no public registration.
 - Admins are identified by a server-side environment variable, `TRAINGRID_ADMIN_USER_IDS`, never
-  by anything the browser sends. Admins can create invitations, see their status and revoke unused
-  ones. Invitation links are sent by hand; no email provider is added.
+  by anything the browser sends. Admins can create invitations, see their status, revoke unused
+  ones, and revoke an accepted member's access. Revoking keeps the member's data and blocks
+  every query on their next request, because membership means a profile that is not revoked;
+  inviting the same email again restores access. Admins cannot be revoked. Invitation links are
+  sent by hand; no email provider is added.
 
 ### Ownership model
 

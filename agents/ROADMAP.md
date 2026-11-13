@@ -6,7 +6,7 @@ Last updated: 2026-11-12
 
 | Epic | Title | Status |
 | --- | --- | --- |
-| 1 | Secure invite-only multi-user cloud foundation | IN PROGRESS |
+| 1 | Secure invite-only multi-user cloud foundation | DONE (2026-11-13) |
 | 2 | Global workout library | Not started |
 | 3 | Personal workout library | Not started |
 | 4 | Per-user calendar and scheduling | Not started |
@@ -26,15 +26,15 @@ Each step is one branch and one reviewable PR. Story numbers refer to [BACKLOG.m
 | 7 | Invitation / allowlist model | `epic-1/07-invitations` | 9, 10 | — | DONE |
 | 7b | Sign-out UX, account chooser, function region | `epic-1/07b-signout-ux` | 26 (follow-up) | — | DONE |
 | 8 | Admin invitation flow | `epic-1/08-admin-invitations` | 11, 12, 27 | — | DONE |
-| 9 | Route protection | `epic-1/09-route-protection` | 13 | Confirm on production that a signed-out browser is sent to `/login` | MERGED (production check to be confirmed) |
-| 8b | Revoke accepted members (keep data) | `epic-1/08b-revoke-members` | 11, 27 (extension) | Revoke and restore a test member on production | MERGED (production check to be confirmed) |
+| 9 | Route protection | `epic-1/09-route-protection` | 13 | — | DONE |
+| 8b | Revoke accepted members (keep data) | `epic-1/08b-revoke-members` | 11, 27 (extension) | — | DONE (revoke and restore verified locally; not exercised on production) |
 | 10 | User-scoped data layer + validation | `epic-1/10-data-layer` | 24 | — | DONE |
 | 11 | Template migration foundation | `epic-1/11-template-seed` | 15 (templates) | — | DONE |
 | 12 | Planner migration files → Supabase | `epic-1/12-planner-migration` | 14, 15, 16, 17 | — | DONE |
 | 13 | Cross-user authorization tests | `epic-1/13-authz-tests` | 28 | — | DONE |
 | 14 | Environment / secrets hardening | `epic-1/14-secrets-hardening` | 20, 22, 23 | — | DONE |
-| 15 | Production rollout | `epic-1/15-rollout` | 30, 31 | Apply `20261112050000`; confirm Vercel plan is Hobby | IN REVIEW |
-| 16 | Documentation closure | `epic-1/16-docs-closure` | 33 | — | TODO |
+| 15 | Production rollout | `epic-1/15-rollout` | 30, 31 | — | DONE |
+| 16 | Documentation closure | `epic-1/16-docs-closure` | 33 | Merge | DONE (with this step's merge) |
 
 ## Sequencing notes
 
