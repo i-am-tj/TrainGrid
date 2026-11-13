@@ -23,18 +23,18 @@ Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
 | 17 | Preserve planner functionality | 12 | Agent | DONE |
 | 18 | Environment variable contract | 4 | Agent | DONE |
 | 19 | Secure GitHub repository secrets | 4, 14 | Agent | DONE (history scan clean in step 14) |
-| 20 | Store production secrets in Vercel | 14 | Tanuj | IN REVIEW (all four set 2026-11-12; Tanuj to confirm Production-only scoping and Secret type, see docs/SECURITY.md) |
+| 20 | Store production secrets in Vercel | 14 | Tanuj | DONE |
 | 21 | Protect Supabase secrets | 4, 8 | Agent | IN REVIEW (secret key used only in `lib/supabase/admin.ts`; bundle scan clean) |
-| 22 | Separate development and production | 14 | Agent + Tanuj | IN REVIEW (local stack for dev; previews protected and without Supabase variables) |
-| 23 | GitHub security hardening | 14 | Tanuj | IN REVIEW (all five settings found disabled 2026-11-12; Tanuj to enable; history scan clean; dependencies patched) |
+| 22 | Separate development and production | 14 | Agent + Tanuj | DONE |
+| 23 | GitHub security hardening | 14 | Tanuj | DONE |
 | 24 | Input validation | 10, 12 | Agent | DONE (data layer); every action uses it from step 12 |
 | 25 | OAuth account handling | 6 | Agent | DONE |
 | 26 | Authentication UI | 5 | Agent | DONE |
 | 27 | Admin security | 8 | Agent | DONE |
 | 28 | Security tests | 3, 10, 13 | Agent | IN REVIEW (all automated checks pass; production rows A2–A4 confirmed manually) |
 | 29 | Supabase migration management | 2 | Agent | DONE |
-| 30 | Vercel production configuration | 15 | Tanuj + Agent | TODO |
-| 31 | Free-tier constraint | 15 | Agent | TODO |
+| 30 | Vercel production configuration | 15 | Tanuj + Agent | IN REVIEW (all verified; migration 20261112050000 to apply) |
+| 31 | Free-tier constraint | 15 | Agent | IN REVIEW (no paid SDKs; Supabase Free; Vercel Hobby to confirm) |
 | 32 | Architecture documentation (ADR) | 1 | Agent | DONE |
 | 33 | Update existing documentation | 16 | Agent | TODO |
 
