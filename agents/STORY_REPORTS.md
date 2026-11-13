@@ -713,6 +713,37 @@ Change:                components/MobileMenu.tsx closes the <details> element it
                        hydration before interacting.
 Schema/RLS/config:     None.
 Tests:                 Lint, typecheck; header tests 20/20 (--repeat-each=4, one worker).
+Status:                DONE — merged to main 2026-11-13
+```
+
+### Step 05 — Copy to My Library (E2-04)
+
+```
+Story:                 E2-04 copy a GLOBAL routine to a PERSONAL routine
+Branch:                epic-2/05-copy-to-personal
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/30
+Commit:                d391ec1
+Schema impact:         None (reuses save_personal_routine(); E2-D13 holds).
+RLS impact:            None. The source is read with the member's own client.
+Secrets/config impact: None. No secret-key client in this flow.
+Changes:               lib/data/routines.ts copyGlobalRoutine(): validates the id, loads the
+                       source through RLS requiring scope GLOBAL (anything else is "not found"),
+                       saves name, category, description and ordered items without ids through
+                       savePersonalRoutine() — one transaction, fresh ids, PERSONAL, owner =
+                       caller, no slug. copyRoutineAction (lib/actions.ts) reads only the source
+                       id and opens the copy with ?copied=1. Detail page: "Copy to My Library"
+                       (secondary; disabled with "Copying…" while pending) on TrainGrid
+                       routines; a one-time confirmation shown only on the member's own routine
+                       (E2-D10). Edit remains on the copy.
+Tests:                 test:all pass: lint, typecheck, unit 161, database 191, integration 35, E2E
+                       103, build; secret scan clean; phone and desktop screenshots checked.
+                       Database 1 new pair (a create failing on its second item leaves nothing).
+                       Integration 5 new (exact copy and new ids, repeat copies, refused sources
+                       create nothing, non-member refused, snapshot independence). E2E 5 new
+                       (copy then edit, confirmation only on own routine, forged id through the
+                       real server action, double click makes one copy, keyboard). Mutation:
+                       without the GLOBAL-only check, the refused-sources test fails.
+Deployment impact:     UI and data layer only. No migration.
 Status:                IN REVIEW
 ```
 
