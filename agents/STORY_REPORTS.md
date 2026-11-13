@@ -632,7 +632,7 @@ Tests:                 test:all pass: lint, typecheck, unit 161 (3 new), databas
 Found and fixed:       The longer card text pushed Schedule onto its own row on phones; the
                        button now stays beside the text and the text wraps.
 Deployment impact:     UI only. No migration, no seed change.
-Status:                IN REVIEW
+Status:                DONE — merged to main 2026-11-13
 ```
 
 ### Step 04a — Library UI refinement (requested by Tanuj)
@@ -640,8 +640,8 @@ Status:                IN REVIEW
 ```
 Story:                 E2-01 presentation (no behaviour change to search, filters or data)
 Branch:                epic-2/04a-library-ui-polish (from epic-2/04-global-details)
-PR:                    (not yet opened)
-Commit:                (not yet committed)
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/26
+Commit:                7d3096b
 Schema impact:         None.
 RLS impact:            None.
 Secrets/config impact: None.
