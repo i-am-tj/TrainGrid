@@ -669,6 +669,33 @@ Tests:                 test:all: lint, typecheck, unit 161, database 189, integr
 Found and fixed:       The pill stayed on the clicked tab after Back returned to the URL it was
                        clicked from; any URL change now clears the pending click.
 Deployment impact:     UI only. No migration, no seed change.
+Status:                DONE — merged to main 2026-11-13
+```
+
+### Step 04b — Phone header menu (requested by Tanuj)
+
+```
+Story:                 Header presentation (E2-D21); no data or behaviour change elsewhere
+Branch:                epic-2/04b-mobile-nav-menu
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/27
+Commit:                94de022
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None.
+Changes:               components/MobileMenu.tsx (client, <details>): menu button with
+                       hamburger/close icon and "Open menu"/"Close menu" labels; vertical
+                       list under the header; closes on navigation, Escape, outside click and
+                       link click. AppHeader: one list of entries drawn inline from sm up and
+                       in the menu on phones; header is the positioning context.
+Tests:                 Lint and typecheck pass. 3 new header tests (phone menu opens as a
+                       vertical list and closes after navigating; keyboard, Escape and outside
+                       click; desktop stays inline). Every E2E file passes after two test
+                       updates: the routine-item helper now looks for <details> inside main
+                       (the header menu is also a <details>, which broke 4 tests), and the
+                       admin phone-header test opens the menu before checking its links.
+                       Phone screenshots, menu closed and open, checked. Full suite not run
+                       (header-only change, per Tanuj).
+Deployment impact:     UI only.
 Status:                IN REVIEW
 ```
 
