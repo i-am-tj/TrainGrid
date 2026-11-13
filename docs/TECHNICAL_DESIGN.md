@@ -1,6 +1,6 @@
 # TrainGrid — Technical design
 
-Current as of Epic 1, November 2026. The decision record behind this design is
+Current as of Epic 2, November 2026. The decision record behind this design is
 [ADR 001](adr/001-multi-user-supabase-architecture.md); the step-by-step reasoning is in
 `agents/DECISIONS.md`.
 
@@ -105,16 +105,20 @@ proxy.ts                     session refresh + route protection
 components/
   planner/                   WeekGrid, DayAgenda, WeekNav, SessionCard, DuplicateWeekForm
   session/                   AddSessionForm, EditSessionForm, CustomizeForm, WorkoutItemsView
-  library/                   RoutineList, RoutineDetail, RoutineEditor, WorkoutItemEditor
+  library/                   LibraryHeader (view control), RoutineList, RoutineDetail,
+                             CopyRoutineButton, SourceLabel, RoutineEditor, WorkoutItemEditor
   admin/                     InvitationForms
   auth/                      SignOutButton
+  AppHeader, MobileMenu,     header with logo and Beta badge; phone menu (<details>)
+  BrandLogo
 lib/
   actions.ts                 planner and library server actions
+  library/                   URL query contract, search and filters (pure), card summaries
   data/                      routines, sessions, export, schemas (Zod), mappers, server (memberData)
   auth/                      sign-in actions, invite check, session/viewer, redirects, route rules
   admin/                     admin guard, invitation functions and actions
   supabase/                  browser, server, proxy and secret-key clients; env validation
-  seed/, legacy/             seed conversion and one-time legacy import (not used at runtime)
+  seed/, legacy/             seed conversion, item id lock, one-time legacy import (not used at runtime)
   calendar-date.ts, week.ts  ISO weeks and dates (UTC arithmetic for stored dates)
 supabase/
   migrations/                schema, RLS, functions
@@ -132,12 +136,25 @@ supabase/
 | `deleteScheduledSessionAction` | Delete one session |
 | `duplicateWeekAction` | Copy a week onto another week |
 | `upsertRoutineAction`, `deleteRoutineAction` | Create, edit, delete the member’s own routine |
+| `copyRoutineAction` | Copy a GLOBAL routine into the member’s library; opens the copy with `?copied=1` |
 | `signInWithProvider`, `signOut` | OAuth start (PKCE, account chooser) and sign-out |
 | `inviteAction`, `revokeAction` | Admin only: invite; revoke a pending invitation or a member’s access |
 
 Each starts from the verified member and passes input to the data layer, which validates it with Zod.
 Saving a routine is one database call (`save_personal_routine()`, security invoker), so its items are
-replaced in a single transaction.
+replaced in a single transaction. Copying uses the same call: `copyGlobalRoutine()` loads the
+source with the member’s own client, requires it to be GLOBAL (anything else is “not found”), and
+saves the content without item ids, so the copy gets new ids and a failed copy leaves nothing.
+
+### Library list
+
+`listLibraryRoutines()` makes **one** request: the member’s visible routines (GLOBAL and their
+own) with each routine’s item names and equipment embedded, capped at 500 routines with a notice
+if the cap is reached. Views, search and filters are pure functions (`lib/library/query.ts`) over
+that result. The URL is the only state: `scope`, `q` (whitespace collapsed, at most 100
+characters), `type`, `equipment`; invalid values fall back to defaults. The heading and view
+control live in the `(list)` layout, which stays mounted across navigations so the view pill can
+slide; its `loading.tsx` applies to `/library` only, so detail pages keep real 404s and redirects.
 
 ## Routing
 
@@ -150,8 +167,8 @@ replaced in a single transaction.
 | `/week/[weekId]` | Member | Planner (`?day=` selects the mobile day) |
 | `/week/[weekId]/add` | Member | Add session (`?routine=<id>`, legacy `?template=<slug>`) |
 | `/session/[id]`, `/edit`, `/customize` | Member (owner) | Session detail and forms; 404 for anyone else |
-| `/library`, `/library/new` | Member | Routine list; new personal routine |
-| `/library/[routineId]`, `/edit` | Member | Routine detail; editor for own routines only. Legacy slug URLs redirect |
+| `/library`, `/library/new` | Member | Routine list (`?scope=global\|mine`, `q`, `type`, `equipment`); new personal routine |
+| `/library/[routineId]`, `/edit` | Member | Routine detail (Schedule, Copy to My Library, `?copied=1` confirmation); editor for own routines only. Legacy slug URLs redirect |
 | `/api/export` | Member | The member’s own data as JSON; 401 otherwise |
 | `/admin/invitations` | Admin | Invitation management; 404 for everyone else |
 
@@ -169,7 +186,9 @@ Breakpoint `md`: week grid above, day agenda below.
 - Migrations are applied locally by `npm run db:reset` and to production only by the owner with
   `npx supabase db push --remote` after a dry run. Nothing applies them automatically.
 - `supabase/seed.sql` is generated by `npm run seed:generate` from `data/templates/*.md`; it is
-  idempotent (fixed ids) and applied with `--include-seed`.
+  idempotent (fixed ids) and applied only with `--include-seed`. Item ids never move to a different
+  exercise: optional `Key:` lines and the id lock `data/templates/seed-ids.json` enforce it
+  ([CONTENT.md](CONTENT.md)).
 - Development and tests use a local Supabase stack in Docker. Only Vercel Production has production
   credentials; preview deployments have none and sit behind Vercel Authentication.
 

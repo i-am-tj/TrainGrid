@@ -1,6 +1,6 @@
 # Test plan
 
-Current as of Epic 1, November 2026. The full security matrix, with a result for every check, is
+Current as of Epic 2, November 2026. The full security matrix, with a result for every check, is
 in `agents/TEST_PLAN.md`; this page explains the strategy.
 
 ## Strategy
@@ -39,14 +39,18 @@ against anything but a local URL.
 5. **Planner** — seven days, week navigation, timed and untimed sessions, several per day,
    reschedule, delete, Duplicate Week, mobile layout without horizontal scrolling.
 6. **Library** — GLOBAL routines read-only, personal routine create/edit/delete, structured fields,
-   legacy slug links.
+   legacy slug links; All / TrainGrid / Mine views; search and filters (every-word match, item
+   names, equipment, combined, malformed URLs, refresh and back); one bounded list request; card
+   summaries; Schedule from card and detail; copy to My Library (exact content, new ids, source
+   unchanged, other members' and own routines refused, atomic, no double copy); phone and desktop
+   layout, keyboard use.
 7. **Snapshots** — scheduling copies; editing or deleting the routine never changes a session;
    customising one session changes only that session.
 8. **Validation** — dates, times, weeks, durations, names, equipment, YouTube links and item counts
    are rejected on the server when invalid.
 9. **Export** — contains only the member’s own data; there is no import.
-10. **Seed** — every template converts with nothing lost; the seed file matches the templates;
-    re-seeding is idempotent.
+10. **Seed** — every template converts with nothing lost; the seed file and the item id lock match
+    the templates; re-seeding is idempotent; an item id never moves to a different exercise.
 11. **Secrets** — no credentials in files or Git history; the secret key is absent from browser
     bundles.
 
