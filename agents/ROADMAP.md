@@ -23,6 +23,7 @@ before a dependent step starts. No step changes production configuration or runs
 | 02 | Library scope (All / TrainGrid / Mine) | `epic-2/02-library-scope` | E2-01 | 01 | — | DONE |
 | 03 | Search and filters | `epic-2/03-search-filters` | E2-02 | 02 | — | DONE |
 | 04 | GLOBAL cards and detail, scheduling CTAs | `epic-2/04-global-details` | E2-03, E2-05 | 03 | Review and merge | IN REVIEW |
+| 04a | Library UI refinement (requested by Tanuj) | `epic-2/04a-library-ui-polish` | E2-01 (presentation) | 04 | Review and merge | IN REVIEW |
 | 05 | Copy to My Library | `epic-2/05-copy-to-personal` | E2-04 | 04 | — | TODO |
 | 06 | Scheduling links | `epic-2/06-scheduling-links` | E2-05 | — | — | FOLDED into 04 (E2-D12, approved) |
 | 07 | Content workflow | `epic-2/07-content-workflow` | E2-06 | 01 (independent of 02–05) | — | TODO |

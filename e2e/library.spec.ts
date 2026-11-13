@@ -31,7 +31,7 @@ test("All is the default and labels every routine as TrainGrid or Mine", async (
   await expect(page.getByRole("link", { name: "New routine" })).toBeVisible();
 });
 
-test("TrainGrid shows shared routines only and never invites editing", async ({ page }) => {
+test("TrainGrid shows shared routines only and never invites editing them", async ({ page }) => {
   await createRoutine(page, "My Hidden Lift", "strength", [["Squat", "3 × 5"]]);
   await page.goto("/library");
   await viewNav(page).getByRole("link", { name: "TrainGrid" }).click();
@@ -42,7 +42,9 @@ test("TrainGrid shows shared routines only and never invites editing", async ({ 
   await expect(cards(page)).toHaveCount(SHARED_COUNT);
   await expect(page.getByText("My Hidden Lift")).toHaveCount(0);
   await expect(cards(page).getByText("Mine", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "New routine" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /edit/i })).toHaveCount(0);
+  // New routine stays available, and always makes a PERSONAL routine (E2-D19).
+  await expect(page.getByRole("link", { name: "New routine" })).toHaveAttribute("href", "/library/new");
   await expect(page.getByText(/read-only/)).toBeVisible();
 });
 

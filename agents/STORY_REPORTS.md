@@ -634,3 +634,41 @@ Found and fixed:       The longer card text pushed Schedule onto its own row on 
 Deployment impact:     UI only. No migration, no seed change.
 Status:                IN REVIEW
 ```
+
+### Step 04a — Library UI refinement (requested by Tanuj)
+
+```
+Story:                 E2-01 presentation (no behaviour change to search, filters or data)
+Branch:                epic-2/04a-library-ui-polish (from epic-2/04-global-details)
+PR:                    (not yet opened)
+Commit:                (not yet committed)
+Schema impact:         None.
+RLS impact:            None.
+Secrets/config impact: None.
+Changes:               components/library/LibraryHeader.tsx (client): heading, intro and the
+                       centred All / TrainGrid / Mine segmented control with one sliding pill.
+                       app/library/(list)/layout.tsx hosts it so it stays mounted across
+                       navigations. Page and loading skeleton now render only the body.
+                       RoutineList: old view tabs removed; toolbar holds the count, Clear
+                       filters and an outlined "+ New routine" in every view; bottom and
+                       empty-state New routine buttons removed (E2-D19). Search and category
+                       controls untouched.
+                       Header (E2-D20): TrainGrid mark beside the name and an outlined Beta
+                       badge; logo files and a 120 × 120 PNG for Google branding in
+                       public/brand/, upload steps in docs/BRANDING.md. On phones the nav now
+                       wraps to a second row (Tanuj's choice).
+                       Header check: lint, typecheck and 53 E2E (header, footer, auth,
+                       protection, library) pass; 2 new header tests (desktop and phone).
+Tests:                 test:all: lint, typecheck, unit 161, database 189, integration 30, build
+                       pass; E2E 93 (9 new) pass on rerun — in the first full run one journey
+                       test (session page with a video) timed out once under load; it passed
+                       3/3 alone, 10/10 with its file and in a full E2E rerun. Secret scan clean.
+                       Mutation checks: remounting the pill on each change failed the
+                       "same element slides" test; dropping the reduced-motion rule failed the
+                       reduced-motion test. Phone (360 px) and desktop screenshots checked.
+Found and fixed:       The pill stayed on the clicked tab after Back returned to the URL it was
+                       clicked from; any URL change now clears the pending click.
+Deployment impact:     UI only. No migration, no seed change.
+Status:                IN REVIEW
+```
+

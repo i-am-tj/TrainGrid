@@ -87,7 +87,7 @@ story numbers 1–33 above stay unchanged.
 
 | Story | Title | Step | Owner | Status |
 | --- | --- | --- | --- | --- |
-| E2-01 | Switch between library scopes (All / TrainGrid / Mine) | 02 | Agent | IN REVIEW |
+| E2-01 | Switch between library scopes (All / TrainGrid / Mine) | 02; presentation refined in 04a | Agent | DONE (04a IN REVIEW) |
 | E2-02 | Find and filter routines (search, category, equipment) | 03 | Agent | DONE |
 | E2-03 | Assess shared routine content (cards and detail) | 04 | Agent | IN REVIEW |
 | E2-04 | Copy a GLOBAL routine to a PERSONAL routine | 05 | Agent | TODO |

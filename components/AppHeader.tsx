@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/BrandLogo";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { isAdminViewer, parseAdminUserIds } from "@/lib/admin/access";
 import { getViewer } from "@/lib/auth/session";
@@ -13,9 +14,19 @@ export async function AppHeader() {
   return (
     <header className="border-b border-line bg-card">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-3 sm:px-4">
-        <Link href={isMember ? "/" : "/login"} className="text-base font-semibold tracking-tight">
-          TrainGrid
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={isMember ? "/" : "/login"}
+            className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
+          >
+            <BrandLogo />
+            TrainGrid
+          </Link>
+          {/* Plain text, outside the link: not interactive, read as "Beta". */}
+          <span className="rounded-md border border-stone-300 px-1.5 text-[11px] font-medium leading-4 text-stone-600">
+            Beta
+          </span>
+        </div>
         <nav className="flex min-w-0 flex-wrap items-center justify-end gap-x-1 gap-y-1 text-sm sm:gap-x-2">
           {isMember ? (
             <>

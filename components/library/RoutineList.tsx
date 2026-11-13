@@ -21,12 +21,6 @@ import { routineAtAGlance } from "@/lib/library/summary";
 import { btnPrimary, btnSecondary, fieldClass, TYPE_SHORT } from "@/lib/ui";
 import { SourceLabel } from "./SourceLabel";
 
-const SCOPE_TABS: Array<{ id: LibraryScope; label: string }> = [
-  { id: "all", label: "All" },
-  { id: "global", label: "TrainGrid" },
-  { id: "mine", label: "Mine" },
-];
-
 const CATEGORY_FILTERS: Array<{ id: "all" | SessionType; label: string }> = [
   // Not just "All": the view tabs above already have an "All".
   { id: "all", label: "All types" },
@@ -38,9 +32,6 @@ const SCOPE_NOUN: Record<LibraryScope, string> = {
   global: "TrainGrid routines",
   mine: "routines of your own",
 };
-
-const tab =
-  "inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2";
 
 /** "matching “lower” in Strength with Barbell" — only the parts that are set. */
 function describeFilters(query: LibraryQuery): string {
@@ -67,34 +58,12 @@ export function RoutineList({
 
   return (
     <div>
-      <nav aria-label="Library view" className="inline-flex rounded-lg border border-line bg-card p-1">
-        <ul className="flex gap-1">
-          {SCOPE_TABS.map((s) => {
-            const active = query.scope === s.id;
-            return (
-              <li key={s.id}>
-                <Link
-                  href={libraryHref(query, { scope: s.id })}
-                  scroll={false}
-                  aria-current={active ? "page" : undefined}
-                  className={`${tab} ${
-                    active ? "bg-stone-900 text-white" : "text-stone-700 hover:bg-stone-100"
-                  }`}
-                >
-                  {s.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
       <form
         method="get"
         action="/library"
         role="search"
         aria-label="Search the library"
-        className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end"
+        className="flex flex-col gap-2 sm:flex-row sm:items-end"
       >
         {query.scope !== "all" ? <input type="hidden" name="scope" value={query.scope} /> : null}
         {query.type !== "all" ? <input type="hidden" name="type" value={query.type} /> : null}
@@ -145,7 +114,7 @@ export function RoutineList({
         </ul>
       </nav>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line pb-3">
         <p className="text-sm text-stone-600" aria-live="polite">
           {visible.length === 1 ? "1 routine" : `${visible.length} routines`}
           {filtered ? (
@@ -157,23 +126,20 @@ export function RoutineList({
             </>
           ) : null}
         </p>
-        {query.scope === "mine" && empty !== "no-own-routines" ? (
-          <Link href="/library/new" className={btnPrimary}>
-            New routine
-          </Link>
-        ) : null}
+        {/* Always creates a PERSONAL routine, whichever view is open. */}
+        <Link href="/library/new" className={`${btnSecondary} gap-1.5`}>
+          <PlusIcon />
+          New routine
+        </Link>
       </div>
 
       {empty === "no-own-routines" ? (
         <div className="mt-4 rounded-lg border border-dashed border-line bg-card px-4 py-10 text-center">
           <p className="text-sm text-stone-700">You haven&apos;t created any routines yet.</p>
           <p className="mt-1 text-sm text-stone-600">
-            Routines you create are only visible to you.
+            Use New routine above to make one. Routines you create are only visible to you.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <Link href="/library/new" className={btnPrimary}>
-              New routine
-            </Link>
             <Link href={libraryHref(query, { scope: "global", type: "all" })} className={btnSecondary}>
               Browse TrainGrid routines
             </Link>
@@ -204,13 +170,6 @@ export function RoutineList({
         </p>
       ) : null}
 
-      {query.scope === "all" ? (
-        <div className="mt-6">
-          <Link href="/library/new" className={btnPrimary}>
-            New routine
-          </Link>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -261,5 +220,13 @@ function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
         );
       })}
     </div>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
+      <path d="M8 3.5v9M3.5 8h9" />
+    </svg>
   );
 }
