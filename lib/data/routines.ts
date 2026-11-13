@@ -1,5 +1,5 @@
 import { itemFromRow, routineFromRow, routineItemsForRpc } from "./mappers";
-import { EQUIPMENT_TYPES, isEquipmentType } from "@/lib/domain";
+import { equipmentUsed } from "@/lib/library/summary";
 import { DataError, type Db, type LibraryRoutine, type Routine, type RoutineSummary } from "./model";
 import { idSchema, routineInputSchema, type RoutineInput } from "./schemas";
 import { validate } from "./validate";
@@ -54,15 +54,12 @@ export async function listLibraryRoutines(
   if (error) throw new Error("Could not load routines.");
 
   const rows = data.slice(0, limit);
-  const routines = rows.map(({ workout_items: items, ...row }) => {
-    const used = new Set(items.flatMap((item) => item.equipment).filter(isEquipmentType));
-    return {
-      ...routineFromRow(row, userId),
-      itemNames: items.map((item) => item.name),
-      equipment: EQUIPMENT_TYPES.filter((tag) => used.has(tag)),
-      itemCount: items.length,
-    };
-  });
+  const routines = rows.map(({ workout_items: items, ...row }) => ({
+    ...routineFromRow(row, userId),
+    itemNames: items.map((item) => item.name),
+    equipment: equipmentUsed(items),
+    itemCount: items.length,
+  }));
   return { routines, truncated: data.length > limit };
 }
 

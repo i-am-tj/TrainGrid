@@ -17,7 +17,9 @@ import {
   type LibraryQuery,
   type LibraryScope,
 } from "@/lib/library/query";
+import { routineAtAGlance } from "@/lib/library/summary";
 import { btnPrimary, btnSecondary, fieldClass, TYPE_SHORT } from "@/lib/ui";
+import { SourceLabel } from "./SourceLabel";
 
 const SCOPE_TABS: Array<{ id: LibraryScope; label: string }> = [
   { id: "all", label: "All" },
@@ -231,20 +233,23 @@ function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
             </h2>
             <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-card">
               {items.map((r) => (
-                <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-3">
-                  <Link href={`/library/${r.id}`} className="min-w-0">
+                <li key={r.id} className="flex items-center justify-between gap-3 px-3 py-3">
+                  <Link href={`/library/${r.id}`} className="min-w-0 flex-1">
                     <div className="font-medium">
                       {r.name}
-                      <SourceLabel routine={r} />
+                      <SourceLabel isOwn={r.isOwn} />
                     </div>
                     <div className="text-xs text-stone-500">
                       {TYPE_SHORT[r.category]}
                       {r.description ? ` · ${r.description}` : ""}
                     </div>
+                    <div className="mt-0.5 text-xs text-stone-600">
+                      {routineAtAGlance(r.itemCount, r.equipment)}
+                    </div>
                   </Link>
                   <Link
                     href={`/week/current/add?routine=${r.id}`}
-                    className={btnSecondary}
+                    className={`${btnSecondary} shrink-0`}
                     aria-label={`Schedule ${r.name}`}
                   >
                     Schedule
@@ -256,18 +261,5 @@ function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
         );
       })}
     </div>
-  );
-}
-
-/** Says, in text, whether a routine is shared or the member's own (E2-01). */
-function SourceLabel({ routine }: { routine: LibraryRoutine }) {
-  return routine.isOwn ? (
-    <span className="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
-      Mine
-    </span>
-  ) : (
-    <span className="ml-2 rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-medium text-stone-600">
-      TrainGrid
-    </span>
   );
 }
