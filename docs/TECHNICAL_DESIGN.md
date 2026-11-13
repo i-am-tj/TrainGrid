@@ -109,8 +109,9 @@ components/
                              CopyRoutineButton, SourceLabel, RoutineEditor, WorkoutItemEditor
   admin/                     InvitationForms
   auth/                      SignOutButton
-  AppHeader, MobileMenu,     header with logo and Beta badge; phone menu (<details>)
-  BrandLogo
+  AppHeader, MobileMenu,     header with logo and Beta badge; phone menu (<details>);
+  BrandLogo, ThemeToggle     light/dark switch (a `dark` class on <html>, set before first paint
+                             by an inline script in app/layout.tsx; dark colours in globals.css)
 lib/
   actions.ts                 planner and library server actions
   library/                   URL query contract, search and filters (pure), card summaries

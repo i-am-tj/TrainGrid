@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MobileMenu } from "@/components/MobileMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { isAdminViewer, parseAdminUserIds } from "@/lib/admin/access";
 import { getViewer } from "@/lib/auth/session";
@@ -39,7 +40,7 @@ export async function AppHeader() {
             href={isMember ? "/" : "/login"}
             className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
           >
-            <BrandLogo />
+            <BrandLogo className="h-6 w-6 rounded-[22%] dark:outline dark:outline-1 dark:outline-hairline" />
             TrainGrid
           </Link>
           {/* Plain text, outside the link: not interactive, read as "Beta". */}
@@ -47,20 +48,24 @@ export async function AppHeader() {
             Beta
           </span>
         </div>
-        {items.length > 0 ? (
-          <>
+        <div className="flex items-center gap-2">
+          {items.length > 0 ? (
             <nav aria-label="Main" className="hidden items-center justify-end gap-x-2 text-sm sm:flex">
               {items.map((item) => (
                 <div key={item.key}>{item.render(desktopItem)}</div>
               ))}
             </nav>
+          ) : null}
+          {/* On every page, signed in or not. */}
+          <ThemeToggle />
+          {items.length > 0 ? (
             <MobileMenu>
               {items.map((item) => (
                 <li key={item.key}>{item.render(mobileItem)}</li>
               ))}
             </MobileMenu>
-          </>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </header>
   );

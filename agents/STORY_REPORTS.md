@@ -850,3 +850,35 @@ current (spec §9). No production migration or seed run was needed for Epic 2.
 
 EPIC 2 COMPLETE — GLOBAL WORKOUT LIBRARY LIVE
 
+---
+
+# Between epics
+
+### UI — TJ ring like iamtj.dev, and light / dark mode (requested by Tanuj)
+
+```
+Branch:                ui/theme-and-footer-ring
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/34
+Commit:                24c51f8
+Schema/RLS/config:     None.
+Changes:               Footer "TJ" ring now matches iamtj.dev (source: ../iamtj-me Footer and
+                       Monogram): hairline rgba(28,22,18,0.14) at rest; on hover or focus the
+                       ring and text fade (300 ms) to the copper accent #9a4e24 (#e0a37a in
+                       dark); previously it turned black. Light / dark mode modelled on iamtj.dev:
+                       `dark` class on <html> set before first paint (saved choice, else system),
+                       ThemeToggle in the header on every page, theme-color meta. Dark palette:
+                       iamtj.dev's dark tokens, with the Tailwind stone scale inverted and the
+                       white, amber, emerald, red and sky tints the app uses remapped in
+                       globals.css, so components needed no dark: variants. Logo gets a hairline
+                       outline in dark mode.
+Tests:                 test:all pass: unit 174, database 191, integration 35, E2E 111 (8 new),
+                       build; secret scan clean. E2E: ring hairline and copper hover in both themes, focus, 300 ms
+                       transition; theme follows system, applied before interactivity, toggle
+                       announced, remembered over the system setting, keyboard; dark-mode
+                       contrast for headings, Search, the selected type and inputs; phone header
+                       layout. Mutation: a black hover fails the ring tests; removing the
+                       before-paint script fails the theme tests. Screenshots of planner,
+                       library, detail and phone forms checked in both themes.
+Status:                IN REVIEW
+```
+

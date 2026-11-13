@@ -19,7 +19,7 @@ App (members only)
 
 ### Header
 
-`[logo] TrainGrid (Beta) · Planner · Library · Export · [Invitations] · Sign out`
+`[logo] TrainGrid (Beta) · Planner · Library · Export · [Invitations] · Sign out · [☀/☾]`
 
 - The logo is decorative; the link's name is "TrainGrid". **Beta** is plain text, not a control.
 - Planner, Library and Export appear for members only; Invitations for admins only.
@@ -27,6 +27,12 @@ App (members only)
   vertical list under the header. The list closes after navigating, on Escape (focus returns to the
   button) and on a tap outside. It works without JavaScript.
 - Sign out shows “Signing out…” immediately while it works.
+- **Light / dark mode**: a round sun/moon button on every page (beside the menu button on phones),
+  labelled “Switch to dark mode” / “Switch to light mode” with `aria-pressed`. The first visit
+  follows the system setting; a choice is remembered in the browser. The theme is applied before
+  the first paint, so a dark page never flashes light. Dark mode uses iamtj.dev's warm dark tones.
+- Footer: the “TJ” ring is a soft hairline that warms to iamtj.dev's copper accent on hover or
+  keyboard focus (300 ms).
 - No horizontal scrolling at any width.
 
 Primary entry: **Planner**. Secondary: **Library**.
