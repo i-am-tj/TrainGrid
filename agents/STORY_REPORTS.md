@@ -571,5 +571,36 @@ Found and fixed:       A library-wide loading boundary made detail pages stream,
                        member's routine returned 200 instead of 404 and legacy slug redirects
                        broke; caught by existing authorization and legacy-link tests.
 Deployment impact:     UI only. No migration, no seed change.
+Status:                DONE — merged to main 2026-11-13
+```
+
+### Step 03 — Search and filters (E2-02)
+
+```
+Story:                 E2-02 find and filter routines (search, category, equipment)
+Branch:                epic-2/03-search-filters
+PR:                    (not yet opened)
+Commit:                (not yet committed)
+Schema impact:         None.
+RLS impact:            None. One read of what the member's RLS already allows, narrowed to
+                       GLOBAL plus their own user id.
+Secrets/config impact: None.
+Changes:               lib/data/routines.ts: listLibraryRoutines() — one query with embedded
+                       item names and equipment, capped at 500 routines, reports truncation
+                       (E2-D07). lib/library/query.ts: q and equipment in the URL contract,
+                       search normalisation, every-word matching over name, description and
+                       exercise names, equipment aggregation, AND of all filters, name sort
+                       (E2-D18). Library list: search form (GET, labelled, works without
+                       JavaScript), equipment select, category chips and view tabs that keep
+                       the other filters, Clear filters, "No … matching …" zero-result message,
+                       cap notice.
+Tests:                 test:all pass: lint, typecheck, unit 158 (10 new), database 189,
+                       integration 29 (3 new), E2E 76 (11 new), build. Secret scan clean.
+                       Mutation checks: "any word" search failed 1 unit and 1 E2E; removing the
+                       equipment filter failed 2 unit and 1 E2E.
+Found and fixed:       Test expectations initially assumed some words were unique to one
+                       routine ("bulgarian", "back squat"); the seeded data has them in two.
+                       The tests now use phrases checked against the templates.
+Deployment impact:     UI only. No migration, no seed change.
 Status:                IN REVIEW
 ```

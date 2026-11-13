@@ -4,6 +4,7 @@ import { DataError } from "@/lib/data/model";
 import {
   deletePersonalRoutine,
   findGlobalRoutineIdBySlug,
+  listLibraryRoutines,
   getRoutine,
   listRoutines,
   savePersonalRoutine,
@@ -186,6 +187,58 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
     it("resolve nothing for a signed-in user who is not a member", async () => {
       const slug = (await service().from("routines").select("slug").eq("id", globalId).single()).data!.slug!;
       expect(await findGlobalRoutineIdBySlug(outsider.db, slug)).toBeNull();
+    });
+  });
+
+  describe("library list read (Epic 2, E2-02)", () => {
+    it("returns visible routines with item names and equipment in one request", async () => {
+      const mine = await savePersonalRoutine(a.db, null, {
+        name: "IT Library Mine",
+        category: "strength",
+        items: [{ name: "Goblet Squat", equipment: ["kettlebell"] }, { name: "Plank" }],
+      });
+      await savePersonalRoutine(b.db, null, { name: "IT Library B Secret", category: "other" });
+
+      let requests = 0;
+      const counting: typeof fetch = (input, init) => {
+        requests += 1;
+        return fetch(input, init);
+      };
+      const client = await a.clientWithFetch(counting);
+      requests = 0;
+      const { routines, truncated } = await listLibraryRoutines(client, a.id);
+
+      expect(requests).toBe(1);
+      expect(truncated).toBe(false);
+
+      const own = routines.find((r) => r.id === mine)!;
+      expect(own).toMatchObject({ isOwn: true, itemNames: ["Goblet Squat", "Plank"], equipment: ["kettlebell"], itemCount: 2 });
+
+      const global = routines.find((r) => r.id === globalId)!;
+      expect(global).toMatchObject({ scope: "GLOBAL", itemNames: ["Back Squat", "Romanian Deadlift"], equipment: ["barbell"] });
+
+      expect(routines.map((r) => r.name)).not.toContain("IT Library B Secret");
+      expect(routines.every((r) => r.scope === "GLOBAL" || r.isOwn)).toBe(true);
+
+      const seeded = routines.filter((r) => r.slug && !r.slug.startsWith("it-"));
+      expect(seeded.length).toBe(18);
+      expect(routines.findIndex((r) => r.scope === "PERSONAL")).toBeGreaterThan(
+        routines.findLastIndex((r) => r.scope === "GLOBAL"),
+      );
+    });
+
+    it("is bounded and reports when it cut the list short", async () => {
+      const all = await listLibraryRoutines(a.db, a.id);
+      const capped = await listLibraryRoutines(a.db, a.id, { limit: 3 });
+      expect(capped.routines).toHaveLength(3);
+      expect(capped.truncated).toBe(true);
+      expect(capped.routines.every((r) => r.scope === "GLOBAL")).toBe(true);
+      expect(all.routines.length).toBeGreaterThan(3);
+    });
+
+    it("gives a signed-in non-member nothing", async () => {
+      const { routines } = await listLibraryRoutines(outsider.db, outsider.id);
+      expect(routines).toEqual([]);
     });
   });
 
