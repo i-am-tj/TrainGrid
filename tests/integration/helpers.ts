@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { spawnSync } from "node:child_process";
 import type { Database } from "@/lib/database.types";
 import type { Db } from "@/lib/data/model";
 
@@ -103,4 +104,33 @@ export async function createGlobalRoutine(name: string, items: string[]): Promis
 
 export async function deleteGlobalRoutine(id: string): Promise<void> {
   await service().from("routines").delete().eq("id", id);
+}
+
+/**
+ * Runs SQL in the LOCAL Supabase database container, for auth fixtures the
+ * API cannot create (an OAuth identity linked onto an existing user). Returns
+ * false when the container is unavailable so callers can skip.
+ */
+export function localSql(sql: string): boolean {
+  if (!integrationReady) return false;
+  const result = spawnSync(
+    "docker",
+    ["exec", "-i", "supabase_db_traingrid", "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-q"],
+    { input: sql, encoding: "utf8" },
+  );
+  return result.status === 0;
+}
+
+/**
+ * Links a Google identity with `email` onto an existing local user, the way
+ * Supabase Auth's automatic linking does, and returns its provider id.
+ */
+export function linkGoogleIdentity(userId: string, email: string): string | null {
+  if (!/^[0-9a-f-]{36}$/.test(userId) || !/^[\w.+-]+@[\w.-]+$/.test(email)) throw new Error("Bad fixture input");
+  const providerId = `it-google-${crypto.randomUUID()}`;
+  const ok = localSql(
+    `insert into auth.identities (provider_id, user_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+     values ('${providerId}', '${userId}', 'google', '{"email": "${email}", "sub": "${providerId}"}', now(), now(), now());`,
+  );
+  return ok ? providerId : null;
 }

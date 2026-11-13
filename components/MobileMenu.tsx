@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "re
  * Phone navigation: a menu button that opens the header links as a vertical
  * list under the header. Built on <details>, so it opens without JavaScript;
  * with JavaScript it also closes after navigating, on Escape (focus returns to
- * the button) and on a click outside. Hidden from `sm` up, where the inline
+ * the button) and on a click outside. Hidden from `md` up, where the inline
  * nav is shown instead.
  */
 export function MobileMenu({ children }: { children: ReactNode }) {
@@ -62,7 +62,7 @@ export function MobileMenu({ children }: { children: ReactNode }) {
       ref={ref}
       open={open}
       onToggle={(event) => setOpen(event.currentTarget.open)}
-      className="sm:hidden"
+      className="md:hidden"
     >
       <summary
         aria-label={open ? "Close menu" : "Open menu"}

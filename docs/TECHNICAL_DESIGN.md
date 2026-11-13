@@ -36,7 +36,7 @@ several database calls.
 
 ## Security model
 
-Every private record is protected twice, and neither layer relies on the other.
+Every private record is protected in layers, and no layer relies on another.
 
 1. **Application.** `proxy.ts` turns away requests without a session (pages → `/login`, API →
    401) and fails closed if Supabase is not configured. Every page and server action then calls
@@ -46,6 +46,12 @@ Every private record is protected twice, and neither layer relies on the other.
 2. **Database.** Row Level Security restricts every row to its owner **and** requires active
    membership (`is_member()`). GLOBAL routines are readable by members and writable by no API role.
    `invitations` has no policies at all.
+
+3. **Identity.** Supabase Auth links sign-ins by verified email and issues sessions per user, so
+   access is also checked per sign-in identity (decision E2-D22). The access token hook refuses
+   tokens for identities the member has not approved and records each session's identity;
+   `is_member()` requires the current session to be recorded against an approved identity.
+   Details: [SECURITY.md](SECURITY.md#sign-in-identities-and-approval).
 
 Membership means “has a `profiles` row that is not revoked”. That row is created only by
 `accept_invitation()`, which takes no arguments, reads the caller’s own confirmed email from Supabase

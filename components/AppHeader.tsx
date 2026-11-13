@@ -12,13 +12,17 @@ export async function AppHeader() {
   // check again themselves.
   const isAdmin = isAdminViewer(viewer, parseAdminUserIds(process.env.TRAINGRID_ADMIN_USER_IDS));
 
-  // One list of entries, drawn inline from `sm` up and as a vertical menu on phones.
+  // One list of entries, drawn inline from `md` up and as a vertical menu below that.
   const items: Array<{ key: string; render: (className: string) => React.ReactNode }> = [];
   if (isMember) {
     items.push(
       { key: "planner", render: (c) => <Link href="/" className={c}>Planner</Link> },
       { key: "library", render: (c) => <Link href="/library" className={c}>Library</Link> },
       { key: "export", render: (c) => <a href="/api/export" className={c}>Export</a> },
+      {
+        key: "account",
+        render: (c) => <Link href="/account/sign-in-methods" className={c}>Sign-in methods</Link>,
+      },
     );
   }
   if (isAdmin) {
@@ -49,7 +53,7 @@ export async function AppHeader() {
         </div>
         {items.length > 0 ? (
           <>
-            <nav aria-label="Main" className="hidden items-center justify-end gap-x-2 text-sm sm:flex">
+            <nav aria-label="Main" className="hidden items-center justify-end gap-x-2 text-sm md:flex">
               {items.map((item) => (
                 <div key={item.key}>{item.render(desktopItem)}</div>
               ))}

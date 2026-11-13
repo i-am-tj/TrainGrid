@@ -92,51 +92,85 @@ Deleting the line in a new commit is not enough: it stays in Git history and may
    step 1 is what actually protects you; history cleanup only limits further copies.
 4. Record what happened, when, and what was rotated.
 
-## Linked sign-in identities
+## Sign-in identities and approval
 
 Supabase Auth **links** a new Google or GitHub sign-in to an existing user when its verified email
-matches the email of any identity that user already has. It does not create a separate user.
-Whoever signs in through a linked identity *is* that user: they see that user's routines and
-sessions, because to RLS and the app they are the same person.
+matches the email of any identity that user already has. It then issues an ordinary session for
+that **user**. Row Level Security only sees `auth.uid()`, so before decision E2-D22 every linked
+identity had the member's full access, whatever the app's callback decided. A check in the
+callback or in `accept_invitation()` is advisory: a client can exchange its own code and call the
+REST API without asking.
 
-So an address that is already a sign-in of one member must never be invited as a separate person.
-Two checks enforce this (decision E2-D22):
+Access is therefore granted per **identity**, and enforced where tokens are issued and on every
+query (migration `20261113000000_identity_approval.sql`):
 
-- **When inviting**, the admin page refuses an address that is already a linked identity of a
-  user whose account email differs (`invitation_email_conflict()`).
-- **When signing in**, `accept_invitation()` refuses a sign-in made through a linked identity whose
-  address has a live invitation that this user never accepted. The callback signs the session out
-  and `/login` shows a fixed message that names no one.
+| Piece | What it does |
+| --- | --- |
+| `approved_identities` | Which identities may be used. Automatic when the identity's verified email equals the account email (the invited mailbox). Otherwise the member approves it on **Sign-in methods** from an approved session signed in within the last 10 minutes. Invitations play no part. |
+| `custom_access_token_hook` | Called by Supabase Auth before issuing **any** token. On sign-in it finds the identity used (`raw_user_meta_data.sub`, which Supabase Auth writes on every OAuth sign-in), refuses an unapproved one with 403, and records session → identity. On refresh it uses that record, so the session keeps its identity. |
+| `session_is_approved()` | Used by `is_member()` and the profile read policy. The token's session must still exist and be recorded against an approved identity. Unlinking an identity, or signing out, cuts access on the next query, not at token expiry. |
+| Sign-in methods page | Lists the member's identities. Approve, or **Remove** with Supabase Auth's `unlinkIdentity()`. The identity of the current session cannot be removed there. |
+| Invite check | The admin page refuses to invite an address that is already a linked identity of another account (`invitation_email_conflict()`). |
 
-A sign-in check cannot undo a link that already exists, or end sessions that are already open. If
-it happens:
+Legitimate linking still works. A same-address identity is approved automatically. Another address,
+for example your GitHub email, is approved once on Sign-in methods.
 
-1. **Revoke the pending invitation** for the address on the admin page.
-2. **End the sessions** of the affected user in Supabase → Authentication → Users → (user) →
-   sign out. That covers anyone still signed in through the linked identity.
-3. **Remove the linked identity** if it belongs to someone else. This is owner-only database
-   work: delete that row from `auth.identities`, after checking its `provider` and `created_at`.
-   While another identity of the member carries the same address (for example their GitHub
-   email), the address cannot have an account of its own. Invite a different address instead.
-4. Review and delete anything created in that window, and record what happened.
+### Deploying identity approval (owner)
 
-### Incident 2026-11-13: routines from "another account" in Mine
+The migration and the hook must go live together. Without the hook no session is recorded, and
+every member sees nothing (it fails closed).
 
-In production, three identical routines appeared in a member's **Mine** view. They had been
-created by what was meant to be a different, newly invited account. Reasoning, from read-only
-queries (ids, timestamps and providers only):
+1. **Settings first.** Authentication → Sign In / Providers → enable **Manual Linking**. It is
+   required by `unlinkIdentity()`. It also lets members link identities manually, but those still
+   need approval.
+2. Dry run, then apply: `npx supabase db push --remote --dry-run`, then without `--dry-run`.
+3. **Straight away**, Authentication → Hooks → **Customize Access Token (JWT) Claims** → Postgres
+   function → `public.custom_access_token_hook` → enable.
+4. Every existing session loses access at once and cannot refresh, including any session opened
+   through a linked identity. Everyone signs in once more. No session rows need deleting.
+5. Smoke test: your usual Google sign-in works. A linked identity with another address is refused
+   with the "has not been approved" message. Sign-in methods lists your identities.
 
-- All three rows had the same `owner_user_id`, the member viewing them, and were created within
-  three seconds. RLS and the data layer returned exactly that member's rows. **No other user's
-  data was exposed.**
-- That user had three identities: Google, GitHub, and a **second Google identity linked at
-  11:59:26 UTC**. Its address was the same as the email on the member's GitHub identity.
-- The admin had invited that address as a separate person at 11:58:31. The sign-in at 11:59 was
-  linked onto the existing member, and the invitation was never used.
-- The routines were created at 12:04 in that session, as the existing member.
+Rollback: disable the hook, then restore `is_member()` and the `profiles_select_own` policy from
+`20261112040000_revoke_members.sql` and `20261112010000_rls_policies.sql` in a new migration.
+Disabling the hook alone leaves members locked out.
 
-Fixed by the two checks above (migration `20261113000000_linked_identity_gate.sql`). Follow-up for
-the owner: apply the migration to production, then complete steps 1 to 4 for that identity.
+### Cleaning up a wrongly linked identity
+
+Use the app, not SQL against `auth.identities`:
+
+1. Sign in with the identity whose email is the account email. It is approved automatically.
+2. **Sign-in methods** → **Remove** each identity that should not be there (`unlinkIdentity()`).
+   Its sessions lose access at once and cannot refresh.
+3. **Automatic relinking.** Supabase Auth links by email across *all* of the account's
+   identities. While any remaining identity carries an address, a new sign-in with that address
+   links back into this account. With approval it is refused, but it never becomes its own
+   account. To let that address have its own account, remove **every** identity with that address
+   from this account, including for example a GitHub identity whose email is that address.
+4. A provider account that knows **both** addresses (GitHub lists all of an account's verified
+   emails) may later link to either account, or be refused as ambiguous. Keep one of the two
+   addresses on that provider account, or do not use it to sign in.
+5. Delete anything created through the wrong identity, and record what happened.
+
+### Incident 2026-11-13: routines from a "second account" in Mine
+
+Three identical routines appeared in the admin's **Mine** view, created from a phone signed in
+with a second Gmail address that the admin had invited as a separate member. Read-only queries
+(ids, timestamps and providers only) showed:
+
+- The rows' owner was the admin's own user id. RLS was correct and no other user's data was read.
+- On 12 Nov, the admin's GitHub identity was linked to the admin account. Its email is the second
+  address. GitHub most likely also lists the admin's Gmail as verified, which is why the link
+  happened.
+- On 13 Nov at 11:59 UTC, the phone's Google sign-in for the second address was **linked into the
+  admin account** through that GitHub email. The invitation was never used.
+- In review, the first fix (a check in `accept_invitation()`) was shown to be advisory: a session
+  for the linked identity still read member data straight through the REST API. That was
+  reproduced in `tests/integration/linked-identity.test.ts`, and replaced by identity approval.
+
+Owner follow-up, after deploying: on Sign-in methods remove the phone Google identity **and** the
+GitHub identity (both carry the second address). Then sign in on the phone again to create the
+separate account, and delete the duplicate routines.
 
 ## Dependencies
 

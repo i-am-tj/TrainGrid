@@ -29,7 +29,9 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) return fail("signin");
+  // The access token hook refuses unapproved linked identities (E2-D22); no
+  // session exists in that case. Any other failure stays generic.
+  if (error) return fail(error.message === "identity_not_approved" ? "linked" : "signin");
 
   // Invite-only gate. The decision is made inside the database from the
   // caller's own identity; nothing from the request influences it.

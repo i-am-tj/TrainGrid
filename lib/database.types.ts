@@ -5,7 +5,21 @@ export type Database = {
   
   "public": {
           Tables: {
-            "invitations": {
+            "approved_identities": {
+                  Row: {
+                    "approved_at": string,"basis": string,"identity_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "approved_at"?: string,"basis": string,"identity_id": string,"user_id": string
+                  }
+                  Update: {
+                    "approved_at"?: string,"basis"?: string,"identity_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"invitations": {
                   Row: {
                     "accepted_at": string | null,"accepted_by": string | null,"created_at": string,"email": string,"id": string,"invited_by": string | null,"revoked_at": string | null
                   }
@@ -79,6 +93,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"session_identities": {
+                  Row: {
+                    "created_at": string,"identity_id": string,"session_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"identity_id": string,"session_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"identity_id"?: string,"session_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"workout_items": {
                   Row: {
                     "created_at": string,"equipment": (string)[],"id": string,"instruction": string,"name": string,"notes": string,"rest": string,"routine_id": string,"sort_order": number,"target": string,"updated_at": string,"video_url": string | null
@@ -108,17 +136,34 @@ isOneToOne: false
             "accept_invitation":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"approve_my_identity":
+{ Args: { "p_identity_id": string }; Returns: string
+                           },
+"custom_access_token_hook":
+{ Args: { "event": Json }; Returns: Json
+                           },
+"identity_is_approved":
+{ Args: { "p_identity_id": string }; Returns: boolean
+                           },
 "invitation_email_conflict":
 { Args: { "p_email": string }; Returns: boolean
                            },
 "is_member":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"list_my_identities":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "approved": boolean,"email": string,"identity_id": string,"linked_at": string,"provider": string,"this_session": boolean
+            }[]
+                           },
 "revoke_invitation":
 { Args: { "p_invitation_id": string,"p_protected_user_ids": (string)[] }; Returns: string
                            },
 "save_personal_routine":
 { Args: { "p_category": string,"p_description": string,"p_items": Json,"p_name": string,"p_routine_id": string }; Returns: string
+                           },
+"session_is_approved":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            }
           }
           Enums: {

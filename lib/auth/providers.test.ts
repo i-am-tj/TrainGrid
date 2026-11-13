@@ -31,7 +31,7 @@ describe("loginErrorMessage", () => {
   it("returns fixed texts for known codes", () => {
     expect(loginErrorMessage("signin")).toMatch(/could not be completed/);
     expect(loginErrorMessage("email")).toMatch(/verified email/);
-    expect(loginErrorMessage("linked")).toMatch(/already linked to another TrainGrid member/);
+    expect(loginErrorMessage("linked")).toMatch(/linked to an existing TrainGrid account but has not been approved/);
     expect(loginErrorMessage("invite")).toBe(
       "TrainGrid is currently invite-only. Ask the person who invited you to verify the email used for your account.",
     );

@@ -13,6 +13,29 @@ begin;
 
 select plan(31);
 
+-- Identity approval (E2-D22): members need a session recorded against an
+-- approved identity. Gives every test user one, with session id = user id.
+create function pg_temp.bind_sessions() returns void
+language sql security definer as $bind$
+  insert into auth.identities (provider_id, user_id, provider, identity_data)
+  select u.id::text, u.id, 'email', jsonb_build_object('email', u.email)
+    from auth.users u
+   where not exists (select 1 from auth.identities i where i.user_id = u.id);
+  insert into auth.sessions (id, user_id)
+  select u.id, u.id from auth.users u
+  on conflict (id) do nothing;
+  insert into public.approved_identities (identity_id, user_id, basis)
+  select distinct on (i.user_id) i.id, i.user_id, 'account_email'
+    from auth.identities i
+   order by i.user_id, i.created_at
+  on conflict (identity_id) do nothing;
+  insert into public.session_identities (session_id, user_id, identity_id)
+  select distinct on (a.user_id) a.user_id, a.user_id, a.identity_id
+    from public.approved_identities a
+   order by a.user_id, a.approved_at
+  on conflict (session_id) do nothing;
+$bind$;
+
 -- ---------------------------------------------------------------------------
 -- Fixtures
 -- ---------------------------------------------------------------------------
@@ -110,8 +133,9 @@ select throws_ok('select public.accept_invitation()', '42501', null, 'anon canno
 reset role;
 
 set local role authenticated;
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000a3", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000a3", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000a3"}', true);
 
 select throws_ok('select * from public.invitations', '42501', null, 'M2: a signed-in user cannot read invitations');
 select throws_ok(
@@ -130,22 +154,27 @@ select throws_ok(
 select is(public.accept_invitation(), 'not_invited', 'A4: uninvited OAuth user is refused');
 select ok(not public.is_member(), 'uninvited user is still not a member');
 
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000a4", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000a4", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000a4"}', true);
 select is(public.accept_invitation(), 'not_invited', 'a revoked invitation grants nothing');
 
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000a5", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000a5", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000a5"}', true);
 select is(public.accept_invitation(), 'unverified_email', 'A6: an unconfirmed email is refused even with an invitation');
 
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000a6", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000a6", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000a6"}', true);
 select is(public.accept_invitation(), 'unverified_email', 'an email/password identity is refused even with an invitation');
 
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000ff", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000ff", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000ff"}', true);
 select throws_ok('select public.accept_invitation()', '28000', null, 'a subject with no auth user is rejected');
 
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims', '{"role": "authenticated"}', true);
 select throws_ok('select public.accept_invitation()', '28000', null, 'a token without a subject is rejected');
 
@@ -153,16 +182,18 @@ select throws_ok('select public.accept_invitation()', '28000', null, 'a token wi
 -- accept_invitation(): acceptance
 -- ---------------------------------------------------------------------------
 
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000a1", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000a1", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000a1"}', true);
 
 select ok(not public.is_member(), 'invited user is not a member before accepting');
 select is(public.accept_invitation(), 'member', 'invited, verified OAuth user becomes a member');
 select ok(public.is_member(), 'invited user is a member after accepting');
 select is(public.accept_invitation(), 'member', 'calling again is harmless');
 
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000a2", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000a2", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000a2"}', true);
 select is(public.accept_invitation(), 'member', 'email matching ignores case');
 
 reset role;

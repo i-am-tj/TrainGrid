@@ -32,22 +32,25 @@ against anything but a local URL.
    production.
 2. **Route protection** — every private page redirects anonymous visitors, the export answers 401,
    a deployment without Supabase settings fails closed, signed-in non-members are turned away.
-3. **Isolation** — member A cannot read, change, delete, duplicate or plant data for member B:
+3. **Identity approval** — a sign-in through an unapproved linked identity gets no token; unlinking
+   or signing out cuts an unexpired token off at once; refresh follows the session's identity;
+   tested directly against Supabase (auth server and REST API), not only through the app.
+4. **Isolation** — member A cannot read, change, delete, duplicate or plant data for member B:
    in the database (RLS), through the data layer, and with forged form input to the app.
-4. **Admin** — invite, duplicate refused, invalid refused, revoke pending, revoke accepted member;
+5. **Admin** — invite, duplicate refused, invalid refused, revoke pending, revoke accepted member;
    non-admins get 404; admin requests replayed by a member or an anonymous visitor change nothing.
-5. **Planner** — seven days, week navigation, timed and untimed sessions, several per day,
+6. **Planner** — seven days, week navigation, timed and untimed sessions, several per day,
    reschedule, delete, Duplicate Week, mobile layout without horizontal scrolling.
-6. **Library** — GLOBAL routines read-only, personal routine create/edit/delete, structured fields,
+7. **Library** — GLOBAL routines read-only, personal routine create/edit/delete, structured fields,
    legacy slug links.
-7. **Snapshots** — scheduling copies; editing or deleting the routine never changes a session;
+8. **Snapshots** — scheduling copies; editing or deleting the routine never changes a session;
    customising one session changes only that session.
-8. **Validation** — dates, times, weeks, durations, names, equipment, YouTube links and item counts
+9. **Validation** — dates, times, weeks, durations, names, equipment, YouTube links and item counts
    are rejected on the server when invalid.
-9. **Export** — contains only the member’s own data; there is no import.
-10. **Seed** — every template converts with nothing lost; the seed file matches the templates;
+10. **Export** — contains only the member’s own data; there is no import.
+11. **Seed** — every template converts with nothing lost; the seed file matches the templates;
     re-seeding is idempotent.
-11. **Secrets** — no credentials in files or Git history; the secret key is absent from browser
+12. **Secrets** — no credentials in files or Git history; the secret key is absent from browser
     bundles.
 
 Several suites were confirmed able to fail: with RLS disabled, with the admin check removed, and

@@ -185,9 +185,9 @@ test("an address already linked to a member's sign-in cannot be invited as someo
   }
 });
 
-test("the sign-in page explains a refused linked identity without naming anyone", async ({ page }) => {
+test("the sign-in page explains a refused, unapproved linked identity without naming anyone", async ({ page }) => {
   await page.goto("/login?error=linked");
   await expect(page.getByRole("alert")).toHaveText(
-    "This account's email address is already linked to another TrainGrid member, so it cannot be used for a separate account. Ask the person who invited you to use a different address.",
+    "This sign-in method is linked to an existing TrainGrid account but has not been approved. Sign in the way you usually do and approve it under Sign-in methods, or ask the person who invited you to use a different address.",
   );
 });

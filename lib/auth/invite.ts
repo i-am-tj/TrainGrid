@@ -1,9 +1,9 @@
 import type { LoginErrorCode } from "@/lib/auth/providers";
 
 /** What `public.accept_invitation()` can return. */
-export type InviteResult = "member" | "not_invited" | "unverified_email" | "linked_identity";
+export type InviteResult = "member" | "not_invited" | "unverified_email";
 
-const INVITE_RESULTS: readonly InviteResult[] = ["member", "not_invited", "unverified_email", "linked_identity"];
+const INVITE_RESULTS: readonly InviteResult[] = ["member", "not_invited", "unverified_email"];
 
 export function parseInviteResult(value: unknown): InviteResult | null {
   return INVITE_RESULTS.includes(value as InviteResult) ? (value as InviteResult) : null;
@@ -24,8 +24,6 @@ export function loginErrorForInvite(value: unknown): LoginErrorCode | null {
       return "invite";
     case "unverified_email":
       return "email";
-    case "linked_identity":
-      return "linked";
     default:
       return "signin";
   }

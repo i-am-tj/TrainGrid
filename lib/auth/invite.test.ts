@@ -6,7 +6,8 @@ describe("parseInviteResult", () => {
     expect(parseInviteResult("member")).toBe("member");
     expect(parseInviteResult("not_invited")).toBe("not_invited");
     expect(parseInviteResult("unverified_email")).toBe("unverified_email");
-    expect(parseInviteResult("linked_identity")).toBe("linked_identity");
+    // Linked identities are refused when tokens are issued (E2-D22), not here.
+    expect(parseInviteResult("linked_identity")).toBeNull();
     expect(parseInviteResult("MEMBER")).toBeNull();
     expect(parseInviteResult(true)).toBeNull();
     expect(parseInviteResult(null)).toBeNull();
@@ -22,8 +23,6 @@ describe("loginErrorForInvite", () => {
   it("maps refusals to their messages", () => {
     expect(loginErrorForInvite("not_invited")).toBe("invite");
     expect(loginErrorForInvite("unverified_email")).toBe("email");
-    // E2-D22: a linked identity invited as someone else is refused, never let in.
-    expect(loginErrorForInvite("linked_identity")).toBe("linked");
   });
 
   it("refuses anything unexpected", () => {

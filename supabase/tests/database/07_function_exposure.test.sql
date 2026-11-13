@@ -21,8 +21,11 @@ select results_eq(
      where n.nspname = 'public' and p.prosecdef
        and has_function_privilege('authenticated', p.oid, 'execute')
      order by 1$$,
-  $$values ('accept_invitation'::text collate "C")$$,
-  'accept_invitation is the only SECURITY DEFINER function signed-in users can call'
+  $$values ('accept_invitation'::text collate "C"),
+           ('approve_my_identity'),
+           ('list_my_identities'),
+           ('session_is_approved')$$,
+  'signed-in users can call only these SECURITY DEFINER functions (invitation and identity approval, E2-D22)'
 );
 
 select is(

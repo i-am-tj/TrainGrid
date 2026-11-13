@@ -16,6 +16,29 @@ begin;
 
 select plan(52);
 
+-- Identity approval (E2-D22): members need a session recorded against an
+-- approved identity. Gives every test user one, with session id = user id.
+create function pg_temp.bind_sessions() returns void
+language sql security definer as $bind$
+  insert into auth.identities (provider_id, user_id, provider, identity_data)
+  select u.id::text, u.id, 'email', jsonb_build_object('email', u.email)
+    from auth.users u
+   where not exists (select 1 from auth.identities i where i.user_id = u.id);
+  insert into auth.sessions (id, user_id)
+  select u.id, u.id from auth.users u
+  on conflict (id) do nothing;
+  insert into public.approved_identities (identity_id, user_id, basis)
+  select distinct on (i.user_id) i.id, i.user_id, 'account_email'
+    from auth.identities i
+   order by i.user_id, i.created_at
+  on conflict (identity_id) do nothing;
+  insert into public.session_identities (session_id, user_id, identity_id)
+  select distinct on (a.user_id) a.user_id, a.user_id, a.identity_id
+    from public.approved_identities a
+   order by a.user_id, a.approved_at
+  on conflict (session_id) do nothing;
+$bind$;
+
 -- ---------------------------------------------------------------------------
 -- Fixtures (as the owner role; RLS does not apply)
 -- ---------------------------------------------------------------------------
@@ -61,8 +84,9 @@ select is(
      from pg_class c
      join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'public' and c.relkind = 'r'
-      -- invitations is deliberately closed: no policies, no privileges.
-      and c.relname <> 'invitations'
+      -- Deliberately closed: no policies, no privileges. invitations, and the
+      -- identity approval records written only by definer functions (E2-D22).
+      and c.relname not in ('invitations', 'approved_identities', 'session_identities')
       and not exists (
         select 1 from pg_policies p
          where p.schemaname = 'public' and p.tablename = c.relname
@@ -101,8 +125,9 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-00000000000a", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-00000000000a", "role": "authenticated", "session_id": "00000000-0000-4000-8000-00000000000a"}', true);
 
 select ok(public.is_member(), 'A is a member');
 
@@ -367,8 +392,9 @@ select is_empty(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-00000000000b", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-00000000000b", "role": "authenticated", "session_id": "00000000-0000-4000-8000-00000000000b"}', true);
 
 select results_eq(
   'select id from public.scheduled_sessions',
@@ -390,8 +416,9 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-00000000000c", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-00000000000c", "role": "authenticated", "session_id": "00000000-0000-4000-8000-00000000000c"}', true);
 
 select ok(not public.is_member(), 'I10: an uninvited user is not a member');
 select is_empty('select 1 from public.profiles', 'I10: uninvited user sees no profiles');

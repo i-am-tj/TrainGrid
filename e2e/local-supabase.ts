@@ -210,7 +210,7 @@ export function localSql(sql: string): boolean {
 export function linkLocalGoogleIdentity(userId: string, email: string): boolean {
   if (!/^[0-9a-f-]{36}$/.test(userId) || !/^[\w.+-]+@[\w.-]+$/.test(email)) throw new Error("Bad fixture input");
   return localSql(
-    `insert into auth.identities (provider_id, user_id, provider, identity_data)
-     values ('e2e-${crypto.randomUUID()}', '${userId}', 'google', '{"email": "${email}"}');`,
+    `insert into auth.identities (provider_id, user_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+     values ('e2e-${crypto.randomUUID()}', '${userId}', 'google', '{"email": "${email}"}', now(), now(), now());`,
   );
 }

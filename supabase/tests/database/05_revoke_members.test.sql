@@ -9,6 +9,29 @@ begin;
 
 select plan(33);
 
+-- Identity approval (E2-D22): members need a session recorded against an
+-- approved identity. Gives every test user one, with session id = user id.
+create function pg_temp.bind_sessions() returns void
+language sql security definer as $bind$
+  insert into auth.identities (provider_id, user_id, provider, identity_data)
+  select u.id::text, u.id, 'email', jsonb_build_object('email', u.email)
+    from auth.users u
+   where not exists (select 1 from auth.identities i where i.user_id = u.id);
+  insert into auth.sessions (id, user_id)
+  select u.id, u.id from auth.users u
+  on conflict (id) do nothing;
+  insert into public.approved_identities (identity_id, user_id, basis)
+  select distinct on (i.user_id) i.id, i.user_id, 'account_email'
+    from auth.identities i
+   order by i.user_id, i.created_at
+  on conflict (identity_id) do nothing;
+  insert into public.session_identities (session_id, user_id, identity_id)
+  select distinct on (a.user_id) a.user_id, a.user_id, a.identity_id
+    from public.approved_identities a
+   order by a.user_id, a.approved_at
+  on conflict (session_id) do nothing;
+$bind$;
+
 insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
   ('00000000-0000-4000-8000-0000000000e1', 'member@example.test', now(), '{}'),
   ('00000000-0000-4000-8000-0000000000e2', 'admin@example.test', now(), '{}');
@@ -47,8 +70,9 @@ select throws_ok(
 reset role;
 
 set local role authenticated;
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000e1", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000e1", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000e1"}', true);
 select throws_ok(
   $$select public.revoke_invitation('60000000-0000-4000-8000-0000000000e2', '{}')$$,
   '42501', null, 'a member cannot call revoke_invitation'
@@ -106,8 +130,9 @@ select ok(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000e1", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000e1", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000e1"}', true);
 
 select ok(not public.is_member(), 'a revoked member is not a member');
 select is_empty('select 1 from public.scheduled_sessions', 'revoked: cannot read their own sessions');
@@ -178,8 +203,9 @@ insert into public.invitations (id, email) values
   ('60000000-0000-4000-8000-0000000000e4', 'member@example.test');
 
 set local role authenticated;
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000e1", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000e1", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000e1"}', true);
 
 select is(public.accept_invitation(), 'member', 'a new invitation restores the member');
 select ok(public.is_member(), 'restored member is a member again');
@@ -207,8 +233,9 @@ select results_eq(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
+select pg_temp.bind_sessions();
 select set_config('request.jwt.claims',
-  '{"sub": "00000000-0000-4000-8000-0000000000e2", "role": "authenticated"}', true);
+  '{"sub": "00000000-0000-4000-8000-0000000000e2", "role": "authenticated", "session_id": "00000000-0000-4000-8000-0000000000e2"}', true);
 select ok(public.is_member(), 'the admin stayed a member throughout');
 select is_empty(
   $$select 1 from public.scheduled_sessions where user_id = '00000000-0000-4000-8000-0000000000e1'$$,

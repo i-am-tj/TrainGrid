@@ -699,40 +699,38 @@ Deployment impact:     UI only.
 Status:                IN REVIEW
 ```
 
-### Fix — Linked-identity gate (bug report, independent of the step order)
+### Fix — Identity approval (bug report and PR #28 review; independent of the step order)
 
 ```
-Report:                Routines "created by someone else" visible in Mine (production).
+Report:                Routines from a "second account" visible in Mine (production).
 Branch:                fix/linked-identity-invite-gate
 PR:                    https://github.com/i-am-tj/TrainGrid/pull/28
-Commit:                43123cc
-Finding:               Not a cross-user leak. The rows' owner was the viewer's own user id
-                       (RLS and "Mine" were correct). A Google sign-in for an address the
-                       admin had just invited as a separate person was linked by Supabase
-                       Auth onto the existing member, because the member's GitHub identity
-                       has the same email. That session created the routines as the member.
-                       Evidence from read-only production queries; no emails recorded here.
-Schema impact:         Migration 20261113000000_linked_identity_gate.sql: new
-                       invitation_email_conflict() (service_role only); accept_invitation()
-                       gains the linked_identity refusal. Not applied to production.
-RLS impact:            None.
-Secrets/config impact: None.
-Changes:               Admin invite refuses addresses already linked to another user's
-                       sign-in; callback refuses linked_identity with a fixed /login message;
-                       docs/SECURITY.md section and incident record (E2-D22).
-Tests:                 test:all pass: lint, typecheck, unit 161, database 203 (14 new),
-                       integration 30, E2E 97 (2 new), build. Secret scan clean. Mutation
-                       checks: removing the sign-in refusal failed 4 database tests; skipping
-                       the invite-time check failed the new admin E2E.
-Also fixed:            Phone menu race from Step 04b, found when the merged header tests
-                       ran here: an outside tap or Escape right after opening could arrive
-                       before React saw the native toggle, so the menu stayed open (about 1
-                       run in 3 under repeats). MobileMenu now closes the <details> element
-                       itself; header tests 40/40 with --repeat-each=8.
-Owner actions:         Apply the migration to production (dry run first). Then revoke the
-                       pending invitation for the linked address, sign out the member's
-                       sessions, remove the linked Google identity if it is not the member's,
-                       and delete the three duplicate routines if unwanted.
+Commits:               43123cc (first fix, superseded), 5128f95 (phone menu race), and the
+                       identity approval commit on top
+Finding:               Not a cross-user leak: the rows' owner was the viewer's own user id. The
+                       phone's Google sign-in for a second address was linked by Supabase Auth
+                       into the admin account through the admin's GitHub identity (same email).
+Review finding:        The first fix (accept_invitation() refusal) was advisory. Reproduced: in
+                       the same session the gate answered linked_identity while the REST API
+                       returned the member's private routine.
+Schema impact:         Migration 20261113000000_identity_approval.sql (replaces the PR's first
+                       migration; never applied outside local): approved_identities,
+                       session_identities, custom_access_token_hook, session_is_approved, is_member
+                       and profiles_select_own updated, list_my_identities, approve_my_identity,
+                       invitation_email_conflict. Not applied to production.
+Config impact:         Local config.toml enables the hook and Manual Linking. Production needs both
+                       set by the owner (docs/SECURITY.md runbook).
+Changes:               Sign-in methods page (approve, remove via unlinkIdentity); callback maps the
+                       hook's refusal to a fixed message; header link; menu breakpoint sm → md.
+Tests:                 test:all pass: lint, typecheck, unit 161, database 221 (32 in the new file;
+                       older files now use recorded sessions), integration 37 (7 new, direct
+                       Supabase), E2E 103 (3 new), build. Secret scan clean. Mutation checks:
+                       hook issuing tokens to unapproved identities failed 5 database and 2
+                       integration tests; session_is_approved() always true failed 6 database and
+                       3 integration tests; is_member() without the session check failed database
+                       tests (the profile policy still blocked data, which is intended).
+Owner actions:         Approve, then deploy in order: Manual Linking, migration, hook. Then on
+                       Sign-in methods remove the phone Google and the GitHub identity, sign in
+                       on the phone again, and delete the duplicate routines.
 Status:                IN REVIEW
 ```
-
