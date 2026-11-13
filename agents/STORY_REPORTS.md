@@ -553,8 +553,8 @@ Status:                DONE — merged to main 2026-11-13
 ```
 Story:                 E2-01 switch between library scopes
 Branch:                epic-2/02-library-scope
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/23
+Commit:                7ec720b
 Schema impact:         None.
 RLS impact:            None. Views filter what the member's own RLS-governed query returns.
 Secrets/config impact: None.
