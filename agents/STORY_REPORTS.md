@@ -411,8 +411,8 @@ Status:                DONE — merged to main 2026-11-12 (ce1cc73)
 ```
 Story:                 30 Vercel production configuration; 31 free-tier constraint
 Branch:                epic-1/15-rollout
-PR:                    not opened yet
-Commit:                not committed yet
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/18
+Commit:                32472e1
 Schema impact:         One migration, 20261112050000_lock_down_definer_functions.sql: revokes
                        API access to Supabase's rls_auto_enable() where it exists.
 RLS impact:            None to policies. New database test 07: no SECURITY DEFINER function
