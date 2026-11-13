@@ -706,7 +706,7 @@ Report:                Routines from a "second account" visible in Mine (product
 Branch:                fix/linked-identity-invite-gate
 PR:                    https://github.com/i-am-tj/TrainGrid/pull/28
 Commits:               43123cc (first fix, superseded), 5128f95 (phone menu race), and the
-                       identity approval commit on top
+                       8986e04 (identity approval)
 Finding:               Not a cross-user leak: the rows' owner was the viewer's own user id. The
                        phone's Google sign-in for a second address was linked by Supabase Auth
                        into the admin account through the admin's GitHub identity (same email).
