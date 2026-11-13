@@ -1,13 +1,13 @@
 # Roadmap
 
-Last updated: 2026-11-12
+Last updated: 2026-11-13
 
 ## Epics
 
 | Epic | Title | Status |
 | --- | --- | --- |
 | 1 | Secure invite-only multi-user cloud foundation | DONE (2026-11-13) |
-| 2 | Global workout library | IN PROGRESS — plan approved 2026-11-13 |
+| 2 | Global workout library | DONE (2026-11-13) |
 | 3 | Personal workout library | Not started |
 | 4 | Per-user calendar and scheduling | Not started |
 
@@ -28,7 +28,7 @@ before a dependent step starts. No step changes production configuration or runs
 | 05 | Copy to My Library | `epic-2/05-copy-to-personal` | E2-04 | 04 | — | DONE |
 | 06 | Scheduling links | `epic-2/06-scheduling-links` | E2-05 | — | — | FOLDED into 04 (E2-D12, approved) |
 | 07 | Content workflow | `epic-2/07-content-workflow` | E2-06 | 01 (independent of 02–05) | — | DONE |
-| 08 | Release and docs | `epic-2/08-release-docs` | all | 02–07 | Review and merge; production smoke test (signed in) | IN REVIEW |
+| 08 | Release and docs | `epic-2/08-release-docs` | all | 02–07 | — | DONE (smoke test PASS 2026-11-13) |
 
 ### Sequencing notes
 
