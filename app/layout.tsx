@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { AppHeader } from "@/components/AppHeader";
 import { SiteFooter } from "@/components/footer/SiteFooter";
 import "./globals.css";
@@ -14,6 +14,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// The display serif from iamtj.dev, used only for the "TJ" monogram in the footer.
+const displaySerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
+  style: "italic",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "TrainGrid",
   description: "A lightweight 7-day training planner and workout reference.",
@@ -25,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppHeader />
