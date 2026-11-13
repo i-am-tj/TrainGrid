@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { exportUserData } from "@/lib/data/export";
 import { DataError } from "@/lib/data/model";
 import {
+  copyGlobalRoutine,
   deletePersonalRoutine,
   findGlobalRoutineIdBySlug,
   listLibraryRoutines,
@@ -239,6 +240,78 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
     it("gives a signed-in non-member nothing", async () => {
       const { routines } = await listLibraryRoutines(outsider.db, outsider.id);
       expect(routines).toEqual([]);
+    });
+  });
+
+  describe("copy a GLOBAL routine to My Library (Epic 2, E2-04)", () => {
+    const content = (items: { name: string; instruction: string; rest: string; target: string; notes: string; equipment: string[]; videoUrl: string | null }[]) =>
+      items.map(({ name, instruction, rest, target, notes, equipment, videoUrl }) => ({ name, instruction, rest, target, notes, equipment, videoUrl }));
+    const ownCount = async (user: TestUser) =>
+      (await service().from("routines").select("id", { count: "exact", head: true }).eq("owner_user_id", user.id)).count ?? 0;
+
+    it("makes an exact PERSONAL copy owned by the caller, with new ids; the source is unchanged", async () => {
+      const source = await getRoutine(a.db, a.id, globalId);
+      const copyId = await copyGlobalRoutine(a.db, a.id, globalId);
+      const copy = await getRoutine(a.db, a.id, copyId);
+
+      expect(copyId).not.toBe(globalId);
+      expect(copy).toMatchObject({
+        scope: "PERSONAL",
+        isOwn: true,
+        slug: null,
+        name: source!.name,
+        category: source!.category,
+        description: source!.description,
+      });
+      expect(content(copy!.items)).toEqual(content(source!.items));
+      const sourceItemIds = source!.items.map((item) => item.id);
+      for (const item of copy!.items) expect(sourceItemIds).not.toContain(item.id);
+
+      const [row] = (await service().from("routines").select("owner_user_id, scope").eq("id", copyId)).data ?? [];
+      expect(row).toEqual({ owner_user_id: a.id, scope: "PERSONAL" });
+      expect(await getRoutine(a.db, a.id, globalId)).toEqual(source);
+    });
+
+    it("copying again makes a separate routine", async () => {
+      const first = await copyGlobalRoutine(a.db, a.id, globalId);
+      const second = await copyGlobalRoutine(a.db, a.id, globalId);
+      expect(second).not.toBe(first);
+    });
+
+    it("refuses anything that is not a GLOBAL routine the caller can see, and creates nothing", async () => {
+      const bRoutine = await savePersonalRoutine(b.db, null, {
+        name: "B secret",
+        category: "other",
+        items: [{ name: "B step", instruction: "private" }],
+      });
+      const aRoutine = await savePersonalRoutine(a.db, null, { name: "A own", category: "other" });
+      const before = await ownCount(a);
+
+      await rejects(copyGlobalRoutine(a.db, a.id, bRoutine), "not_found");
+      await rejects(copyGlobalRoutine(a.db, a.id, aRoutine), "not_found");
+      await rejects(copyGlobalRoutine(a.db, a.id, crypto.randomUUID()), "not_found");
+      await rejects(copyGlobalRoutine(a.db, a.id, "not-a-uuid"), "not_found");
+      await rejects(copyGlobalRoutine(a.db, a.id, null), "not_found");
+      expect(await ownCount(a)).toBe(before);
+
+      // Not even through a raw query: B's routine stays invisible to A.
+      expect((await a.db.from("routines").select("id").eq("id", bRoutine)).data).toEqual([]);
+    });
+
+    it("a signed-in non-member cannot copy", async () => {
+      await rejects(copyGlobalRoutine(outsider.db, outsider.id, globalId), "not_found");
+      expect(await ownCount(outsider)).toBe(0);
+    });
+
+    it("G5: a session scheduled from the copy keeps its own snapshot when the copy is edited", async () => {
+      const copyId = await copyGlobalRoutine(a.db, a.id, globalId);
+      const session = await scheduleRoutine(a.db, a.id, { routineId: copyId, date: MONDAY });
+      await savePersonalRoutine(a.db, copyId, { name: "My edited copy", category: "strength", items: [{ name: "Front Squat", instruction: "5 × 3" }] });
+
+      const after = await getSession(a.db, a.id, session.id);
+      expect(after!.items.map((item) => item.name)).toEqual(["Back Squat", "Romanian Deadlift"]);
+      // And the GLOBAL routine is untouched by editing the copy.
+      expect((await getRoutine(a.db, a.id, globalId))!.items.map((item) => item.name)).toEqual(["Back Squat", "Romanian Deadlift"]);
     });
   });
 

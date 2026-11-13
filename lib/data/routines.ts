@@ -113,6 +113,55 @@ export async function savePersonalRoutine(
 }
 
 /**
+ * Copies a GLOBAL routine into the caller's own library (E2-04) and returns
+ * the new routine's id.
+ *
+ * The source is loaded with the caller's own client, so Row Level Security
+ * decides what they can see, and it must be GLOBAL: a guessed id of another
+ * member's routine, of the caller's own routine, an invalid id or a
+ * non-member all get "not found", and nothing is created. Nothing about the
+ * copy comes from the request except the source id.
+ *
+ * The copy has the source's exact name, category, description and ordered
+ * items (E2-D10), scope PERSONAL, the caller as owner and no slug. Items are
+ * passed without ids, so every routine and item id is new. It is saved by
+ * save_personal_routine() in one transaction: a failed copy leaves nothing.
+ */
+export async function copyGlobalRoutine(db: Db, userId: string, rawSourceId: unknown): Promise<string> {
+  const id = idSchema.safeParse(rawSourceId);
+  if (!id.success) throw new DataError("not_found", "Routine not found.");
+
+  const { data, error } = await db
+    .from("routines")
+    .select(`${ROUTINE_COLUMNS}, workout_items(${ITEM_COLUMNS}, sort_order)`)
+    .eq("id", id.data)
+    .eq("scope", "GLOBAL")
+    .order("sort_order", { referencedTable: "workout_items" })
+    .maybeSingle();
+  if (error) throw new Error("Could not load the routine.");
+  if (!data) throw new DataError("not_found", "Routine not found.");
+
+  const { workout_items: rows, ...row } = data;
+  const source = routineFromRow(row, userId);
+  if (source.scope !== "GLOBAL") throw new DataError("not_found", "Routine not found.");
+
+  return savePersonalRoutine(db, null, {
+    name: source.name,
+    category: source.category,
+    description: source.description,
+    items: rows.map(itemFromRow).map((item) => ({
+      name: item.name,
+      instruction: item.instruction,
+      rest: item.rest,
+      target: item.target,
+      notes: item.notes,
+      equipment: item.equipment,
+      videoUrl: item.videoUrl,
+    })),
+  });
+}
+
+/**
  * Deletes one of the caller's PERSONAL routines. Scheduled sessions made from
  * it keep their snapshot; only their provenance link is cleared.
  */
