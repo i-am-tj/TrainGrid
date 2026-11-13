@@ -1,14 +1,23 @@
 import Link from "next/link";
-import type { RoutineSummary } from "@/lib/data/model";
-import { SESSION_TYPE_LABELS, SESSION_TYPES, type SessionType } from "@/lib/domain";
+import type { LibraryRoutine } from "@/lib/data/model";
+import {
+  EQUIPMENT_LABELS,
+  EQUIPMENT_TYPES,
+  SESSION_TYPE_LABELS,
+  SESSION_TYPES,
+  type SessionType,
+} from "@/lib/domain";
 import {
   applyLibraryQuery,
+  DEFAULT_LIBRARY_QUERY,
+  hasFilters,
   libraryEmptyState,
   libraryHref,
+  MAX_SEARCH_LENGTH,
   type LibraryQuery,
   type LibraryScope,
 } from "@/lib/library/query";
-import { btnPrimary, btnSecondary, TYPE_SHORT } from "@/lib/ui";
+import { btnPrimary, btnSecondary, fieldClass, TYPE_SHORT } from "@/lib/ui";
 
 const SCOPE_TABS: Array<{ id: LibraryScope; label: string }> = [
   { id: "all", label: "All" },
@@ -31,15 +40,28 @@ const SCOPE_NOUN: Record<LibraryScope, string> = {
 const tab =
   "inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2";
 
+/** "matching “lower” in Strength with Barbell" — only the parts that are set. */
+function describeFilters(query: LibraryQuery): string {
+  const parts: string[] = [];
+  if (query.q) parts.push(`matching “${query.q}”`);
+  if (query.type !== "all") parts.push(`in ${SESSION_TYPE_LABELS[query.type]}`);
+  if (query.equipment !== "all") parts.push(`with ${EQUIPMENT_LABELS[query.equipment]}`);
+  return parts.length > 0 ? parts.join(" ") : "in this view";
+}
+
 export function RoutineList({
   routines,
   query,
+  truncated = false,
 }: {
-  routines: RoutineSummary[];
+  routines: LibraryRoutine[];
   query: LibraryQuery;
+  truncated?: boolean;
 }) {
   const visible = applyLibraryQuery(routines, query);
   const empty = libraryEmptyState(routines, query, visible);
+  const filtered = hasFilters(query);
+  const clearHref = libraryHref({ ...DEFAULT_LIBRARY_QUERY, scope: query.scope });
 
   return (
     <div>
@@ -65,6 +87,42 @@ export function RoutineList({
         </ul>
       </nav>
 
+      <form
+        method="get"
+        action="/library"
+        role="search"
+        aria-label="Search the library"
+        className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end"
+      >
+        {query.scope !== "all" ? <input type="hidden" name="scope" value={query.scope} /> : null}
+        {query.type !== "all" ? <input type="hidden" name="type" value={query.type} /> : null}
+        <label className="block text-sm font-medium sm:flex-1">
+          Search routines
+          <input
+            type="search"
+            name="q"
+            defaultValue={query.q}
+            maxLength={MAX_SEARCH_LENGTH}
+            placeholder="Name, description or exercise"
+            className={fieldClass}
+          />
+        </label>
+        <label className="block text-sm font-medium sm:w-48">
+          Equipment
+          <select name="equipment" defaultValue={query.equipment === "all" ? "" : query.equipment} className={fieldClass}>
+            <option value="">Any equipment</option>
+            {EQUIPMENT_TYPES.map((tag) => (
+              <option key={tag} value={tag}>
+                {EQUIPMENT_LABELS[tag]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" className={btnPrimary}>
+          Search
+        </button>
+      </form>
+
       <nav aria-label="Category" className="mt-3">
         <ul className="flex flex-wrap gap-2">
           {CATEGORY_FILTERS.map((f) => {
@@ -86,8 +144,16 @@ export function RoutineList({
       </nav>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-stone-600" aria-live="polite">
           {visible.length === 1 ? "1 routine" : `${visible.length} routines`}
+          {filtered ? (
+            <>
+              {" · "}
+              <Link href={clearHref} className="underline underline-offset-2 hover:text-stone-900">
+                Clear filters
+              </Link>
+            </>
+          ) : null}
         </p>
         {query.scope === "mine" && empty !== "no-own-routines" ? (
           <Link href="/library/new" className={btnPrimary}>
@@ -114,10 +180,10 @@ export function RoutineList({
       ) : empty === "no-matches" ? (
         <div className="mt-4 rounded-lg border border-dashed border-line bg-card px-4 py-10 text-center">
           <p className="text-sm text-stone-700">
-            No {SCOPE_NOUN[query.scope]} in {query.type === "all" ? "this view" : SESSION_TYPE_LABELS[query.type]}.
+            No {SCOPE_NOUN[query.scope]} {describeFilters(query)}.
           </p>
           <div className="mt-4">
-            <Link href={libraryHref(query, { type: "all" })} className={btnSecondary}>
+            <Link href={clearHref} className={btnSecondary}>
               Clear filters
             </Link>
           </div>
@@ -129,6 +195,12 @@ export function RoutineList({
       ) : (
         <RoutineGroups routines={visible} />
       )}
+
+      {truncated ? (
+        <p className="mt-4 text-sm text-stone-600">
+          Showing the first routines only. Narrow the search to find the rest.
+        </p>
+      ) : null}
 
       {query.scope === "all" ? (
         <div className="mt-6">
@@ -143,7 +215,7 @@ export function RoutineList({
 
 const GROUPS: SessionType[] = ["running", "strength", "plyometrics", "other"];
 
-function RoutineGroups({ routines }: { routines: RoutineSummary[] }) {
+function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
   return (
     <div className="mt-4 space-y-6">
       {GROUPS.map((type) => {
@@ -188,7 +260,7 @@ function RoutineGroups({ routines }: { routines: RoutineSummary[] }) {
 }
 
 /** Says, in text, whether a routine is shared or the member's own (E2-01). */
-function SourceLabel({ routine }: { routine: RoutineSummary }) {
+function SourceLabel({ routine }: { routine: LibraryRoutine }) {
   return routine.isOwn ? (
     <span className="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
       Mine

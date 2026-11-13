@@ -96,7 +96,7 @@ test("a filter with no results says so and offers Clear filters", async ({ page 
   await page.goto("/library?scope=mine&type=running");
   await expect(page.getByText("No routines of your own in Running.")).toBeVisible();
   await expect(page.getByText(/haven't created/)).toHaveCount(0);
-  await page.getByRole("link", { name: "Clear filters" }).click();
+  await page.locator("main").getByRole("link", { name: "Clear filters" }).last().click();
   await expect(page).toHaveURL(/\/library\?scope=mine$/);
   await expect(cards(page)).toHaveCount(1);
 });
@@ -150,4 +150,145 @@ test("the view and category controls are distinguishable", async ({ page }) => {
   await expect(viewNav(page).getByRole("link", { name: "All", exact: true })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Category" }).getByRole("link", { name: "All types" }))
     .toHaveAttribute("aria-current", "page");
+});
+
+// ---------------------------------------------------------------------------
+// Search and filters (Epic 2, E2-02)
+// ---------------------------------------------------------------------------
+
+const search = async (page: Page, text: string) => {
+  await page.getByRole("searchbox", { name: "Search routines" }).fill(text);
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  // A GET form always sends its fields, so wait for this search's own q (blank stays blank).
+  await page.waitForURL((url) => url.searchParams.get("q") === text);
+};
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** Waits (with retries) until the result cards show exactly these routine names, in order. */
+const expectCards = async (page: Page, names: string[]) =>
+  expect(cards(page).locator("a[href^='/library/'] > div:first-child")).toHaveText(
+    names.map((name) => new RegExp(`^${escapeRegExp(name)}\\s*(TrainGrid|Mine)?$`)),
+  );
+/** Card names in display order, read only once the results (not the loading skeleton) are on screen. */
+const cardNames = async (page: Page) => {
+  await expect(page.getByText(/^\d+ routines?\b/)).toBeVisible();
+  return (await cards(page).locator("a[href^='/library/'] > div:first-child").allInnerTexts()).map((t) =>
+    t.replace(/\s*(TrainGrid|Mine)$/, "").trim(),
+  );
+};
+
+test("search finds routines by name, description and exercise name", async ({ page }) => {
+  await page.goto("/library");
+  await search(page, "lower");
+  await expectCards(page, ["Lower A", "Lower B", "Lower-Body Cooldown", "Lower-Body Warm-up"]);
+
+  await search(page, "conversational");
+  await expectCards(page, ["Easy Run"]);
+
+  // "Bulgarian split squat" appears only as an exercise name, never in a routine name or description.
+  await search(page, "bulgarian");
+  await expectCards(page, ["Lower A", "Lower B"]);
+});
+
+test("search ignores case and extra spaces, and needs every word", async ({ page }) => {
+  await page.goto("/library?q=%20%20ROMANIAN%20%20%20deadlift%20");
+  await expect(page.getByRole("searchbox", { name: "Search routines" })).toHaveValue("ROMANIAN deadlift");
+  await expectCards(page, ["Lower A"]);
+
+  await page.goto("/library?q=squat+treadmill");
+  await expect(page.getByText("No routines matching “squat treadmill”.")).toBeVisible();
+});
+
+test("a blank search is no search", async ({ page }) => {
+  await page.goto("/library");
+  await search(page, "    ");
+  await expect(page.getByText(`${SHARED_COUNT} routines`)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Clear filters" })).toHaveCount(0);
+});
+
+test("the equipment filter matches any item with the tag; untagged routines need no filter", async ({ page }) => {
+  await page.goto("/library");
+  await page.getByLabel("Equipment").selectOption("machine");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.waitForURL(/equipment=machine/);
+  await expectCards(page, ["Lower B"]);
+
+  await page.goto("/library?equipment=barbell");
+  await expectCards(page, ["Lower A", "Lower B", "Upper A", "Upper B"]);
+
+  await page.goto("/library");
+  expect(await cardNames(page)).toContain("Easy Run");
+});
+
+test("filters combine, and the category chips keep the search", async ({ page }) => {
+  await page.goto("/library?scope=global&q=lower&equipment=barbell");
+  await page.getByRole("navigation", { name: "Category" }).getByRole("link", { name: "Strength" }).click();
+  await expect(page).toHaveURL(/\/library\?scope=global&q=lower&type=strength&equipment=barbell$/);
+  await expectCards(page, ["Lower A", "Lower B"]);
+  await expect(page.getByRole("searchbox", { name: "Search routines" })).toHaveValue("lower");
+  await expect(page.getByLabel("Equipment")).toHaveValue("barbell");
+
+  await viewNav(page).getByRole("link", { name: "Mine" }).click();
+  await expect(page).toHaveURL(/\/library\?scope=mine&q=lower&type=strength&equipment=barbell$/);
+});
+
+test("searching keeps the view and category", async ({ page }) => {
+  await page.goto("/library?scope=global&type=running");
+  await search(page, "easy");
+  await expect(page).toHaveURL(/scope=global/);
+  await expect(page).toHaveURL(/type=running/);
+  // Running Warm-up and Running Cooldown also say "easy" but are other categories.
+  await expectCards(page, ["Easy Run", "Long Run", "Recovery Run"]);
+});
+
+test("zero results say what was searched and offer Clear filters, keeping the view", async ({ page }) => {
+  await page.goto("/library?scope=global&q=zzzz&equipment=kettlebell");
+  await expect(page.getByText("No TrainGrid routines matching “zzzz” with Kettlebell.")).toBeVisible();
+  await expect(page.getByText(/haven't created|No TrainGrid routines yet/)).toHaveCount(0);
+  await page.getByRole("link", { name: "Clear filters" }).first().click();
+  await expect(page).toHaveURL(/\/library\?scope=global$/);
+  await expect(page.getByText(`${SHARED_COUNT} routines`)).toBeVisible();
+});
+
+test("malformed search parameters fall back safely", async ({ page }) => {
+  const long = "x".repeat(300);
+  const response = await page.goto(`/library?q=${long}&equipment=trampoline&type=strength`);
+  expect(response?.status()).toBe(200);
+  await expect(page.getByLabel("Equipment")).toHaveValue("");
+  await expect(page.getByRole("searchbox", { name: "Search routines" })).toHaveValue("x".repeat(100));
+
+  await page.goto("/library?q=%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E");
+  await expect(page.getByText("No routines matching “<img src=x onerror=alert(1)>”.")).toBeVisible();
+  expect(await page.locator("main img").count()).toBe(0);
+});
+
+test("filter state survives reload and back navigation", async ({ page }) => {
+  await page.goto("/library");
+  await search(page, "upper");
+  await page.getByRole("navigation", { name: "Category" }).getByRole("link", { name: "Strength" }).click();
+  await page.waitForURL(/type=strength/);
+  await page.reload();
+  await expectCards(page, ["Upper A", "Upper B"]);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/library\?q=upper(&equipment=)?$/);
+  await expectCards(page, ["Upper A", "Upper B", "Upper-Body Cooldown", "Upper-Body Warm-up"]);
+});
+
+test("search works from the keyboard", async ({ page }) => {
+  await page.goto("/library");
+  const box = page.getByRole("searchbox", { name: "Search routines" });
+  await box.focus();
+  await page.keyboard.type("tempo");
+  await page.keyboard.press("Enter");
+  await page.waitForURL(/q=tempo/);
+  await expectCards(page, ["Tempo / Threshold"]);
+});
+
+test("the search controls fit a phone screen", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/library?scope=global&q=lower&equipment=barbell&type=strength");
+  await expect(page.getByRole("searchbox", { name: "Search routines" })).toBeVisible();
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 4,
+  );
+  expect(overflow).toBe(false);
 });

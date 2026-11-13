@@ -88,7 +88,7 @@ story numbers 1–33 above stay unchanged.
 | Story | Title | Step | Owner | Status |
 | --- | --- | --- | --- | --- |
 | E2-01 | Switch between library scopes (All / TrainGrid / Mine) | 02 | Agent | IN REVIEW |
-| E2-02 | Find and filter routines (search, category, equipment) | 03 | Agent | TODO |
+| E2-02 | Find and filter routines (search, category, equipment) | 03 | Agent | IN REVIEW |
 | E2-03 | Assess shared routine content (cards and detail) | 04 | Agent | TODO |
 | E2-04 | Copy a GLOBAL routine to a PERSONAL routine | 05 | Agent | TODO |
 | E2-05 | Schedule directly from the library | 04 (06 folded in, E2-D12) | Agent | TODO |
@@ -120,6 +120,7 @@ story numbers 1–33 above stay unchanged.
 - **The video link is not fully accessible.** It reads "▶ Watch demo" with no item name and no
   new-tab notice. Fixed in Step 04.
 - **`listRoutines()` has no row bound.** Fine for 18 GLOBAL routines, but a member's personal
-  routines are unbounded. Step 03 adds an explicit cap (E2-D07).
+  routines are unbounded. Step 03 adds an explicit cap (E2-D07). Done: the library list now
+  uses `listLibraryRoutines()`, capped at 500 with a visible notice.
 - **There is no loading state for the library.** Step 02 adds `app/library/loading.tsx`.
 - **`agents/EPIC-1.md`** is in an open PR (#20) and not yet on `main`. Unrelated to Epic 2.

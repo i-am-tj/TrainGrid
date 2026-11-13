@@ -22,7 +22,13 @@ export function service(): Db {
   });
 }
 
-export type TestUser = { id: string; email: string; db: Db };
+export type TestUser = {
+  id: string;
+  email: string;
+  db: Db;
+  /** Another signed-in client for the same user, with a custom fetch (to count requests). */
+  clientWithFetch: (fetchImpl: typeof fetch) => Promise<Db>;
+};
 
 const created: string[] = [];
 
@@ -45,7 +51,16 @@ export async function createTestUser(label: string, { member = true } = {}): Pro
   });
   const signIn = await db.auth.signInWithPassword({ email, password });
   if (signIn.error) throw new Error(`sign-in failed: ${signIn.error.message}`);
-  return { id: data.user.id, email, db };
+  const clientWithFetch = async (fetchImpl: typeof fetch) => {
+    const client = createClient<Database>(url, publishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { fetch: fetchImpl },
+    });
+    const again = await client.auth.signInWithPassword({ email, password });
+    if (again.error) throw new Error(`sign-in failed: ${again.error.message}`);
+    return client;
+  };
+  return { id: data.user.id, email, db, clientWithFetch };
 }
 
 /** A client with no session: the publishable key alone. */

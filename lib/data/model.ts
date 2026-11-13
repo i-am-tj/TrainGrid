@@ -32,6 +32,14 @@ export type RoutineSummary = {
 
 export type Routine = RoutineSummary & { items: PlannedItem[] };
 
+/** A routine as the library list needs it: summary plus what search and filters look at. */
+export type LibraryRoutine = RoutineSummary & {
+  itemNames: string[];
+  /** Every equipment tag used by any item, in canonical order, without duplicates. */
+  equipment: EquipmentType[];
+  itemCount: number;
+};
+
 export type SnapshotItem = PlannedItem & {
   /** The routine item this was copied from, if any. Provenance only. */
   sourceItemId: string | null;

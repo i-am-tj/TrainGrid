@@ -1,5 +1,6 @@
 import { itemFromRow, routineFromRow, routineItemsForRpc } from "./mappers";
-import { DataError, type Db, type Routine, type RoutineSummary } from "./model";
+import { EQUIPMENT_TYPES, isEquipmentType } from "@/lib/domain";
+import { DataError, type Db, type LibraryRoutine, type Routine, type RoutineSummary } from "./model";
 import { idSchema, routineInputSchema, type RoutineInput } from "./schemas";
 import { validate } from "./validate";
 
@@ -24,6 +25,45 @@ export async function listRoutines(db: Db, userId: string): Promise<RoutineSumma
     .order("name");
   if (error) throw new Error("Could not load routines.");
   return data.map((row) => routineFromRow(row, userId));
+}
+
+/** Upper bound on routines read for the library list (E2-D07). */
+export const LIBRARY_ROUTINE_LIMIT = 500;
+
+/**
+ * Everything the library list, its search and its filters need, in ONE
+ * request: the member's visible routines with each routine's item names and
+ * equipment embedded (no per-routine queries). RLS applies to the routines
+ * and to the embedded items; the user-id filter narrows it again.
+ *
+ * Bounded: GLOBAL routines first, then the member's own, at most `limit`.
+ * `truncated` says whether more existed, so the page can say so.
+ */
+export async function listLibraryRoutines(
+  db: Db,
+  userId: string,
+  { limit = LIBRARY_ROUTINE_LIMIT }: { limit?: number } = {},
+): Promise<{ routines: LibraryRoutine[]; truncated: boolean }> {
+  const { data, error } = await db
+    .from("routines")
+    .select(`${ROUTINE_COLUMNS}, workout_items(name, equipment)`)
+    .or(`scope.eq.GLOBAL,owner_user_id.eq.${userId}`)
+    .order("scope")
+    .order("name")
+    .limit(limit + 1);
+  if (error) throw new Error("Could not load routines.");
+
+  const rows = data.slice(0, limit);
+  const routines = rows.map(({ workout_items: items, ...row }) => {
+    const used = new Set(items.flatMap((item) => item.equipment).filter(isEquipmentType));
+    return {
+      ...routineFromRow(row, userId),
+      itemNames: items.map((item) => item.name),
+      equipment: EQUIPMENT_TYPES.filter((tag) => used.has(tag)),
+      itemCount: items.length,
+    };
+  });
+  return { routines, truncated: data.length > limit };
 }
 
 export async function getRoutine(db: Db, userId: string, rawId: unknown): Promise<Routine | null> {
