@@ -5,7 +5,7 @@ const svgProps = {
   "aria-hidden": true,
   focusable: false,
   xmlns: "http://www.w3.org/2000/svg",
-  className: "size-6",
+  className: "size-[18px]",
 } as const;
 
 export function XIcon() {
