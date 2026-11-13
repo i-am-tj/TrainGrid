@@ -1,73 +1,85 @@
 # Test results
 
-Date: 31 Aug 2026 (library enhancement)
+Date: 13 Nov 2026 (Epic 1, documentation closure). Local run of `npm run test:all` against the local
+Supabase stack; production checks from 12 Nov 2026. Per-check results and history are in
+`agents/TEST_PLAN.md`.
 
 ## Summary
 
 | Suite | Result |
 | --- | --- |
-| Vitest (`npm test`) | **38 passed** (7 files) |
-| Playwright (`npx playwright test`) | **13 passed** |
-| MVP checklist | All implementation items **PASS** (see `docs/MVP_CHECKLIST.md`) |
+| ESLint, TypeScript (`npm run typecheck`) | Pass |
+| Unit — Vitest (`npm test`) | **131 passed** (16 files) |
+| Database — pgTAP (`npm run db:test`) | **189 passed** (7 files) |
+| Integration — Vitest (`npm run test:integration`) | **26 passed** |
+| End to end — Playwright (`npm run test:e2e`) | **53 passed** |
+| Production build (`npm run build`) | Pass |
+| Secret scan, files and full Git history (`npm run scan:secrets`) | No credentials found |
+| Production dependency audit (`npm audit --omit=dev`) | 0 vulnerabilities |
 
-## Tests executed
+## What was tested
 
-### Unit (Vitest)
+### Database (pgTAP, as the real API roles)
 
-- ISO week Monday–Sunday, month/year boundary, 2020-W53 / 2026-W01, leap day 29 Feb 2024
-- Previous/next week × 60 without corrupting Monday
-- 30-minute times; `07:30` sits in hour 7
-- Workout item parse/serialize, reorder, running session Markdown
-- Live-link vs snapshot vs ad-hoc resolution; missing template keeps stored name
-- Duplicate week copies with new ids; refuses same-week copy
-- Backup JSON accept/reject (malformed, wrong version, invalid session)
-- Name trim/cap; slug uniqueness; untimed-then-time sort
+- Constraints: GLOBAL/PERSONAL ownership, slugs only on GLOBAL, item fields, equipment, video links,
+  snapshot shape, sort order, durations.
+- Row Level Security on every table: members see only their own rows; GLOBAL routines readable and
+  not writable; anonymous and uninvited users read and write nothing; ownership cannot be changed.
+- Invitations: normalised emails, one live invitation per email, `accept_invitation()` accepts only
+  a confirmed Google or GitHub email with a live invitation, refused attempts consume nothing.
+- Revocation: a revoked member can reach nothing, including their own data; data is kept; a new
+  invitation restores access; admins are protected.
+- `save_personal_routine()`: atomic, stable item ids, cannot touch other routines.
+- Seed: 18 routines and 96 items, fields filled, order kept, no metadata left in text.
+- Function exposure: no `SECURITY DEFINER` function callable by anonymous visitors.
 
-### End-to-end (Playwright)
+### Integration (real signed-in users through the API)
 
-- Journey 1 — Lower A template → schedule Monday 08:00 → open contents
-- Journey 2 — VO2 running template → schedule Wednesday 07:00 → edit notes
-- Journey 3 — Speed Run 07:00 + Lower B 08:30 → reschedule Lower B
-- Journey 4 — Duplicate week → edit copy → original week unchanged
-- Journey 5 — Export → wipe E2E data → import restores plan
-- Invalid import JSON is rejected; existing template remains
-- Seven-day planner + week navigation + Today
-- Empty week / empty library
-- Delete template; scheduled session still shows workout text
-- Edit template body; live-linked session updates
-- Mobile 390px: day nav, add control, no horizontal overflow
+Routine and session CRUD, snapshots unaffected by routine edits and deletion, customising one
+occurrence, Duplicate Week with new ids, export scope, legacy slug lookup, revocation, and every
+cross-user case — through the data layer and by direct queries that bypass the app’s own filters.
 
-## Bugs discovered and fixed
+### End to end (Playwright, fresh member per test)
 
-| Bug | Fix |
+- Sign-in page, OAuth hand-off (PKCE, account chooser, same-site callback), fixed error messages,
+  invite-only notice, sign-out.
+- Route protection for every private page and the export; unconfigured deployments fail closed.
+- Planner journeys: personal and shared routines on the calendar, timed and untimed sessions,
+  several per day, reschedule, refuse non-existent weeks, Duplicate Week, mobile layout.
+- Library: shared routines read-only, personal routine lifecycle, structured fields, legacy links.
+- Admin: invite, duplicate and invalid refused, revoke pending, revoke accepted member, 404 for
+  non-admins.
+- Forged requests: another member’s ids swapped into real forms, injected ownership fields, and an
+  admin’s captured requests replayed by a member and an anonymous visitor — all refused, checked in
+  the database.
+
+### Production (12 Nov 2026)
+
+- Read-only database checks: schema matches, RLS on every table, no anonymous grants, seed present,
+  every snapshot valid.
+- Auth: only Google and GitHub sign-in enabled.
+- Signed-out requests: private pages redirect to sign-in, export 401.
+- JavaScript served to browsers: no secret key, admin list or private key.
+- Google and GitHub sign-in, invite acceptance and refusal, the admin page, revocation and the
+  planner checked by the project owner.
+
+## Confirmed able to fail
+
+Tests were run against deliberately broken versions to show they detect real problems:
+
+| Break | Detected by |
 | --- | --- |
-| Invalid import could throw after starting a replace, and had no user-facing error | Parse/validate first (`parseBackupJson`); import returns `{ error }` without writing; banner on Import |
-| Import used a data dir that could not be isolated in tests | `TRAINGRID_DATA_DIR` getters in `lib/paths.ts` |
-| Invalid week ids / times could be stored | `coerceSession` requires ISO week + 30-minute times |
-| Blank / huge names | `sanitizeName` (trim, max 200); form `maxLength` |
-| “No specific time” matched Playwright `getByLabel('Time')` (substring) | Checkbox label is now **No start time** |
-| Duplicate-week / backup logic was only inside Server Actions | Extracted `duplicateWeekSessions` and `parseBackupJson` for tests |
-| Weak focus and small hit targets | `min-h-10` + `:focus-visible` ring |
-| Unhandled action errors could surface raw exceptions | `app/error.tsx` with a safe message |
-
-## Published / hosted behaviour
-
-- Default `data/schedule.json` is empty; hosted planners show a friendly visitor note (clone/deploy your own). Library has no banner.
-- Visitors should clone/fork and deploy their own TrainGrid rather than expecting a shared writable planner.
-- `isPublishedReadonly()` covers `VERCEL=1` and `TRAINGRID_READONLY`.
+| RLS disabled on `scheduled_sessions` | Database and integration isolation tests |
+| Admin check removed from invitation creation | Replayed-admin-request E2E test |
+| An exposed `SECURITY DEFINER` function | Function-exposure database tests |
+| A planted secret key and database password | `scan:secrets` |
 
 ## Known limitations
 
-- Next.js may log `The destination stream closed early` when a test downloads `/api/export`; the export file is still valid and Journey 5 passed.
-- Vitest prints a Vite configLoader warning for `vitest.config.ts`; tests still run.
-- Only Chromium is used in Playwright, not WebKit/Firefox.
-- Screen-reader and colour-contrast audits were not run with dedicated a11y tooling.
-- Timezone matrix is not CI-parameterised; week math uses local year/month/day, not UTC instants.
-- E2E does not populate a full Mon–Sun sample week in one test; duplicate-week is covered with a single Easy Run plus unit tests for the copy function.
-
-## Untested / light coverage
-
-- Keyboard-only full-app tour
-- Import of a backup with mixed valid/invalid rows (whole file is rejected — covered in unit tests)
-- 05:00 / 22:00 on the scrolled grid (unit tests cover hour mapping; E2E uses 07:00–18:00)
-- Simultaneous two-server writes to `schedule.json`
+- Real Google and GitHub sign-in cannot be automated; it is verified manually on production.
+- The case of a GitHub account without a verified email is tested with a simulated provider error.
+- Only Chromium is used in Playwright.
+- Screen-reader and contrast audits were not run with dedicated tooling.
+- Eight moderate advisories remain in the lint toolchain (`typescript-eslint`); no patched release
+  exists yet. They do not affect the application.
+- Next.js logs “The destination stream closed early” during some E2E downloads; tests pass.

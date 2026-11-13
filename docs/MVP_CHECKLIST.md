@@ -1,5 +1,11 @@
 # TrainGrid — MVP checklist
 
+> **Historical record.** This checklist verified the original single-user, file-backed MVP on
+> 31 Aug 2026. That design (files in `data/`, a read-only published site, live-linked templates,
+> Markdown workout items, import) was replaced in Epic 1 by the invite-only multi-user app on
+> Supabase. Current requirements: [REQUIREMENTS.md](REQUIREMENTS.md). Epic 1 acceptance:
+> `agents/STORY_REPORTS.md`.
+
 The app is a functional MVP when **all** items below are true. Nothing else is required.
 
 Phase 3 verification (31 Aug 2026): statuses are **PASS** / **FAIL** / **NOT APPLICABLE**.

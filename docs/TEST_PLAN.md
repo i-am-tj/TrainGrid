@@ -1,40 +1,61 @@
 # Test plan
 
+Current as of Epic 1, November 2026. The full security matrix, with a result for every check, is
+in `agents/TEST_PLAN.md`; this page explains the strategy.
+
 ## Strategy
 
-Phase 3 checks that the planner matches Phase 1 behaviour, not implementation trivia.
+Behaviour is tested at the lowest layer that can prove it, and security is tested at every layer,
+because each layer is meant to hold even if another one fails.
 
-| Layer | Tool | What it covers |
-| --- | --- | --- |
-| Unit | Vitest | ISO weeks, times, workout Markdown, equipment/YouTube metadata, template vs scheduled session, duplicate week, backup parse, names/slugs |
-| End-to-end | Playwright | Critical journeys, plyometrics filter, equipment + Watch demo |
-| Manual | Browser | Desktop density, keyboard focus, contrast (already improved in this phase) |
+| Layer | Tool | Runs against | What it covers |
+| --- | --- | --- | --- |
+| Unit | Vitest (`npm test`) | Pure functions | ISO weeks and dates, Zod schemas, snapshot copying, route rules, redirects, invite results, admin list parsing, seed conversion of every template, legacy import |
+| Database | pgTAP (`npm run db:test`) | Local Postgres, as the `anon` and `authenticated` roles | Constraints, Row Level Security for every table, invitations and `accept_invitation()`, member revocation, `save_personal_routine()`, seeded content, which functions the API can call |
+| Integration | Vitest (`npm run test:integration`) | Local Supabase API, real signed-in users | The data layer end to end: routine and session CRUD, snapshots, Duplicate Week, export scope, every cross-user case both through the data layer and by direct queries |
+| End to end | Playwright (`npm run test:e2e`) | `next dev` + local Supabase, a fresh member per test | Planner journeys, library, sign-in pages, route protection, admin page, revocation, and forged requests to the real server actions |
+| Static | ESLint, TypeScript, `npm run scan:secrets` | Source and Git history | Lint, types, credentials in files or history |
+| Production | Read-only checks and manual sign-in | `train-grid.vercel.app` | Schema and RLS state, auth providers, signed-out routes, shipped JavaScript; Google and GitHub sign-in by the owner |
 
-E2E runs against a throwaway directory (`e2e/.data` via `TRAINGRID_DATA_DIR`) so it does not overwrite `data/`.
+`npm run test:all` runs lint, typecheck, unit, database, integration, E2E and build in order. It
+needs Docker and the local Supabase stack (`npm run supabase:start`) with its keys in `.env.local`;
+tests that need the stack skip themselves without it.
+
+Test users exist only in the local stack. Helpers refuse to create users or use the secret key
+against anything but a local URL.
 
 ## Coverage map
 
-1. Weekly planner — Playwright 7-day headings; Vitest dates, month/year/leap, week navigation round-trip
-2. Time slots — Vitest `07:30` → hour 7; E2E 07:00 / 08:00 / 08:30 / 18:00
-3. Library CRUD — E2E create/read/update/delete
-4. Workout items — Vitest parse/serialize/reorder; E2E add multiple items
-5. Running / strength templates — E2E journeys 1–2
-6. Scheduling / instances — E2E schedule twice, reschedule one, live-link vs snapshot vs delete-template
-7. Duplicate week — Vitest copy semantics; E2E journey 4
-8. Persistence — file writes + E2E reload via navigation
-9. Import/export — Vitest parse; E2E journey 5 + invalid JSON
-10. Empty states — E2E
-11. Validation — Vitest names/times; server sanitizes names; HTML `required` / `maxLength`
-12. Dates — Vitest local calendar dates, no UTC day shift in helpers
-13. Mobile — Playwright 390×844, no horizontal overflow, day nav
-15. Equipment / YouTube — Vitest parse/serialize; E2E Watch demo + Barbell tag
-16. Categories — Plyometrics present, Mobility absent
-17. Published read-only — Vitest `isPublishedReadonly`; planner shows a friendly visitor note (clone/deploy your own); Library has no banner
+1. **Access** — sign-in page offers only Google and GitHub; the OAuth hand-off carries PKCE and a
+   same-site callback; failures show fixed messages; uninvited and unverified users are refused in
+   the database; sign-out removes access. Real Google and GitHub sign-in is checked manually on
+   production.
+2. **Route protection** — every private page redirects anonymous visitors, the export answers 401,
+   a deployment without Supabase settings fails closed, signed-in non-members are turned away.
+3. **Isolation** — member A cannot read, change, delete, duplicate or plant data for member B:
+   in the database (RLS), through the data layer, and with forged form input to the app.
+4. **Admin** — invite, duplicate refused, invalid refused, revoke pending, revoke accepted member;
+   non-admins get 404; admin requests replayed by a member or an anonymous visitor change nothing.
+5. **Planner** — seven days, week navigation, timed and untimed sessions, several per day,
+   reschedule, delete, Duplicate Week, mobile layout without horizontal scrolling.
+6. **Library** — GLOBAL routines read-only, personal routine create/edit/delete, structured fields,
+   legacy slug links.
+7. **Snapshots** — scheduling copies; editing or deleting the routine never changes a session;
+   customising one session changes only that session.
+8. **Validation** — dates, times, weeks, durations, names, equipment, YouTube links and item counts
+   are rejected on the server when invalid.
+9. **Export** — contains only the member’s own data; there is no import.
+10. **Seed** — every template converts with nothing lost; the seed file matches the templates;
+    re-seeding is idempotent.
+11. **Secrets** — no credentials in files or Git history; the secret key is absent from browser
+    bundles.
+
+Several suites were confirmed able to fail: with RLS disabled, with the admin check removed, and
+against a simulated exposed function, the relevant tests failed.
 
 ## Out of scope for automation
 
-- Exhaustive screen-reader pass
-- Every timezone in CI (dates are local `Date` components)
-- Visual regression screenshots
-- Concurrent two-process file writes
-- Live write behaviour on Vercel (by design: publish via Git only)
+- Real Google and GitHub sign-in (needs real accounts; checked manually on production)
+- Exhaustive screen-reader pass and visual regression screenshots
+- Browsers other than Chromium
+- Load and free-tier quota testing

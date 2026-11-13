@@ -1,21 +1,53 @@
 # TrainGrid — UX specification
 
-Low-fidelity behaviour only. No visual design system.
+Low-fidelity behaviour only. No visual design system. Current as of Epic 1, November 2026.
 
-Canonical terms: **session template**, **scheduled session**, **workout item**. See `docs/REQUIREMENTS.md`.
+Canonical terms: **routine** (GLOBAL or PERSONAL), **scheduled session**, **snapshot**, **workout item**. See `docs/REQUIREMENTS.md`.
 
 ## Information architecture
 
 ```text
-App
+Sign in                   /login                     public
+App (members only)
 ├── Planner               /  and  /week/[weekId]
-├── Scheduled session     /session/[id]
-└── Library               /library
-    └── Session template  /library/[templateId]
-                          /library/new
+├── Scheduled session     /session/[id]   (+ /edit, /customize)
+├── Library               /library
+│   └── Routine           /library/[routineId]   (+ /edit for own routines)
+│                         /library/new
+└── Invitations           /admin/invitations      admins only
 ```
 
+### Header
+
+`TrainGrid · Planner · Library · Export · [Invitations] · Sign out`
+
+- Planner, Library and Export appear for members only; Invitations for admins only.
+- Sign out shows “Signing out…” immediately while it works.
+- The header wraps on narrow screens; no horizontal scrolling.
+
 Primary entry: **Planner**. Secondary: **Library**.
+
+---
+
+## Sign in
+
+```text
+Welcome to TrainGrid
+Invite-only access
+
+[ Continue with Google ]
+[ Continue with GitHub ]
+```
+
+- No email, password or sign-up fields. No buttons for providers that are not configured.
+- Each sign-in asks the provider to show an account chooser.
+- After sign-in, an invited member lands on the page they originally asked for.
+- Not invited: back on this page with “TrainGrid is currently invite-only. Ask the person who invited
+  you to verify the email used for your account.”
+- No verified email from the provider: a fixed explanation to add one or use another account.
+- Any other failure: “Sign-in could not be completed. Please try again.” Provider details are never
+  shown.
+- A signed-in member who opens this page sees “Signed in as …” and a link to the planner.
 
 ---
 
@@ -89,37 +121,37 @@ No drag-and-drop in MVP.
 ```text
 Add session
 ───────────
-Day:     [ Wed 2 Sep        ▾ ]
-Time:    [ 07:00            ▾ ]  ( ) No specific time
-Duration:[ — optional —       ]
-Name:    [ VO2max             ]   required
-Type:    [ running          ▾ ]
-From:    (•) Template  ( ) Blank
+Day:      [ Wed 11 Nov        ▾ ]
+Time:     [ 07:00             ▾ ]  [ ] No start time
+Duration: [ — optional —        ]
+From:     (•) Routine  ( ) Blank
 
-Template: [ VO2max            ▾ ]
+Routine:  [ My routines / TrainGrid library ▾ ]
+Name:     [ VO2max              ]   required
+Notes:    [                      ]
 
-Notes:    [                     ]
-
-        [Cancel]  [Add]
+        [Add]  [Cancel]
 ```
 
-- Time options: 30-minute steps `00:00`–`23:30`, plus “No specific time”.
-- **From template**: choosing a session template prefills `Name` and `Type` from the template; the user may edit the scheduled session name before saving. Body stays live-linked (`bodySnapshot` null, `templateId` set).
-- **Blank (ad-hoc)**: user must enter `Name`; body starts empty (or a placeholder heading). `templateId` is null; body is stored on the scheduled session.
-- Rationale for forms: planning is infrequent; drag-and-drop is not justified for MVP.
+- Time options: 30-minute steps `00:00`–`23:30`, plus “No start time”.
+- **From routine**: the picker groups the member’s own routines and the shared library. Choosing one
+  prefills the name; the type comes from the routine. On save, the routine’s workout items are
+  **copied** into the session.
+- **Blank**: the member enters a name and type and adds workout items with the item editor.
+- Rationale for forms: planning is infrequent; drag-and-drop is not justified.
 
 ### Edit scheduled session
 
-Same fields: day, time, duration, name, type, notes.
+Same fields: week, day, time, duration, name, type, notes. The week must exist.
 
-Additional actions:
+To change the workout of one occurrence, use **Customize content** on the session: it opens the item
+editor for this session only. The routine and other sessions are not affected.
 
-- **Replace template** — pick another session template; copies that template’s name/type onto the scheduled session only if the user accepts overwrite of name; sets `templateId`, clears `bodySnapshot`. Confirm if a snapshot would be discarded.
-- **Customize this session** — copies current resolved Markdown into `bodySnapshot`. Name is unchanged. Later template body edits no longer apply.
+There is no “replace routine”; schedule the other routine instead.
 
 ### Delete scheduled session
 
-Confirm: “Remove from this week? The session template will be kept.”
+Confirm: “Remove this session from the week? Its routine is kept.”
 
 ### Move / reschedule
 
@@ -132,63 +164,81 @@ Change day and/or time in the edit form.
 ```text
 ← Back to week
 
-VO2max                         running
-Wed 2 Sep  ·  07:00  ·  60m
-Linked template: VO2max
-Updates if you edit the template.
+Lower A
+Lift · Mon 9 Nov · 18:00 · 60m
+Copied from Lower A. Changes to that routine do not affect this session.
 
-Notes: Track if windy
+Notes: Gym before work
 
 ────────────────────────────────
-## Warm-up
-1 km easy
+Back Squat
+4 × 5–6
+Rest: 2–3 min    Target: RPE 7–8
+Controlled descent.
+[Barbell]   ▶ Watch demo
 …
 ────────────────────────────────
 
-[Edit]  [Customize content]  [Open template]  [Delete]
+[Edit]  [Customize content]
 ```
 
-- Workout Markdown is read-only until Customize (then a textarea).
-- Snapshot banner: “This session has its own copy.” Hide Open template if not live-linked.
-- Ad-hoc: no Open template. Banner: “Not linked to a template.”
+- Workout items are read-only here; **Customize content** edits them for this session only.
+- Source line: “Copied from <routine>” with a link when the routine still exists; otherwise “Not
+  linked to a routine. This session has its own copy of the workout.”
+- Another member’s session does not exist for you (not found).
 
 ---
 
 ## Library
 
 ```text
-Library                    [New template]
+Library
+Reusable routines. Schedule them onto any week from here or from the planner.
 
 [ All ] [ Running ] [ Strength ] [ Plyometrics ] [ Other ]
 
-Lower A          strength          [Schedule]
-Upper A          strength          [Schedule]
-VO2max           running           [Schedule]
+RUNNING
+Easy Run                         [Schedule]
+My Tempo   (Mine)                [Schedule]
+STRENGTH
+Lower A                          [Schedule]
+
+[New routine]
 ```
 
-- Click row → read-only template detail. **Edit** opens the template editor.
-- **Schedule** opens the add-session form with that template selected (current week, user picks day/time).
+- Lists the shared TrainGrid routines and the member’s own, which are marked **Mine**.
+- Click a row → routine detail. Shared routines show “TrainGrid library · read-only” and have no
+  Edit. The member’s own show “Your routine” and **Edit**.
+- **Schedule** opens the add-session form with that routine selected.
 
-### Session template editor
+### Routine editor (own routines only)
 
 ```text
-Name: [ Lower A ]
+Name: [ My Lower ]
 Type: [ Strength ▾ ]
+Description: [ … ]
 
-Body (workout-item CRUD):
+Workout item 1
+  Name:        [ Back Squat ]
+  Instruction: [ 4 × 5–6    ]
+  ▸ More details
+      Rest [ 2–3 min ]   Target [ RPE 7–8 ]
+      Notes [ … ]
+      Equipment [Bodyweight][Dumbbell][Barbell] …
+      YouTube URL [ … ]
+  [Up] [Down] [Remove]
+[Add workout item]
 
-## Back Squat
-4 × 5–6
-Equipment: [ Barbell ]
-YouTube URL (optional)
+[Save] [Cancel] [Back to library]          [Delete routine]
 ```
 
-- Create / read / update / delete the session template here.
-- Workout items support optional equipment tags and an optional YouTube URL.
+- “More details” opens automatically when any of its fields has a value.
+- Invalid YouTube links are flagged while typing and rejected on save.
 
-### Delete session template
+### Delete routine
 
-Confirm. Then: for every live-linked scheduled session, copy current template body into `bodySnapshot` (and keep each session’s existing `name` / `type`). Then delete the template file. Scheduled sessions remain on the planner.
+Confirm: “Delete this routine? Sessions already on your calendar keep their own copy of the workout.”
+Scheduled sessions stay on the planner unchanged.
 
 ---
 
@@ -251,9 +301,9 @@ Desktop vs mobile is **layout only**; same data and routes.
 
 | Surface | Copy / action |
 | --- | --- |
-| Empty week | Local: “No sessions this week.” + Add. Published: friendly visitor note on the planner only (link to @i-am-tj; clone & deploy your own) — no banner on Library |
+| Empty week | “No sessions this week.” + Add session |
 | Empty day (mobile) | “Nothing planned.” Add session |
-| Empty library | “No templates yet.” New template |
+| Empty library filter | “No routines yet.” + New routine (the shared library is never empty) |
 | Missing scheduled session | “Session not found.” Link to planner |
 | Duplicate onto empty week | No extra empty-state; just copy |
 | Duplicate destination has sessions | Confirm append, as above |
@@ -262,16 +312,42 @@ Desktop vs mobile is **layout only**; same data and routes.
 
 ## Important interaction decisions
 
-1. **No drag-and-drop in MVP.**
-2. **Scheduled session `name` is stored on every scheduled session** (copied from the session template at schedule time, user-editable). Ad-hoc sessions require a name. Display never depends on Markdown headings.
-3. **Live-link for body only.** Template body edits update live-linked scheduled sessions. Name/placement on the calendar do not follow template renames.
-4. **Customize snapshots body** so one occurrence can diverge.
-5. **Ad-hoc** scheduled sessions store their own body and name.
+1. **No drag-and-drop.**
+2. **Every scheduled session stores its own name** (prefilled from the routine, editable). Blank sessions require a name.
+3. **Scheduling copies the workout.** A session never changes because its routine changed.
+4. **Customize changes one occurrence only.**
+5. **Shared routines are read-only;** members edit only their own.
 6. **Hour rows**, 30-minute start times, **one-row card height**, duration as label.
 7. **Untimed lane = no start time only.** Full-day scroll for other hours.
-8. **No RRULE.** Repeat a week with **Duplicate Week**, or add another scheduled session from a template.
-9. **Rest** is a normal template or untimed scheduled session.
+8. **No RRULE.** Repeat a week with **Duplicate Week**, or schedule a routine again.
+9. **Rest** is an untimed session or an empty day.
 10. Fast path: **Today**.
+
+---
+
+## Admin — invitations
+
+```text
+Invitations
+Only invited email addresses can use TrainGrid. …
+
+Invite someone
+Email address [ friend@example.com ] [Invite]
+No email is sent. After inviting, send them this link yourself:
+https://train-grid.vercel.app/login
+
+All invitations
+friend@example.com     Invited 12 Nov 2026          Pending   [Revoke]
+pal@example.com        Invited 12 Nov 2026          Accepted  [Revoke access]
+you@example.com        Invited 12 Nov 2026 · Admin  Accepted
+old@example.com        … · Access revoked, data kept Revoked
+```
+
+- Revoke (pending) and Revoke access (accepted) ask for confirmation; the second explains that data
+  is kept and that inviting the email again restores it.
+- Admin rows have no revoke action.
+- Results show as “Invitation created.”, “Revoked.” or a fixed error such as “That email address
+  already has an invitation.”
 
 ---
 

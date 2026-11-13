@@ -2,7 +2,7 @@
 
 Plan the week. Show up. Don’t overthink it.
 
-**TrainGrid** is a personal training planner — a Monday–Sunday calendar, reusable session templates, and a straight answer to “what am I doing today?”  
+**TrainGrid** is a training planner for a small, invited group — a Monday–Sunday calendar, a shared library of running, strength and plyometrics routines, and a straight answer to “what am I doing today?”
 It is **not** a workout logger. Keep Strava / Hevy for that.
 
 <br />
@@ -10,85 +10,107 @@ It is **not** a workout logger. Keep Strava / Hevy for that.
 <p align="center">
   <img src="docs/images/planner.png" alt="TrainGrid planner on mobile" width="280" />
   &nbsp;&nbsp;&nbsp;
-  <img src="docs/images/planner-desktop.png" alt="TrainGrid planner on desktop" width="520" />
+  <img src="docs/images/planner-desktop.png" alt="TrainGrid weekly planner on desktop" width="520" />
 </p>
 
-<p align="center"><em>Published view — peek, don’t edit. Clone it if you want your own.</em></p>
+<p align="center"><em>Your week on a phone, and the full grid on a desktop.</em></p>
 
 <p align="center">
-  <img src="docs/images/library.png" alt="TrainGrid template library" width="420" />
+  <img src="docs/images/library.png" alt="TrainGrid routine library" width="420" />
   &nbsp;&nbsp;&nbsp;
-  <img src="docs/images/session-detail.png" alt="Lower A session template detail" width="420" />
+  <img src="docs/images/session-detail.png" alt="A scheduled Lower A session with its workout items" width="420" />
 </p>
 
-<p align="center"><em>Library of running, strength, and plyometrics templates — open one and see the work.</em></p>
+<p align="center"><em>Pick a routine from the library, put it on the calendar, open it when it’s time.</em></p>
 
 ---
 
-## Why this exists
+## How it works
 
-Most “fitness apps” want accounts, feeds, and streak guilt. TrainGrid is the opposite:
-
-- Your plan lives in **files** you own (`data/`)
-- You edit **locally**, publish by **pushing to Git**
-- A hosted site (Vercel, etc.) is a **read-only showcase** of whatever you’ve committed
-
-The default schedule is empty on purpose. Visitors see a friendly hello — not a shared spreadsheet.
-
-```text
-npm run dev  →  plan the week  →  commit data/  →  push  →  live site updates
-```
-
-| Where | What you get |
-| --- | --- |
-| Local | Full editor — add sessions, tweak templates, duplicate weeks |
-| Hosted | Read-only published plan — clone the repo to make yours |
+- **Invite-only.** Sign in with **Google** or **GitHub**. Signing in proves who you are; only email addresses the admin has invited get in. Everyone else sees a polite “invite-only” note.
+- **Your calendar is yours.** Each member sees and edits only their own sessions and routines — enforced by the database, not just the app.
+- **A shared library.** The TrainGrid routines (runs, lifts, plyometrics, warm-ups, cooldowns) are read-only for everyone. Create your own routines alongside them.
+- **Scheduling copies.** Putting a routine on the calendar copies it into the session, so later changes to the routine never rewrite a past or planned session. Tweak one session without touching the routine.
 
 ---
 
 ## What’s in the box
 
-- **7-day planner** with timed + untimed sessions
-- Seed templates for **running**, **strength**, **plyometrics**, warm-ups & cooldowns
-- Optional **equipment** tags and **YouTube** demo links
-- Duplicate a week, export JSON (local)
-- Published mode that politely tells guests to deploy their own copy
+- **7-day planner** with timed and untimed sessions, several per day, and a mobile day view
+- **Routines** with structured workout items: instruction, rest, target, notes, **equipment** tags and **YouTube** demo links
+- **Duplicate a week** onto another week
+- **Export** your own routines and sessions as JSON
+- **Admin page** to invite people, see who joined, and revoke access (their data is kept)
 
 More detail: [docs/](docs/README.md)
 
+### Sign-in providers
+
+| Provider | Status |
+| --- | --- |
+| Google | Supported |
+| GitHub | Supported |
+| Apple | Deferred — needs a paid Apple Developer membership, and TrainGrid runs at zero cost |
+| ChatGPT | Deferred — waiting for practical, general developer availability |
+
+There is no email/password sign-in and no public sign-up.
+
 ---
 
-## Get your own copy
+## How it runs
 
-Needs **Node.js 20+**.
+| Piece | Service |
+| --- | --- |
+| App | Next.js 16 on **Vercel** (Hobby), deployed from GitHub |
+| Database and sign-in | **Supabase** (Free): PostgreSQL with Row Level Security, Supabase Auth |
+| Secrets | Vercel environment variables — never in Git |
+
+Why and how: [ADR 001](docs/adr/001-multi-user-supabase-architecture.md) · setup: [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) · security: [docs/SECURITY.md](docs/SECURITY.md)
+
+---
+
+## Run it locally
+
+Needs **Node.js 20+** and **Docker** (for the local Supabase stack). Local development never touches the production database.
 
 ```bash
 git clone https://github.com/i-am-tj/TrainGrid.git
 cd TrainGrid
 npm install
+npm run supabase:start      # local Postgres, Auth and API in Docker
+npm run supabase:status     # prints the local URL and keys
+cp .env.example .env.local  # then paste the local publishable key (and, for tests, the local secret key)
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — that’s your writable planner.
+Open [http://localhost:3000](http://localhost:3000). Google and GitHub sign-in are configured only on production; locally, the test suites create throwaway users instead.
 
 ```bash
-npm run build && npm start   # production locally
-npm test                     # Vitest
-npm run test:e2e             # Playwright
+npm test                  # unit tests (Vitest)
+npm run db:test           # database and Row Level Security tests (pgTAP)
+npm run test:integration  # data layer against the local stack, as real users
+npm run test:e2e          # browser tests (Playwright)
+npm run test:all          # all of the above, plus lint, typecheck and build
+npm run scan:secrets      # look for credentials in the repository
 ```
-
-Deploy the same repo to Vercel (or similar) when you want a public, read-only view of your committed `data/`.
 
 ```text
 traingrid/
-├── app/                 # Next.js routes
+├── app/                  # Next.js routes (planner, sessions, library, admin, auth)
 ├── components/
 ├── lib/
-├── data/
-│   ├── templates/       # session templates (Markdown)
-│   └── schedule.json    # your published week(s) — empty by default
+│   ├── data/             # every database read and write, validated with Zod
+│   ├── auth/             # sign-in, sessions, route rules
+│   └── admin/            # invitation management
+├── supabase/
+│   ├── migrations/       # schema, Row Level Security, functions
+│   ├── tests/database/   # pgTAP tests
+│   └── seed.sql          # the shared routines (generated)
+├── data/templates/       # source Markdown for the shared routines
+├── tests/integration/
 ├── e2e/
-└── docs/
+├── docs/
+└── agents/               # roadmap, backlog, decisions, test plan, story reports
 ```
 
 ---

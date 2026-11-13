@@ -114,13 +114,13 @@ Every layer runs with one command: `npm run test:all` (needs Docker and the loca
 
 | # | Check | How | Result |
 | --- | --- | --- | --- |
-| P1 | Production schema matches the repository | `supabase migration list --remote` | PASS (5 of 5 at the time; `20261112050000` added in step 15, to be applied) |
+| P1 | Production schema matches the repository | `supabase migration list --remote` | PASS (6 of 6, 2026-11-13) |
 | P2 | RLS on every table; policies only for `authenticated`; no anon table privileges | read-only query | PASS (5 tables, 14 policies, 0 anon grants) |
 | P3 | Seed present; no personal routine has a slug; every session has a valid snapshot | read-only query | PASS (18 routines, 96 items; 0; 0 invalid) |
 | P4 | Only Google and GitHub sign-in; no email, phone or anonymous sign-in | public auth settings endpoint | PASS |
 | P5 | Signed-out requests: private pages redirect, export 401, callback fails safely, login shows only the two providers | HTTP requests | PASS |
 | P6 | No secret key, admin list or private key in the JavaScript served to browsers | download and scan all 9 chunks | PASS |
-| P7 | Supabase security advisor | `supabase db advisors --remote` | 1 fixed (D-80), 2 accepted (D-80) |
+| P7 | Supabase security advisor | `supabase db advisors --remote` | PASS 2026-11-13: the exposed function fixed and confirmed; 2 accepted warnings remain (D-80) |
 | P8 | Members use the planner and library on production | Tanuj | PASS (step 12) |
 
 ### Approved model decisions
