@@ -11,6 +11,7 @@ the plan, the state of the work, and the reasoning behind it.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Current-state inventory and target architecture |
 | [TEST_PLAN.md](TEST_PLAN.md) | Test layers and the release-blocking security matrix |
 | [STORY_REPORTS.md](STORY_REPORTS.md) | Completion report per story, and the epic completion report |
+| [EPIC-1.md](EPIC-1.md) | Epic 1 specification, verbatim (complete) |
 
 Formal architecture decision records live in `docs/adr/`.
 
@@ -22,5 +23,5 @@ Formal architecture decision records live in `docs/adr/`.
 - Owner values: `Agent` (code/docs in this repo) or `Tanuj` (console work an agent must not do:
   creating cloud projects, OAuth credentials, entering secrets, repository settings).
 - Never write secrets, personal emails, user UUIDs or private schedule data into this folder.
-- The epic specification itself is not copied here; save it as `agents/EPIC-1.md` if you want it
-  versioned next to these records.
+- Epic specifications are saved verbatim as `agents/EPIC-<n>.md`; decisions that refine them are
+  recorded in `DECISIONS.md`.
