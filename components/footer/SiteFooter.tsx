@@ -55,10 +55,15 @@ export function SiteFooter() {
           aria-label={`${AUTHOR} (TJ), iamtj.dev`}
           className="group rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
         >
-          {/* The iamtj.dev monogram, unchanged: Instrument Serif italic in a hairline ring. */}
+          {/*
+            The iamtj.dev monogram, as it is there: Instrument Serif italic in a
+            soft hairline ring that warms to the copper accent on hover or focus
+            (#9a4e24, or #e0a37a in dark mode).
+          */}
           <span
             aria-hidden="true"
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-line font-display text-[1.0625rem] italic leading-none tracking-tight text-stone-900 transition-colors duration-300 group-hover:border-stone-900"
+            data-testid="monogram"
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-hairline font-display text-[1.0625rem] italic leading-none tracking-tight text-foreground transition-colors duration-300 group-hover:border-accent group-hover:text-accent group-focus-visible:border-accent group-focus-visible:text-accent motion-reduce:transition-none"
           >
             <span className="-translate-x-px">TJ</span>
           </span>
