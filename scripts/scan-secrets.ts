@@ -34,7 +34,8 @@ const RULES: Rule[] = [
   },
   {
     name: "Secret assigned in an env file",
-    pattern: /^\+?\s*(SUPABASE_SECRET_KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_DB_PASSWORD)\s*=\s*\S{8,}/gm,
+    // [ \t] rather than \s, so an empty placeholder never matches the next line.
+    pattern: /^\+?[ \t]*(SUPABASE_SECRET_KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_DB_PASSWORD)[ \t]*=[ \t]*[^\s#]{8,}/gm,
   },
 ];
 
