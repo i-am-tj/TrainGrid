@@ -109,6 +109,9 @@ components/
                              CopyRoutineButton, SourceLabel, RoutineEditor, WorkoutItemEditor
   admin/                     InvitationForms
   auth/                      SignOutButton
+  LogoLoader,                the spinning-logo loader; NavigationLoader shows it for client
+  NavigationLoader           navigations to another path (root layout, not loading.js, so 404s
+                             and redirects keep their status); pages stream sections with Suspense
   AppHeader, MobileMenu,     header with logo and Beta badge; phone menu (<details>);
   BrandLogo, ThemeToggle     light/dark switch (a `dark` class on <html>, set before first paint
                              by an inline script in app/layout.tsx; dark colours in globals.css)

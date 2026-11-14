@@ -20,6 +20,7 @@ export function SessionCard({
 
   return (
     <Link
+      prefetch={false}
       href={`/session/${session.id}`}
       className={`block rounded-sm border border-stone-200 border-l-4 ${TYPE_BAR[session.type]} ${TYPE_TINT[session.type]} px-1.5 py-1 text-left hover:brightness-[0.98]`}
       aria-label={`${session.name}, ${session.time ?? "no time"}`}

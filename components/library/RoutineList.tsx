@@ -1,3 +1,4 @@
+import Form from "next/form";
 import Link from "next/link";
 import type { LibraryRoutine } from "@/lib/data/model";
 import {
@@ -42,24 +43,16 @@ function describeFilters(query: LibraryQuery): string {
   return parts.length > 0 ? parts.join(" ") : "in this view";
 }
 
-export function RoutineList({
-  routines,
-  query,
-  truncated = false,
-}: {
-  routines: LibraryRoutine[];
-  query: LibraryQuery;
-  truncated?: boolean;
-}) {
-  const visible = applyLibraryQuery(routines, query);
-  const empty = libraryEmptyState(routines, query, visible);
-  const filtered = hasFilters(query);
-  const clearHref = libraryHref({ ...DEFAULT_LIBRARY_QUERY, scope: query.scope });
-
+/**
+ * Search form and type chips. Rendered outside the results' loading boundary,
+ * so they stay on screen while a new search or filter loads. Next's <Form>
+ * makes the GET search an in-app navigation; without JavaScript it is still a
+ * plain GET form. Keyed by the query so the fields follow back and forward.
+ */
+export function LibraryFilters({ query }: { query: LibraryQuery }) {
   return (
-    <div>
-      <form
-        method="get"
+    <div key={libraryHref(query)}>
+      <Form
         action="/library"
         role="search"
         aria-label="Search the library"
@@ -92,7 +85,7 @@ export function RoutineList({
         <button type="submit" className={btnPrimary}>
           Search
         </button>
-      </form>
+      </Form>
 
       <nav aria-label="Category" className="mt-3">
         <ul className="flex flex-wrap gap-2">
@@ -101,6 +94,7 @@ export function RoutineList({
             return (
               <li key={f.id}>
                 <Link
+                  prefetch={false}
                   href={libraryHref(query, { type: f.id })}
                   scroll={false}
                   className={active ? btnPrimary : btnSecondary}
@@ -113,8 +107,28 @@ export function RoutineList({
           })}
         </ul>
       </nav>
+    </div>
+  );
+}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line pb-3">
+export function RoutineList({
+  routines,
+  query,
+  truncated = false,
+}: {
+  routines: LibraryRoutine[];
+  query: LibraryQuery;
+  truncated?: boolean;
+}) {
+  const visible = applyLibraryQuery(routines, query);
+  const empty = libraryEmptyState(routines, query, visible);
+  const filtered = hasFilters(query);
+  const clearHref = libraryHref({ ...DEFAULT_LIBRARY_QUERY, scope: query.scope });
+
+  return (
+    <div>
+
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line pb-3">
         <p className="text-sm text-stone-600" aria-live="polite">
           {visible.length === 1 ? "1 routine" : `${visible.length} routines`}
           {filtered ? (
@@ -193,7 +207,7 @@ function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
             <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-card">
               {items.map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-3 px-3 py-3">
-                  <Link href={`/library/${r.id}`} className="min-w-0 flex-1">
+                  <Link href={`/library/${r.id}`} prefetch={false} className="min-w-0 flex-1">
                     <div className="font-medium">
                       {r.name}
                       <SourceLabel isOwn={r.isOwn} />
@@ -207,6 +221,7 @@ function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
                     </div>
                   </Link>
                   <Link
+                    prefetch={false}
                     href={`/week/current/add?routine=${r.id}`}
                     className={`${btnSecondary} shrink-0`}
                     aria-label={`Schedule ${r.name}`}

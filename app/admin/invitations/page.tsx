@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { SectionLoader } from "@/components/LogoLoader";
 import { InviteForm, RevokeForm } from "@/components/admin/InvitationForms";
 import { getAdminViewer } from "@/lib/admin/guard";
 import {
@@ -47,7 +49,6 @@ export default async function InvitationsPage() {
     );
   }
 
-  const invitations = await listInvitations();
   const protectedIds = protectedUserIds(admin.userId);
   const signInUrl = `${originFromHeaders(await headers())}/login`;
 
@@ -76,45 +77,57 @@ export default async function InvitationsPage() {
 
       <section className="mt-6">
         <h2 className="text-sm font-semibold">All invitations</h2>
-        {invitations.length === 0 ? (
-          <p className="mt-3 text-sm text-stone-600">No invitations yet.</p>
-        ) : (
-          <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-card">
-            {invitations.map((invitation) => {
-              const status = invitationStatus(invitation);
-              const kind = revokeKind(invitation, protectedIds);
-              const isAdminRow = Boolean(
-                invitation.accepted_by && protectedIds.has(invitation.accepted_by.toLowerCase()),
-              );
-              return (
-                <li
-                  key={invitation.id}
-                  className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium break-all">{invitation.email}</p>
-                    <p className="mt-0.5 text-xs text-stone-500">
-                      Invited {formatDate(invitation.created_at)}
-                      {isAdminRow ? " · Admin" : ""}
-                      {invitation.accepted_at && invitation.revoked_at ? " · Access revoked, data kept" : ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`rounded-md px-2 py-1 text-xs font-medium ${STATUS_STYLE[status]}`}
-                    >
-                      {status}
-                    </span>
-                    {kind ? (
-                      <RevokeForm id={invitation.id} email={invitation.email} kind={kind} />
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <Suspense fallback={<SectionLoader label="Loading invitations…" minHeight="min-h-32" />}>
+          <InvitationList protectedIds={protectedIds} />
+        </Suspense>
       </section>
     </div>
+  );
+}
+
+/** The invitation list, streamed behind a section loader; the invite form above is ready at once. */
+async function InvitationList({ protectedIds }: { protectedIds: Set<string> }) {
+  const invitations = await listInvitations();
+  return (
+    <>
+          {invitations.length === 0 ? (
+            <p className="mt-3 text-sm text-stone-600">No invitations yet.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-card">
+              {invitations.map((invitation) => {
+                const status = invitationStatus(invitation);
+                const kind = revokeKind(invitation, protectedIds);
+                const isAdminRow = Boolean(
+                  invitation.accepted_by && protectedIds.has(invitation.accepted_by.toLowerCase()),
+                );
+                return (
+                  <li
+                    key={invitation.id}
+                    className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium break-all">{invitation.email}</p>
+                      <p className="mt-0.5 text-xs text-stone-500">
+                        Invited {formatDate(invitation.created_at)}
+                        {isAdminRow ? " · Admin" : ""}
+                        {invitation.accepted_at && invitation.revoked_at ? " · Access revoked, data kept" : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`rounded-md px-2 py-1 text-xs font-medium ${STATUS_STYLE[status]}`}
+                      >
+                        {status}
+                      </span>
+                      {kind ? (
+                        <RevokeForm id={invitation.id} email={invitation.email} kind={kind} />
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+    </>
   );
 }

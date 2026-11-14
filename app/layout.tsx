@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { NavigationLoader } from "@/components/NavigationLoader";
 import { SiteFooter } from "@/components/footer/SiteFooter";
 import "./globals.css";
 
@@ -67,6 +69,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AppHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <Suspense fallback={null}>
+          <NavigationLoader />
+        </Suspense>
       </body>
     </html>
   );

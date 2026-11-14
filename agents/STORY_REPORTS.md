@@ -882,3 +882,37 @@ Tests:                 test:all pass: unit 174, database 191, integration 35, E2
 Status:                IN REVIEW
 ```
 
+### Release 0.2.1-beta — speed and loaders (requested by Tanuj)
+
+```
+Branch:                fix/speed-and-loaders
+PR:                    https://github.com/i-am-tj/TrainGrid/pull/36
+Analysis:              Production from Mumbai, unthrottled: 0.42–0.52 s per request with a new
+                       TLS connection (~0.3 s on a reused one); a cold start 1.55 s. Requests
+                       enter Vercel in bom1 and run in syd1 beside the database (x-vercel-id
+                       bom1::syd1). The uniform ~2 s in the report came from DevTools "3G"
+                       throttling, which adds ~2 s per request; the real waste was the number of
+                       requests (Next.js prefetching every link in view).
+Changes:               prefetch={false} on repeated per-item links (library cards, Schedule,
+                       type chips, view tabs, planner day strip, grid add-cells, session cards):
+                       background _rsc requests on a production build, main → branch:
+                       library 32 → 4, filtered library 25 → 6, planner 106 → 8. getViewer()
+                       cached per request (one profile query instead of two). LogoLoader
+                       (clockwise spin, reduced-motion pulse); NavigationLoader page loader for
+                       path changes (root layout, 150 ms delay, 15 s give-up; no route-level
+                       loading.js, so 404s and redirects keep their status); section loaders
+                       with Suspense: planner week (keyed by week and day), library results
+                       (keyed by query, filters split out and kept on screen, search via
+                       next/form without a page reload), admin invitation list.
+Tests:                 E2E loaders.spec.ts (7): page loader on a slowed navigation, library
+                       search section loader, no flash for same-URL or new-tab clicks, clockwise
+                       spin keyframes, reduced-motion pulse, planner day section loader, 404 kept.
+                       test:all on Node 24.22.3 passes: unit 174, database 191, integration
+                       35, E2E 118 (7 new), build; secret scan clean. The two failures seen
+                       mid-way (search section loader; a Schedule-on-detail test) pass.
+Environment:           Mid-way, Homebrew node@22 stopped starting (simdjson upgraded to 5.1.1,
+                       node needed libsimdjson.30). Tests were then run with Homebrew node@24
+                       (24.22.3) at Tanuj's request. No project Node pin was changed.
+Status:                IN REVIEW
+```
+

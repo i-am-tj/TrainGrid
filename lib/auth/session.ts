@@ -1,6 +1,7 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -17,7 +18,13 @@ export type Viewer =
  * only their own profile row, so a row that comes back and is not revoked
  * means "this caller is a member".
  */
-export async function getViewer(): Promise<Viewer> {
+export const getViewer = cache(viewerForRequest);
+
+/**
+ * The header, the page and its data layer all ask who the viewer is; cache()
+ * answers that once per request instead of querying the profile each time.
+ */
+async function viewerForRequest(): Promise<Viewer> {
   if (!getSupabaseEnv()) return { status: "anonymous" };
 
   const supabase = await createSupabaseServerClient();
