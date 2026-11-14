@@ -65,6 +65,7 @@ export function LibraryHeader() {
             return (
               <li key={s.id} className="relative">
                 <Link
+                  prefetch={false}
                   href={libraryHref(query, { scope: s.id })}
                   scroll={false}
                   onClick={onTabClick(s.id)}

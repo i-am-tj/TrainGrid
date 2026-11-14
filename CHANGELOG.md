@@ -4,6 +4,24 @@ All notable changes to TrainGrid. Versions follow [Semantic Versioning](https://
 while TrainGrid is in beta, each epic is a minor release (`0.<epic>.0-beta`) and fixes between
 epics are patch releases. How releases are made: [docs/RELEASING.md](docs/RELEASING.md).
 
+## [0.2.1-beta] — 2026-11-14
+
+Faster-feeling navigation, with loading feedback everywhere.
+
+- **Loaders**: the TrainGrid logo, turning clockwise, shows while a page loads, and inside a
+  section while its data loads (the planner's week, library results, the invitation list); the
+  rest of the page stays on screen. It waits 150 ms before appearing, so quick navigations do not
+  flash, and pulses gently instead of spinning if your device asks for reduced motion.
+- **Far fewer background requests**: lists no longer prefetch every link in view. On the planner
+  that cut background requests from 106 to 8 per page view; on the library from 32 to 4.
+- **Library search without a page reload**: searching and filtering now update the results in
+  place, keeping the search form and view control.
+- **One fewer database query per page**: who you are is looked up once per request, not twice.
+
+Measured from Mumbai without throttling, a request to production takes about 0.3–0.5 s; most of
+that is the network path to the Sydney region where the app and its database run. DevTools'
+"3G" throttling adds about 2 s to every request on its own.
+
 ## [0.2.0-beta] — 2026-11-13
 
 The first public release: the secure invite-only foundation (Epic 1) and the global workout
@@ -55,4 +73,5 @@ library (Epic 2). Live at https://train-grid.vercel.app for invited members.
 - Tests at every layer: unit 174, database (pgTAP) 191, integration 35, end-to-end 111.
 - Runs at zero cost on Vercel Hobby and Supabase Free.
 
+[0.2.1-beta]: https://github.com/i-am-tj/TrainGrid/releases/tag/v0.2.1-beta
 [0.2.0-beta]: https://github.com/i-am-tj/TrainGrid/releases/tag/v0.2.0-beta

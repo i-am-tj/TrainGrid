@@ -81,6 +81,7 @@ export function WeekGrid({
               style={{ minHeight: UNTIMED }}
             >
               <Link
+                prefetch={false}
                 href={`/week/${weekId}/add?day=${day}&untimed=1`}
                 className="mb-1 block text-[10px] text-stone-400 hover:text-stone-700"
               >
@@ -155,6 +156,7 @@ function HourRow({
               ))}
             </div>
             <Link
+              prefetch={false}
               href={`/week/${weekId}/add?day=${day}&time=${time}`}
               className="mt-0.5 block min-h-[1.25rem] text-[10px] text-transparent hover:text-stone-500"
               aria-label={`Add session ${formatShortDate(date)} ${time}`}

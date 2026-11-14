@@ -80,6 +80,7 @@ export function DayAgenda({
     <div className="mt-3 md:hidden">
       <div className="flex items-center justify-between gap-2">
         <Link
+          prefetch={false}
           href={`/week/${prev.weekId}?day=${prev.day}`}
           className={btnSecondary}
           aria-label="Previous day"
@@ -88,6 +89,7 @@ export function DayAgenda({
         </Link>
         <h2 className="text-base font-semibold">{formatLongDay(date)}</h2>
         <Link
+          prefetch={false}
           href={`/week/${next.weekId}?day=${next.day}`}
           className={btnSecondary}
           aria-label="Next day"
@@ -133,6 +135,7 @@ export function DayAgenda({
         ) : null}
 
         <Link
+          prefetch={false}
           href={`/week/${weekId}/add?day=${day}`}
           className="block rounded-md bg-stone-900 px-3 py-3 text-center text-sm font-medium text-white"
         >

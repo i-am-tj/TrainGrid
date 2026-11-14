@@ -33,6 +33,10 @@ App (members only)
   the first paint, so a dark page never flashes light. Dark mode uses iamtj.dev's warm dark tones.
 - Footer: the “TJ” ring is a soft hairline that warms to iamtj.dev's copper accent on hover or
   keyboard focus (300 ms).
+- **Loading**: the TrainGrid logo turning clockwise (pulsing with reduced motion). A page loader
+  covers navigations to another page after 150 ms; section loaders cover data that streams in
+  while the rest of the page is shown (the planner's week, library results after a search or
+  filter, the invitation list). Never both at once.
 - No horizontal scrolling at any width.
 
 Primary entry: **Planner**. Secondary: **Library**.
