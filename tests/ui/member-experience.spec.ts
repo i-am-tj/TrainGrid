@@ -123,6 +123,7 @@ test("empty day, empty week and missing routines remain distinct", async ({
   await expect(
     page.getByRole("heading", { name: "Make a routine your own." }),
   ).toBeVisible();
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(`${preview}/dashboard-no-routines.html`);
   await expect(
     page.getByRole("link", { name: "Open session: Lower A", exact: true }),
@@ -206,18 +207,26 @@ test("dashboard links support keyboard focus with reduced motion", async ({
   ).toBe("0s");
 });
 
-test("empty routine actions align in a centered row and wrap cleanly on phones", async ({ page }) => {
+test("empty routine actions have comfortable spacing in both themes and wrap on phones", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(`${preview}/dashboard-no-routines.html`);
   const create = page.getByRole("link", { name: "Create your first routine", exact: true });
   const browse = page.getByRole("link", { name: "Browse TrainGrid routines", exact: true });
-  for (const width of [320, 1440]) {
-    await page.setViewportSize({ width, height: 900 });
-    const first = (await create.boundingBox())!;
-    const second = (await browse.boundingBox())!;
-    if (width === 1440) expect(Math.abs(first.y + first.height / 2 - second.y - second.height / 2)).toBeLessThanOrEqual(1);
-    else expect(second.y).toBeGreaterThanOrEqual(first.y + first.height);
-    await mkdir("docs/images/epic-3/enhancements", { recursive: true });
-    await page.screenshot({ path: `docs/images/epic-3/enhancements/empty-routines-${width}.png`, fullPage: true });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  for (const theme of ["light", "dark"] as const) {
+    await page.evaluate((dark) => document.documentElement.classList.toggle("dark", dark), theme === "dark");
+    for (const width of [320, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const first = (await create.boundingBox())!;
+      const second = (await browse.boundingBox())!;
+      if (width === 1440) {
+        expect(Math.abs(first.y + first.height / 2 - second.y - second.height / 2)).toBeLessThanOrEqual(1);
+        expect(second.x - first.x - first.width).toBeGreaterThanOrEqual(24);
+      } else {
+        expect(second.y - first.y - first.height).toBeGreaterThanOrEqual(12);
+      }
+      await mkdir("docs/images/epic-3/enhancements", { recursive: true });
+      await page.locator(".ui-panel").filter({ hasText: "Make a routine your own." }).screenshot({ path: `docs/images/epic-3/enhancements/empty-routines-${width}-${theme}.png`, animations: "disabled" });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
   }
 });

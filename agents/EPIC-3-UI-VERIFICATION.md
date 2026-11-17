@@ -68,4 +68,11 @@ The dashboard's empty-routine actions now share a centered cross-axis alignment,
 
 Verification: lint/typecheck/secret scan pass; 49 component browser tests pass (including desktop center alignment and phone wrapping); 32 affected app regressions pass plus the focused modal test in light/dark at 320/1440px. The latter verifies initial focus, Tab/Shift+Tab between actions, background focus exclusion, Escape/Cancel focus restoration, viewport fit, no native JavaScript prompt, and zero axe violations. Actual deletion, ownership protection and scheduled-copy preservation are covered by the updated existing regressions. Native dialogs allow browser-chrome focus; checks cover intra-dialog Tab order and background inertness.
 
-Review captures: [desktop modal](../docs/images/epic-3/enhancements/delete-routine-1440-light.png), [mobile modal](../docs/images/epic-3/enhancements/delete-routine-320-dark.png), [desktop alignment](../docs/images/epic-3/enhancements/empty-routines-1440.png), [mobile alignment](../docs/images/epic-3/enhancements/empty-routines-320.png). Modal captures use the live local app; alignment captures are labelled component examples.
+The empty-routine actions use a 24px horizontal gap and 12px vertical gap when wrapped. Regression checks verify these distances and alignment in both themes.
+
+| Fix | Desktop light | Desktop dark | Mobile light | Mobile dark |
+| --- | --- | --- | --- | --- |
+| Delete modal | [1440px](../docs/images/epic-3/enhancements/delete-routine-1440-light.png) | [1440px](../docs/images/epic-3/enhancements/delete-routine-1440-dark.png) | [320px](../docs/images/epic-3/enhancements/delete-routine-320-light.png) | [320px](../docs/images/epic-3/enhancements/delete-routine-320-dark.png) |
+| Routine actions | [1440px](../docs/images/epic-3/enhancements/empty-routines-1440-light.png) | [1440px](../docs/images/epic-3/enhancements/empty-routines-1440-dark.png) | [320px](../docs/images/epic-3/enhancements/empty-routines-320-light.png) | [320px](../docs/images/epic-3/enhancements/empty-routines-320-dark.png) |
+
+Modal captures use the live local app; action captures show the isolated component empty state.
