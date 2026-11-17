@@ -118,11 +118,11 @@ Existing `lib/ui.ts` class exports remain the compatibility layer. Primary, seco
 
 ### Public landing presentation
 
-`LandingPage({ creatorRole? })` has no member data, auth calls or data-fetching imports. Default role is “Co-founder / Developer”. Compose inside one main with PublicHeader and the existing SiteFooter. Root integration is deferred to Claude.
+`LandingPage({ creatorRole? })` has no member data, auth calls or data-fetching imports. Default role is “Founder & Developer”. Compose inside one main with PublicHeader and the existing SiteFooter. Root integration is deferred to Claude.
 
-Sections: original brand and Beta; “Plan the week. Own the work.”; Log in `/login`; Explore features `#features`; weekly planner hero; six capability cards; mobile agenda, routine cards and workout detail; Browse → Plan → Open; Tanuj card using TJ; invite-only final CTA. Existing verified footer links/credit remain. External creator links use supplied portfolio/GitHub URLs; no portrait, accomplishments or company history invented.
+Sections: original brand and Beta; “Plan the week. Own the work.”; Log in `/login`; Explore features `#features`; weekly planner hero; six capability cards; mobile agenda, routine cards and workout detail; Browse → Plan → Open; Tanuj card using the supplied portrait; invite-only final CTA. Existing verified footer links/credit remain. External creator links use supplied portfolio/GitHub URLs; portrait supplied by Tanuj; no accomplishments or company history invented.
 
-All product examples are visibly labelled as examples and are static, generic authored content. They represent real existing models: category, time, duration, equipment and structured workout instructions. They never read member records. Illustrative labels are not interactive mock controls. Hero/calendar, agenda, library and detail graphics are finished responsive HTML/CSS compositions in `ProductPreview.tsx`; feature drawings live in `public/marketing/features.svg`. TJ is a CSS/serif treatment. The product benefits more from readable UI than an isometric/3D effect; no rendering dependencies needed.
+All product examples are visibly labelled as examples and are static, generic authored content. They represent real existing models: category, time, duration, equipment and structured workout instructions. They never read member records. Illustrative labels are not interactive mock controls. Hero/calendar, agenda, library and detail graphics are finished responsive HTML/CSS compositions in `ProductPreview.tsx`; feature drawings live in `public/marketing/features.svg`. The footer retains its CSS/serif TJ treatment; the About card uses the approved local portrait. The product benefits more from readable UI than an isometric/3D effect; no rendering dependencies needed.
 
 `landingMetadata` is an unattached server-side metadata object, intended for the public root only. Social artwork is `/marketing/og-preview.png` (1200×630), static and free of member data. Claude must supply the verified deployment origin as metadataBase on publication; do not invent a canonical hostname.
 
@@ -150,7 +150,7 @@ Run existing lint/typecheck/unit/db/integration/E2E/build suite, secret scan and
 
 ## UI-01 implementation status
 
-Implemented: additive tokens/class variants, three presentation primitives, active member navigation, reusable public shell and landing, six SVG icons, four product compositions, TJ creator treatment, unattached public metadata, static QA harness and responsive test matrix. Existing footer design/theme/menu/library interactions are retained.
+Implemented: additive tokens/class variants, three presentation primitives, active member navigation, reusable public shell and landing, six SVG icons, four product compositions, approved creator portrait, unattached public metadata, static QA harness and responsive test matrix. Existing footer design/theme/menu/library interactions are retained.
 
 Not integrated: public `/` publication and public-shell selection. Existing root redirect remains intact. `/home`, login redesign, invitation/email, calendar and editor refinements await their scheduled PRs. Full workstream is not complete.
 
@@ -173,3 +173,10 @@ Regression-test corrections: wait for streamed library content before measuring 
 Deferred to Claude: coordinated public-root publication and shell selection; authenticated `/home` data and date preparation; post-login defaults; invitation delivery integration. Proposed dashboard and email contracts are explicitly labelled unimplemented in the handoff.
 
 Remaining UI work: UI-02 login states/dashboard; UI-03 admin/email/planner/library/editor/session polish; UI-04 complete hydrated public-page, accessibility/contrast, zoom, motion and performance validation. New public component screenshots establish review evidence, not approved pixel-diff baselines. **Do not start UI-02 before UI-01 review. Do not merge automatically.**
+
+
+### PR #37 review revisions
+
+Creator label is now “Founder & Developer” (still configurable). The About card uses the supplied square portrait from `iamtj-me/public/static/images/tanuj-chakraborty-1x1.jpg`, copied unchanged to `public/marketing/tanuj-chakraborty.jpg`. Explicit dimensions reserve space; the below-fold local image is lazy-loaded without an image-service request. The footer reading/visual order is now author credit → TJ ring → Follow me/social links, horizontally on desktop and vertically on mobile. Verified destinations and ring hover/focus behavior are unchanged.
+
+Revision validation: lint and typecheck passed; all 14 component UI checks and all 5 footer E2E tests passed, including portrait loading and desktop/mobile footer order. The four review screenshots were refreshed after waiting for the lazy-loaded image to decode.

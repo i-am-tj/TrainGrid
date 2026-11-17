@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { btnPrimary, btnSecondary } from "@/lib/ui";
@@ -45,7 +46,7 @@ export type LandingPageProps = { creatorRole?: string };
 
 /** Ready for public routing; intentionally has no auth, database or fixture imports. */
 export function LandingPage({
-  creatorRole = "Co-founder / Developer",
+  creatorRole = "Founder & Developer",
 }: LandingPageProps) {
   return (
     <div className="landing">
@@ -210,8 +211,16 @@ export function LandingPage({
         aria-labelledby="creator-title"
       >
         <div className="creator-card ui-panel">
-          <div className="creator-mark" aria-hidden="true">
-            <span className="font-display text-7xl italic text-accent">TJ</span>
+          <div className="creator-mark">
+            <Image
+              src="/marketing/tanuj-chakraborty.jpg"
+              alt="Tanuj Chakraborty"
+              width={1170}
+              height={1170}
+              unoptimized
+              loading="lazy"
+              className="aspect-square w-56 rounded-2xl border border-hairline object-cover"
+            />
             <span className="mt-5 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
               Made with intention
             </span>

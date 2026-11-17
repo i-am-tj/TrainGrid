@@ -18,7 +18,9 @@ test.beforeEach(async ({ page }) => {
         ? "text/css"
         : pathname.endsWith(".svg")
           ? "image/svg+xml"
-          : "text/html",
+          : pathname.endsWith(".jpg")
+            ? "image/jpeg"
+            : "text/html",
     });
   });
 });
@@ -58,6 +60,11 @@ for (const theme of ["light", "dark"] as const) {
           .evaluate((el) => getComputedStyle(el).animationName),
       ).toBe("none");
       if (width === 360 || (width === 1440 && height === 900)) {
+        const portrait = page.getByRole("img", { name: "Tanuj Chakraborty", exact: true });
+        await portrait.scrollIntoViewIfNeeded();
+        await expect.poll(() => portrait.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBe(1170);
+        await portrait.evaluate((image) => (image as HTMLImageElement).decode());
+        await page.evaluate(() => window.scrollTo(0, 0));
         await mkdir("docs/images/epic-3", { recursive: true });
         await page.screenshot({
           path: `docs/images/epic-3/landing-${width}-${theme}.png`,
@@ -88,6 +95,11 @@ test("semantic navigation, focus, public-only content and feature anchor", async
   await expect(
     page.getByRole("heading", { name: "Tanuj Chakraborty" }),
   ).toBeVisible();
+  await expect(page.getByText("Founder & Developer", { exact: true })).toBeVisible();
+  const portrait = page.getByRole("img", { name: "Tanuj Chakraborty", exact: true });
+  await portrait.scrollIntoViewIfNeeded();
+  await expect(portrait).toBeVisible();
+  await expect.poll(() => portrait.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBe(1170);
   await expect(
     page.getByRole("link", { name: "Invitations", exact: true }),
   ).toHaveCount(0);
