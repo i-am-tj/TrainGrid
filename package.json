@@ -1,6 +1,6 @@
 {
   "name": "traingrid",
-  "version": "0.2.1-beta",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -27,7 +27,9 @@
     "scan:secrets": "tsx scripts/scan-secrets.ts",
     "test:ui": "node --import tsx scripts/build-ui-preview.tsx && playwright test --config playwright.ui.config.ts",
     "test:audit": "playwright test --config playwright.audit.config.ts",
-    "test:assets": "node --import tsx scripts/check-ui-assets.ts"
+    "test:assets": "node --import tsx scripts/check-ui-assets.ts",
+    "screenshots": "npm run build && E2E_SERVER=build playwright test --config playwright.screenshots.config.ts",
+    "icons:generate": "node --import tsx scripts/generate-app-icons.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

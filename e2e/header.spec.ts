@@ -1,10 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState } from "./local-supabase";
 
-/** Global header brand: logo, name and Beta badge. Runs signed out on the sign-in page. */
+/** Global header brand: logo, name and Early access badge. Runs signed out on the sign-in page. */
 
 for (const [label, width] of [["desktop", 1280], ["phone", 360]] as const) {
-  test(`the brand shows the logo, the name and a Beta badge (${label})`, async ({ page }) => {
+  test(`the brand shows the logo, the name and an Early access badge (${label})`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/login");
     const banner = page.getByRole("banner");
@@ -14,11 +14,11 @@ for (const [label, width] of [["desktop", 1280], ["phone", 360]] as const) {
     await expect(brand).toBeVisible();
     await expect(brand.locator("svg")).toHaveAttribute("aria-hidden", "true");
 
-    // Beta is plain text beside the link: visible, readable, not interactive.
-    const beta = banner.getByText("Beta", { exact: true });
+    // "Early access" is plain text beside the link: visible, readable, not interactive.
+    const beta = banner.getByText("Early access", { exact: true });
     await expect(beta).toBeVisible();
     expect(await beta.evaluate((el) => el.closest("a, button"))).toBeNull();
-    await expect(banner.getByRole("link", { name: /beta/i })).toHaveCount(0);
+    await expect(banner.getByRole("link", { name: /early access/i })).toHaveCount(0);
 
     // Same line as the name, immediately after it.
     const b = (await brand.boundingBox())!;
@@ -63,7 +63,7 @@ test.describe("header menu", () => {
     await expect(toggle).toBeVisible();
     for (const name of LINKS) await expect(banner.getByRole("link", { name, exact: true })).toHaveCount(0);
 
-    // Brand, Beta and the button share one row.
+    // Brand, badge and the button share one row.
     const brand = (await banner.getByRole("link", { name: "TrainGrid", exact: true }).boundingBox())!;
     const button = (await toggle.boundingBox())!;
     expect(Math.abs(button.y + button.height / 2 - (brand.y + brand.height / 2))).toBeLessThan(3);

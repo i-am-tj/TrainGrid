@@ -56,7 +56,7 @@ test("footer places credit, TJ ring and social links in reading order", async ({
     const footer = page.getByRole("contentinfo");
     const credit = (await footer.locator(".credit-underline").boundingBox())!;
     const ring = (await page.getByTestId("monogram").boundingBox())!;
-    const social = (await footer.getByRole("navigation").boundingBox())!;
+    const social = (await footer.getByRole("navigation", { name: "Follow me" }).boundingBox())!;
     if (width === 1440) {
       expect(credit.x + credit.width).toBeLessThan(ring.x);
       expect(ring.x + ring.width).toBeLessThan(social.x);

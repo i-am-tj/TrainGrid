@@ -1,42 +1,81 @@
 # Changelog
 
-All notable changes to TrainGrid. Versions follow [Semantic Versioning](https://semver.org/);
-while TrainGrid is in beta, each epic is a minor release (`0.<epic>.0-beta`) and fixes between
-epics are patch releases. How releases are made: [docs/RELEASING.md](docs/RELEASING.md).
+All notable changes to TrainGrid. Versions follow [Semantic Versioning](https://semver.org/):
+new features are minor releases, fixes are patches. Before 1.0, each epic was a `0.x.0-beta`
+release. How releases are made: [docs/RELEASING.md](docs/RELEASING.md). Members see the same notes
+in the app at `/whats-new`.
 
 ## [Unreleased]
 
-Epic 3 integration: a public home page, a member dashboard and invitation emails.
+## [1.0.0] — 2026-11-17
 
-- **Public landing page at `/`** for everyone, with its own header. Nothing private is rendered
-  there; the planner moved to `/week/current` and the header gains **Home**.
-- **`/home`**: today's planned sessions, this week's planned counts (Monday–Sunday) and your own
-  routines, with loading, empty and error states. Signing in now lands here.
-- **Today in your time zone**: `/home` and the planner decide "today" in your browser's time
-  zone instead of the server's (UTC), so the day no longer changes at 10–11 am in Australia.
-- **Invitation emails** (admins): tick *Email the invitation* when inviting, or send/resend from
-  the list. Status reads "accepted by provider" — never "delivered" — and a failed send leaves
-  the invitation valid. Requires Resend configuration; see `docs/EMAIL_SETUP.md`.
-- **Database**: new migration `20261117000000_invitation_email_deliveries.sql` (apply before or
-  with the deploy; the invitations page keeps working without it).
-- **Email setup**: `TRAINGRID_EMAIL_FROM` now also accepts `Name<address>` (no space before `<`)
-  and normalises it, instead of silently treating it as "not configured". `docs/EMAIL_SETUP.md`
-  follows Resend's current DNS records (DKIM TXT plus two SPF CNAMEs, no MX).
-- **Invitations list**: compact *Send/Resend email* and *Revoke* buttons side by side, and their
-  messages now span the full row instead of being squeezed into the narrow actions column.
-- **Slow loading is explained and retried once**: after 5 seconds every loader says "This is
-  taking longer than usual. Trying again…" and asks the server once more; after 20 seconds it
-  suggests checking the connection or reloading.
-- **Loaders say where you are going**: following a link to the planner shows "Loading your
-  calendar…" (home, library, invitations likewise), and the planner's own section loader uses
-  the same words.
-- **Home loads by section**: the greeting, titles and quick actions appear at once; today's
-  sessions, the week and your routines each stream in behind their own loader, and a failed
-  read affects only its section.
-- **Home links**: *View full planner*, *Browse My Library* and *Browse TrainGrid routines* sweep
-  an underline in on hover without changing colour; quick-action arrows take the icon's colour.
-- **"Welcome" on your first visit**: the first session after accepting an invitation greets you
-  with "Welcome"; later sign-ins say "Welcome back".
+TrainGrid 1.0: the first release for early-access members. A home that knows your day, a warmer
+first visit, a direct line for feedback, and TrainGrid on your phone’s home screen.
+
+### Home
+
+- **Your day at a glance**: today’s planned sessions in order, this week’s planned counts from
+  Monday to Sunday, quick actions, and your most recent routines. Signing in now lands here.
+- **Loads section by section**: the greeting, titles and shortcuts appear at once; today, the week
+  and your routines each fill in behind their own loader, and if one can’t load, only that
+  section says so.
+- **Welcome, then welcome back**: your first visit after accepting an invitation greets you with
+  “Welcome”; from then on, “Welcome back”.
+- **Getting started**: three steps for new members (plan a session, make a routine your own,
+  schedule a routine) that tick themselves off as you go and step aside when you’re done.
+- **Today means your today**: home and the planner use your device’s time zone, so the day no
+  longer changes mid-morning in Australia.
+- Smoother details: links sweep an underline in on hover, and shortcut arrows take the accent
+  colour.
+
+### Planner and loading
+
+- **Loaders say where you’re going**: “Loading your calendar…”, “Loading your home…”.
+- **Slow moments are explained**: after five seconds a loader says it is taking longer than usual
+  and quietly tries again once; after twenty it suggests checking your connection.
+
+### Getting help and staying in the loop
+
+- **Feedback** in the header: choose Idea, Problem or Praise and write a few words. It goes
+  straight to the person who builds TrainGrid.
+- **What’s new** (`/whats-new`): every release, newest first.
+- **Privacy notice and terms** (`/privacy`, `/terms`): plain-language, readable before signing in,
+  and linked from a new footer row and the sign-in page.
+
+### On your phone
+
+- **Install TrainGrid** to your home screen: it opens like an app, with its own icon and shortcuts
+  to the planner and the library.
+- Shared TrainGrid links now show a proper preview card.
+
+### For admins
+
+- **Invitation emails**: tick *Email the invitation* when inviting, or send and resend from the
+  list. The status says “accepted by provider”, never “delivered”, and a failed send leaves the
+  invitation valid. Compact row actions, with messages across the full row.
+- Every confirmation is a themed dialog; nothing uses the browser’s own pop-ups.
+
+### Look and feel
+
+- A public **landing page** at `/` for everyone, with its own header; the planner lives at
+  `/week/current` and the header gains **Home**.
+- “Beta” is now **Early access**.
+
+### For maintainers
+
+- **Database**: migrations `20261117000000_invitation_email_deliveries.sql` and
+  `20261118000000_member_feedback.sql` (apply before or with the deploy).
+- **New optional settings**: `TRAINGRID_FEEDBACK_TO`, `TRAINGRID_CONTACT_EMAIL`,
+  `TRAINGRID_ALERT_WEBHOOK_URL` (see `docs/SUPABASE_SETUP.md`).
+- **CI on every pull request**: lint, types, unit, database, integration and end-to-end tests,
+  with E2E against a production build (`docs/CI.md`).
+- **Error reports**: one data-free log line per server error, and optional throttled Slack/Discord
+  alerts; `/api/health` for uptime monitors.
+- **Email setup**: `TRAINGRID_EMAIL_FROM` accepts `Name<address>`; `docs/EMAIL_SETUP.md` follows
+  Resend’s current DNS records.
+- **Docs**: a member guide (`docs/GUIDE.md`), an admin guide (`docs/ADMIN.md`), a new README, and
+  screenshots generated from the app with `npm run screenshots`.
+- Install icons are generated with `npm run icons:generate`.
 
 ## [0.2.1-beta] — 2026-11-14
 
@@ -107,5 +146,6 @@ library (Epic 2). Live at https://train-grid.vercel.app for invited members.
 - Tests at every layer: unit 174, database (pgTAP) 191, integration 35, end-to-end 111.
 - Runs at zero cost on Vercel Hobby and Supabase Free.
 
+[1.0.0]: https://github.com/i-am-tj/TrainGrid/releases/tag/v1.0.0
 [0.2.1-beta]: https://github.com/i-am-tj/TrainGrid/releases/tag/v0.2.1-beta
 [0.2.0-beta]: https://github.com/i-am-tj/TrainGrid/releases/tag/v0.2.0-beta

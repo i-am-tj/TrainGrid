@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canonicalUrl,
+  contactEmail,
   configuredSiteOrigin,
   parseSiteOrigin,
   siteMetadataBase,
@@ -60,5 +61,15 @@ describe("configuredSiteOrigin", () => {
       "https://app.example.com/",
     );
     expect(canonicalUrl("/", { VERCEL_PROJECT_PRODUCTION_URL: "train-grid.vercel.app" })).toBeNull();
+  });
+});
+
+describe("contactEmail", () => {
+  it("returns a plausible address, and null otherwise", () => {
+    expect(contactEmail({ TRAINGRID_CONTACT_EMAIL: " hello@traingrid.example " })).toBe("hello@traingrid.example");
+    expect(contactEmail({})).toBeNull();
+    expect(contactEmail({ TRAINGRID_CONTACT_EMAIL: "not an address" })).toBeNull();
+    expect(contactEmail({ TRAINGRID_CONTACT_EMAIL: "a@b" })).toBeNull();
+    expect(contactEmail({ TRAINGRID_CONTACT_EMAIL: "<x@y.z>" })).toBeNull();
   });
 });

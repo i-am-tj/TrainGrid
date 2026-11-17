@@ -18,6 +18,8 @@ export type OutgoingEmail = {
   text: string;
   /** Same key → the provider sends at most once. */
   idempotencyKey: string;
+  /** Overrides the configured reply-to for this message (e.g. the member who wrote feedback). */
+  replyTo?: string;
 };
 
 export type SendFailureCode =
@@ -63,7 +65,7 @@ export function createResendTransport(
           subject: email.subject,
           html: email.html,
           text: email.text,
-          ...(config.replyTo ? { reply_to: config.replyTo } : {}),
+          ...((email.replyTo ?? config.replyTo) ? { reply_to: email.replyTo ?? config.replyTo } : {}),
         }),
         signal: AbortSignal.timeout(timeoutMs),
         cache: "no-store",

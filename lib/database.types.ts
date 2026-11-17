@@ -39,6 +39,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"member_feedback": {
+                  Row: {
+                    "created_at": string,"id": string,"kind": string,"message": string,"page_path": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"kind": string,"message": string,"page_path"?: string | null,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"kind"?: string,"message"?: string,"page_path"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "member_feedback_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "avatar_url": string | null,"created_at": string,"display_name": string | null,"id": string,"revoked_at": string | null,"updated_at": string

@@ -56,7 +56,7 @@ export function LandingPage({
             <BrandLogo className="size-7" />
             TrainGrid
             <span className="ml-1 rounded-md border border-line px-2 py-0.5 text-[11px] font-normal text-stone-600">
-              Invite-only Beta
+              Invite-only early access
             </span>
           </div>
           <p className="ui-eyebrow">A clear plan. Space to train.</p>
@@ -270,7 +270,7 @@ export function LandingPage({
               Make a plan. Show up.
             </h2>
             <p className="mt-3 text-sm leading-6 text-stone-600">
-              TrainGrid is in invite-only Beta. Sign in with your invited email.
+              TrainGrid is in invite-only early access. Sign in with your invited email.
             </p>
           </div>
           <Link

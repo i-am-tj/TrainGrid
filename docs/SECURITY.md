@@ -14,6 +14,8 @@ check before a release. The security model itself (invite-only access, Row Level
 | `TRAINGRID_ADMIN_USER_IDS` | Server-only config | Vercel (Production) | Git |
 | `RESEND_API_KEY` | Secret; sends email as your domain | Vercel (Production, type **Sensitive**) | Git, browser bundles, chat, logs |
 | `TRAINGRID_SITE_URL`, `TRAINGRID_EMAIL_FROM` | Server-only config | Vercel (Production) | — |
+| `TRAINGRID_FEEDBACK_TO`, `TRAINGRID_CONTACT_EMAIL` | Server-only config | Vercel (Production) | — |
+| `TRAINGRID_ALERT_WEBHOOK_URL` | Secret; anyone with it can post to your channel | Vercel (Production, type **Sensitive**) | Git, browser bundles, chat, logs |
 | Supabase database password | Secret | Password manager | Anywhere else |
 | Google OAuth client secret | Secret | Supabase dashboard (Google provider) | Git, Vercel |
 | GitHub OAuth client secret | Secret | Supabase dashboard (GitHub provider) | Git, Vercel |
@@ -140,3 +142,23 @@ linking, so the conventions above still matter.
   through `eslint-config-next`). They affect only linting on a developer machine; npm's suggested
   fix is a downgrade to the Next 15 config, which is wrong for this app. Revisit when a patched
   `typescript-eslint` is released.
+
+## Error reports and alerts
+
+`instrumentation.ts` reports every server error as one JSON log line (`"event":"server_error"`,
+searchable in Vercel → Logs) with the route, the path **without its query**, the method, the
+error's class name and Next.js's digest. It never includes the error message, headers, cookies,
+request bodies or user ids. When `TRAINGRID_ALERT_WEBHOOK_URL` is an `https` Slack or Discord
+webhook, the same line is posted there, at most once per distinct error per 10 minutes per server
+instance (`lib/observability/alerts.ts`).
+
+For uptime, point a monitor (for example UptimeRobot's free plan) at `/api/health`: it answers
+`200 {"supabase":"ok"}` when the app can reach Supabase, `503` otherwise, and reveals nothing else.
+
+## Member feedback
+
+Feedback is stored in `public.member_feedback`. Members may only **insert** their own rows
+(column-level grant on `kind`, `message`, `page_path`; `user_id` defaults to the caller and the
+policy checks it plus active membership). Nobody can read it through the API; the owner reads it
+in the Supabase dashboard, and optionally by email (`TRAINGRID_FEEDBACK_TO`). A trigger refuses
+more than 10 messages per member per 24 hours. Messages are escaped in the HTML email.

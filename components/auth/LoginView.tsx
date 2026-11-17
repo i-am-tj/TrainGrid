@@ -32,7 +32,7 @@ export function LoginView({
             <BrandLogo className="size-7" />
             TrainGrid
             <span className="ml-1 rounded-md border border-line px-1.5 text-[11px] font-normal text-stone-600">
-              Beta
+              Early access
             </span>
           </div>
           <p className="ui-eyebrow mt-10">Your week starts here</p>
@@ -98,6 +98,17 @@ export function LoginView({
             <p className="mt-2 text-xs leading-6 text-stone-600">
               Use the Google or GitHub account with the email address you were
               invited with. There’s no separate TrainGrid password.
+            </p>
+            <p className="mt-3 text-xs leading-6 text-stone-600">
+              By continuing, you agree to the{" "}
+              <Link href="/terms" className="underline-reveal-parent rounded-sm text-accent">
+                <span className="underline-reveal">Terms</span>
+              </Link>{" "}
+              and acknowledge the{" "}
+              <Link href="/privacy" className="underline-reveal-parent rounded-sm text-accent">
+                <span className="underline-reveal">Privacy notice</span>
+              </Link>
+              .
             </p>
           </div>
         </section>

@@ -3,18 +3,24 @@ import { safeNextPath } from "./redirect";
 import { isApiPath, isPublicPath, loginPathFor } from "./routes";
 
 describe("isPublicPath", () => {
-  it("allows only the landing page, the sign-in surfaces and the health check", () => {
+  it("allows only the landing page, sign-in, health check, information pages and the manifest", () => {
     expect(isPublicPath("/")).toBe(true);
     expect(isPublicPath("/login")).toBe(true);
     expect(isPublicPath("/login/")).toBe(true);
     expect(isPublicPath("/auth/callback")).toBe(true);
     expect(isPublicPath("/api/health")).toBe(true);
+    expect(isPublicPath("/privacy")).toBe(true);
+    expect(isPublicPath("/terms/")).toBe(true);
+    expect(isPublicPath("/whats-new")).toBe(true);
+    expect(isPublicPath("/manifest.webmanifest")).toBe(true);
   });
 
   it("treats everything else as private", () => {
     for (const path of [
       "/home",
       "/home/",
+      "/privacy/extra",
+      "/terms-and-more",
       "//",
       "/index",
       "/week/current",
