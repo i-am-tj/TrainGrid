@@ -84,8 +84,8 @@ test("M1: an admin can invite, sees the status, and can revoke", async ({
     await page.getByRole("button", { name: "Invite", exact: true }).click();
     await expect(page.locator('p[role="alert"]')).toHaveText("Enter a valid email address.");
 
-    page.once("dialog", (dialog) => dialog.accept());
     await row.getByRole("button", { name: "Revoke" }).click();
+    await page.getByRole("dialog", { name: "Revoke invitation?" }).getByRole("button", { name: "Revoke", exact: true }).click();
     await expect(row.getByText("Revoked")).toBeVisible();
     await expect(row.getByRole("button", { name: "Revoke" })).toHaveCount(0);
   } finally {
@@ -124,11 +124,9 @@ test("an admin revokes an accepted member's access; the member is locked out at 
 
     const memberRow = page.getByRole("listitem").filter({ hasText: member.email });
     await expect(memberRow.getByText("Accepted")).toBeVisible();
-    page.once("dialog", (dialog) => {
-      expect(dialog.message()).toContain("Their routines and sessions are kept");
-      return dialog.accept();
-    });
     await memberRow.getByRole("button", { name: "Revoke access" }).click();
+    await expect(page.getByRole("dialog")).toContainText("Their routines and sessions are kept");
+    await page.getByRole("dialog", { name: "Revoke access?" }).getByRole("button", { name: "Revoke access", exact: true }).click();
     await expect(memberRow.getByText("Revoked", { exact: true })).toBeVisible();
     await expect(memberRow.getByText("Access revoked, data kept")).toBeVisible();
     await expect(memberRow.getByRole("button")).toHaveCount(0);

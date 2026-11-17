@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef } from "react";
+import { useActionState, useEffect, useId, useMemo, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import {
   inviteAction,
@@ -10,7 +10,7 @@ import {
   type InvitationFormState,
 } from "@/lib/admin/actions";
 import type { EmailFeedback } from "@/lib/admin/invitation-model";
-import { btnDangerCompact, btnPrimary, btnSecondaryCompact, fieldClass } from "@/lib/ui";
+import { btnDanger, btnDangerCompact, btnPrimary, btnSecondary, btnSecondaryCompact, fieldClass } from "@/lib/ui";
 import { useRowFeedback, type RowFeedbackMessage } from "@/components/admin/RowFeedback";
 
 const FEEDBACK_STYLE: Record<EmailFeedback["tone"], string> = {
@@ -139,32 +139,70 @@ export function RevokeForm({
   email: string;
   kind: "invitation" | "access";
 }) {
-  const [state, action] = useActionState(revokeAction, null);
+  const [state, action, pending] = useActionState(revokeAction, null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+  useEffect(() => {
+    if (state) dialog.current?.close();
+  }, [state]);
   const inRow = useReportToRow(
     useMemo(
       () => (state?.message ? { tone: state.ok ? "success" : "error", message: state.message } as const : null),
       [state],
     ),
   );
-  const question =
-    kind === "access"
-      ? `Revoke access for ${email}?\n\nThey lose access to TrainGrid straight away. Their routines and sessions are kept, and inviting this email again restores them.`
-      : `Revoke the invitation for ${email}?`;
+  const label = kind === "access" ? "Revoke access" : "Revoke";
   return (
-    <form
-      action={action}
-      onSubmit={(event) => {
-        if (!confirm(question)) event.preventDefault();
-      }}
-    >
-      <input type="hidden" name="id" value={id} />
-      <Submit
-        label={kind === "access" ? "Revoke access" : "Revoke"}
-        busy="Revoking…"
+    <>
+      <button
+        type="button"
+        disabled={pending}
         className={btnDangerCompact}
-      />
+        onClick={() => {
+          dialog.current?.showModal();
+          cancel.current?.focus();
+        }}
+      >
+        {label}
+      </button>
+      <dialog
+        ref={dialog}
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        onCancel={(event) => {
+          if (pending) event.preventDefault();
+        }}
+        className="ui-panel m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto p-5 text-foreground backdrop:bg-black/50 sm:p-6"
+      >
+        <h2 id={titleId} className="text-xl font-semibold">
+          {kind === "access" ? "Revoke access?" : "Revoke invitation?"}
+        </h2>
+        <div id={descriptionId} className="mt-3 space-y-3 text-sm leading-6 text-stone-600">
+          <p className="font-medium text-foreground [overflow-wrap:anywhere]">{email}</p>
+          <p>
+            {kind === "access"
+              ? "They lose access to TrainGrid straight away. Their routines and sessions are kept, and inviting this email again restores them."
+              : "This invitation will no longer grant access to TrainGrid."}
+          </p>
+        </div>
+        <form action={action} className="mt-6 flex flex-wrap justify-end gap-2">
+          <input type="hidden" name="id" value={id} />
+          <button
+            ref={cancel}
+            type="button"
+            disabled={pending}
+            className={btnSecondary}
+            onClick={() => dialog.current?.close()}
+          >
+            Cancel
+          </button>
+          <Submit label={label} busy="Revoking…" className={btnDanger} />
+        </form>
+      </dialog>
       {inRow ? null : <Message state={state} />}
-    </form>
+    </>
   );
 }
 

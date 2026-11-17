@@ -31,8 +31,12 @@ test.beforeEach(async ({ baseURL }) => {
   test.skip(!hasLocalSecretKey(), "SUPABASE_SECRET_KEY is not set for the local stack");
 });
 
-/** Sets every hidden input with this name on the page. */
+/** Mutate only hydrated fields so React cannot restore the original id afterward. */
 async function forge(page: Page, name: string, value: string) {
+  await page.waitForFunction((fieldName) => {
+    const input = document.querySelector(`input[type="hidden"][name="${CSS.escape(fieldName)}"]`);
+    return !!input && Object.keys(input).some((key) => key.startsWith("__reactFiber"));
+  }, name);
   await page.locator(`input[type="hidden"][name="${name}"]`).evaluateAll(
     (inputs, v) => inputs.forEach((input) => ((input as HTMLInputElement).value = v)),
     value,
@@ -256,9 +260,9 @@ test.describe("admin actions replayed by others", () => {
       await expect(page.getByRole("listitem").filter({ hasText: pending })).toBeVisible();
       const [pendingRow] = await readRows("invitations", { email: pending });
       const [memberRow] = await readRows("invitations", { email: memberEmail });
-      page.once("dialog", (dialog) => dialog.accept());
       const revokeRequest = page.waitForRequest((r) => r.method() === "POST" && !!r.headers()["next-action"]);
       await page.getByRole("listitem").filter({ hasText: pending }).getByRole("button", { name: "Revoke" }).click();
+      await page.getByRole("dialog", { name: "Revoke invitation?" }).getByRole("button", { name: "Revoke", exact: true }).click();
       const revoke = await revokeRequest;
       const revokeBody = revoke.postDataBuffer()!.toString("utf8")
         .split(pendingRow!.id as string).join(memberRow!.id as string);
