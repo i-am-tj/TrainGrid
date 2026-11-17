@@ -28,10 +28,12 @@ export function EmptyState({
   title,
   children,
   action,
+  icon,
 }: {
   title: string;
   children: ReactNode;
   action?: ReactNode;
+  icon?: ReactNode;
 }) {
   return (
     <div className="ui-panel border-dashed px-5 py-10 text-center">
@@ -39,7 +41,7 @@ export function EmptyState({
         aria-hidden="true"
         className="mb-4 inline-flex size-12 items-center justify-center rounded-xl border border-line text-accent"
       >
-        ▦
+        {icon ?? "▦"}
       </span>
       <h2 className="font-semibold">{title}</h2>
       <div className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-600">

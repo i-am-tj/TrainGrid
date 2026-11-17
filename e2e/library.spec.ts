@@ -38,7 +38,7 @@ test("TrainGrid shows shared routines only and never invites editing them", asyn
 
   await expect(page).toHaveURL(/\/library\?scope=global$/);
   await expect(viewNav(page).getByRole("link", { name: "TrainGrid" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByText(`${SHARED_COUNT} routines`)).toBeVisible();
+  await expect(page.getByText(`${SHARED_COUNT} routines`, { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(cards(page)).toHaveCount(SHARED_COUNT);
   await expect(page.getByText("My Hidden Lift")).toHaveCount(0);
   await expect(cards(page).getByText("Mine", { exact: true })).toHaveCount(0);
@@ -107,7 +107,7 @@ test("malformed parameters fall back to defaults without an error", async ({ pag
   const response = await page.goto("/library?scope=everyone&type=%3Cscript%3E");
   expect(response?.status()).toBe(200);
   await expect(viewNav(page).getByRole("link", { name: "All" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByText(`${SHARED_COUNT} routines`)).toBeVisible();
+  await expect(page.getByText(`${SHARED_COUNT} routines`, { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(page.getByText("<script>")).toHaveCount(0);
 });
 
@@ -203,7 +203,7 @@ test("search ignores case and extra spaces, and needs every word", async ({ page
 test("a blank search is no search", async ({ page }) => {
   await page.goto("/library");
   await search(page, "    ");
-  await expect(page.getByText(`${SHARED_COUNT} routines`)).toBeVisible();
+  await expect(page.getByText(`${SHARED_COUNT} routines`, { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Clear filters" })).toHaveCount(0);
 });
 
@@ -248,7 +248,7 @@ test("zero results say what was searched and offer Clear filters, keeping the vi
   await expect(page.getByText(/haven't created|No TrainGrid routines yet/)).toHaveCount(0);
   await page.getByRole("link", { name: "Clear filters" }).first().click();
   await expect(page).toHaveURL(/\/library\?scope=global$/);
-  await expect(page.getByText(`${SHARED_COUNT} routines`)).toBeVisible();
+  await expect(page.getByText(`${SHARED_COUNT} routines`, { exact: true }).filter({ visible: true })).toBeVisible();
 });
 
 test("malformed search parameters fall back safely", async ({ page }) => {

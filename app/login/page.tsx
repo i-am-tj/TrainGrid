@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LoginView } from "@/components/auth/LoginView";
+import { ProviderSubmit } from "@/components/auth/ProviderSubmit";
 import { signInWithProvider } from "@/lib/auth/actions";
 import { OAUTH_PROVIDERS, loginErrorMessage } from "@/lib/auth/providers";
 import { safeNextPath } from "@/lib/auth/redirect";
@@ -12,9 +13,16 @@ export const metadata: Metadata = {
   title: "Sign in · TrainGrid",
 };
 
-type SearchParams = Promise<{ error?: string | string[]; next?: string | string[] }>;
+type SearchParams = Promise<{
+  error?: string | string[];
+  next?: string | string[];
+}>;
 
-export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const params = await searchParams;
   const configured = getSupabaseEnv() !== null;
   const error = loginErrorMessage(first(params.error));
@@ -22,64 +30,18 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   const viewer = await getViewer();
 
   return (
-    <div className="mx-auto max-w-sm px-3 py-12 sm:py-20">
-      <div className="rounded-2xl border border-line bg-card px-5 py-7 text-center sm:px-7">
-        <h1 className="text-xl font-semibold tracking-tight">Welcome to TrainGrid</h1>
-        <p className="mt-1.5 text-sm text-stone-600">Invite-only access</p>
-
-        {error ? (
-          <p
-            role="alert"
-            className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
-          >
-            {error}
-          </p>
-        ) : null}
-
-        {!configured ? (
-          <p className="mt-6 text-sm text-stone-600">
-            Sign-in is not available on this deployment.
-          </p>
-        ) : viewer.status === "not_member" ? (
-          <div className="mt-6">
-            <p className="text-sm text-stone-700">
-              TrainGrid is currently invite-only. Ask the person who invited you to verify the
-              email used for your account.
-            </p>
-            <p className="mt-3 text-sm text-stone-600">
-              Use Sign out at the top of the page to try a different account.
-            </p>
-          </div>
-        ) : viewer.status === "member" ? (
-          <div className="mt-6">
-            <p className="text-sm text-stone-700">
-              Signed in as{" "}
-              <span className="font-medium break-all">{viewer.email ?? viewer.displayName}</span>
-            </p>
-            <p className="mt-3 text-sm">
-              <Link href="/" className="underline underline-offset-2">
-                Go to the planner
-              </Link>
-            </p>
-          </div>
-        ) : (
-          <div className="mt-6 space-y-2.5">
-            {OAUTH_PROVIDERS.map((provider) => (
-              <form key={provider.id} action={signInWithProvider}>
-                <input type="hidden" name="provider" value={provider.id} />
-                <input type="hidden" name="next" value={nextPath} />
-                <button
-                  type="submit"
-                  className="w-full rounded-lg bg-stone-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-stone-800"
-                >
-                  {provider.label}
-                </button>
-              </form>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+    <LoginView
+      configured={configured}
+      viewer={viewer}
+      error={error}
+      providerForms={OAUTH_PROVIDERS.map((provider) => (
+        <form key={provider.id} action={signInWithProvider}>
+          <input type="hidden" name="provider" value={provider.id} />
+          <input type="hidden" name="next" value={nextPath} />
+          <ProviderSubmit provider={provider.id} label={provider.label} />
+        </form>
+      ))}
+    />
   );
 }
 
