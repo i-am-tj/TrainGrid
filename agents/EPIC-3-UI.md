@@ -1,6 +1,6 @@
 # Epic 3 — TrainGrid product experience and frontend
 
-Status: UI-01 ready for review; UI-02 must wait for review of UI-01.
+Status: UI-01 merged (PR #37); UI-02 ready for review from reviewed main `47e2eb7`. UI-01 review gate is satisfied.
 Audit date: 2026-11-17. Reviewed-main base: `f3a0770` (PR #36).
 Branch: `codex/epic-3-ui-01`. This document distinguishes implementation from future work.
 
@@ -180,3 +180,62 @@ Remaining UI work: UI-02 login states/dashboard; UI-03 admin/email/planner/libra
 Creator label is now “Founder & Developer” (still configurable). The About card uses the supplied square portrait from `iamtj-me/public/static/images/tanuj-chakraborty-1x1.jpg`, copied unchanged to `public/marketing/tanuj-chakraborty.jpg`. Explicit dimensions reserve space; the below-fold local image is lazy-loaded without an image-service request. The footer reading/visual order is now author credit → TJ ring → Follow me/social links, horizontally on desktop and vertically on mobile. Verified destinations and ring hover/focus behavior are unchanged.
 
 Revision validation: lint and typecheck passed; all 14 component UI checks and all 5 footer E2E tests passed, including portrait loading and desktop/mobile footer order. The four review screenshots were refreshed after waiting for the lazy-loaded image to decode.
+
+
+## UI-02 — login and member dashboard presentation
+
+Base: `47e2eb7` (merged PR #37). Branch: `codex/epic-3-ui-02`. Scope: production login presentation and typed reusable dashboard, with fixtures isolated to screenshot/development QA. No `/home` route, root publication, new data reads, auth/callback/default-next changes, endpoints, schema or delivery work.
+
+### Login implementation
+
+`LoginView` separates the visual shell from the existing server-page decisions. The page retains configuration checking, getViewer, fixed loginErrorMessage mapping, safeNextPath and the provider forms' action and hidden values. It renders the same branch precedence and existing messages/links. A small client ProviderSubmit reads useFormStatus and renders the pure ProviderButton, preserving accessible provider names while pending text says “Connecting to Google/GitHub…”. Pending disables the submitted button, with aria-busy and a reduced-motion-safe spinner. Provider icons are local SVG, including reuse of the existing GitHub mark. Both buttons use the outlined control variant; no competing dark primary buttons.
+
+The shell uses existing brand/Beta, a welcome heading and invited-email instructions. On desktop a restrained seven-day brand illustration and three-step rhythm occupy a secondary panel; mobile prioritizes sign-in. Existing header/theme/footer remain shared. States: signed out; signed-in member; nonmember; generic sign-in error; verified-email error; invitation error; auth unavailable; submitting. Error text remains an alert and cannot be confused with success. Signed-in nonmembers' email remains hidden.
+
+### Dashboard implementation
+
+`MemberDashboard({ state })` and `types.ts` implement the handoff contract. It renders prepared display values only. No production page imports fixtures. No dashboard route is published until Claude integrates authorized real data.
+
+- Welcome/date: prepared date label, optional displayName with neutral fallback, contextual copy and one primary weekly-planner link.
+- Today's sessions: primary content area, category, optional time/duration, prepared workout summary, Open session and Add session. Untimed is explicit; absence of duration never produces a fake number.
+- Week: Monday–Sunday seven-day tuple, calendar labels, prepared planned-session counts, selected outline/aria-current and today emphasis. Empty days use a dash with an explicit zero in the accessible label. Day links open planner dates; no misleading local selection or completion statistics.
+- My routines: prepared personal cards, category/summary, View and Schedule, Browse My Library, Create routine. Long spaced and unbroken names wrap; short/empty lists remain usable.
+- Quick actions: four real link slots for Add session, planner, TrainGrid library and Create routine, using the original SVG icon vocabulary.
+- States: several sessions; empty today with other planned days; fully empty week; no personal routines; loading skeleton; recoverable error; very long session/routine/member names. Loading/error do not show empty-data claims. Actions are supplied local hrefs rather than placeholder callbacks.
+
+The desktop layout places today beside week/shortcuts, then routines. Mobile flows as today → week → shortcuts → routines. Content widths use existing tokens and a fluid 76rem container. All action focus rings and semantic category tints remain consistent with the approved theme. New transitions are short and removed for reduced motion; loading skeletons are static.
+
+### Preview and review evidence
+
+The existing static QA harness now emits labelled dashboard/login fixtures into ignored `.next/ui-preview/`. It is not an auth-bypass route or a production user experience. The source of example data is only `tests/ui/fixtures/`; production components receive required typed props, never default demo content. The seven-day tuple enforces structure at compile time; Claude remains responsible for real data validation, timezone, ownership, ordering and planned-count preparation.
+
+Screenshots are under `docs/images/epic-3/ui-02/`, including 360px and 1440px light/dark login, populated dashboard and empty dashboard. They render the real components with fallback fonts; actual app E2E verifies hydrated login behavior. Fixture screenshots use a labelled public shell solely for isolated presentation QA, not a claim that authenticated navigation has been wired to `/home`.
+
+Validation complete: lint/typecheck; 174 unit tests; 191 local DB tests; 35 integration tests; 31 component browser tests (including every login/dashboard state in both themes across the viewport matrix); 123 app E2E tests; secret scan; production build using `next build --webpack`. DB-writing suites ran sequentially. No runtime dependencies or build settings changed. The final complete app E2E run passed all 123 tests without retries.
+
+The existing admin test now scopes invitation success to its form-message paragraph, excluding streamed loader status. The blank-search test scopes its count to the visible result because React can briefly retain the old hidden result tree. The new login error check scopes alerts to main, excluding Next's route announcer. These corrections change test selectors only, not application behavior.
+
+Deferred to Claude: authenticate and serve `/home`; prepare real per-member dashboard data/date/links; coordinate root publication and member navigation; configure post-login destination while preserving explicit safe next. Email remains UI-03 and unimplemented. UI-03/UI-04 retain their original scope.
+
+
+### UI-02 review report
+
+Screens covered: live `/login` and every existing auth presentation state; reusable member dashboard with welcome/date, today's sessions, weekly planned counts, personal routines and quick actions; empty-day/week/routine, long-name, loading and recoverable-error variants. Actual production login forms remain connected. Dashboard is presentation only and must not be reported as a connected member feature.
+
+Review screenshots:
+
+| Screen | Desktop | Mobile |
+| --- | --- | --- |
+| Live login, light | [1440px](../docs/images/epic-3/ui-02/login-live-1440-light.png) | [360px](../docs/images/epic-3/ui-02/login-live-360-light.png) |
+| Live login, dark | [1440px](../docs/images/epic-3/ui-02/login-live-1440-dark.png) | [360px](../docs/images/epic-3/ui-02/login-live-360-dark.png) |
+| Dashboard example, light | [1440px](../docs/images/epic-3/ui-02/dashboard-ready-1440-light.png) | [360px](../docs/images/epic-3/ui-02/dashboard-ready-360-light.png) |
+| Dashboard example, dark | [1440px](../docs/images/epic-3/ui-02/dashboard-ready-1440-dark.png) | [360px](../docs/images/epic-3/ui-02/dashboard-ready-360-dark.png) |
+| Empty dashboard example, light | [1440px](../docs/images/epic-3/ui-02/dashboard-empty-week-1440-light.png) | [360px](../docs/images/epic-3/ui-02/dashboard-empty-week-360-light.png) |
+
+`login-live-*` captures the hydrated Next app with real fonts and the development indicator excluded from the image. Other captures are labelled fixture compositions with fallback fonts. Both themes of empty/dashboard/login static examples are included in the same asset directory.
+
+Claude dependencies: serve authenticated `/home`, prepare authorized real data (including dates/timezone, sorted sessions, seven days/counts and personal routines), supply safe working hrefs/retry behavior, coordinate root publication and post-login destination. See the updated exact contracts in EPIC-3-UI-HANDOFF.md. No API, schema, member policy, invitation semantics, scheduled persistence or production-data changes occurred.
+
+Remaining UI work: UI-03 invitations/email preview and planner/library/editor/session polish; UI-04 final responsive/zoom/contrast, motion/performance and integration regression. Review and manual merge only; UI-03 is not started.
+
+UI-02 review refinement: active member navigation uses the existing background highlight without the copper underline. Accessible aria-current and keyboard focus remain unchanged.

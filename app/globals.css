@@ -175,7 +175,6 @@ body {
   .ui-control:disabled { cursor: not-allowed; opacity: 0.55; }
   .ui-nav-link { position: relative; transition: color var(--motion-fast) var(--ease-ui), background-color var(--motion-fast) var(--ease-ui); }
   .ui-nav-link[aria-current="page"] { color: var(--foreground); background: var(--background); }
-  .ui-nav-link[aria-current="page"]::after { content: ""; position: absolute; bottom: 0; left: 0.5rem; right: 0.5rem; height: 2px; background: var(--accent); border-radius: 2px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ui-control, .ui-nav-link { transition: none; }
@@ -237,3 +236,17 @@ body {
 }
 /* The decorative orbit is clipped locally; page content remains scrollable. */
 .landing { overflow-x: clip; }
+
+/* UI-02: planning presentation uses the existing theme and category colors. */
+.dashboard-container { width: min(100% - 1.5rem, 76rem); margin-inline: auto; padding-block: clamp(1.5rem, 4vw, 3rem); }
+.dashboard-shortcut, .dashboard-day { transition: background-color var(--motion-fast) var(--ease-ui), border-color var(--motion-fast) var(--ease-ui); }
+.dashboard-shortcut:hover { background: var(--background); }
+.dashboard-skeleton { border-radius: 0.375rem; background: var(--line); }
+.login-week-mark { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.35rem; }
+.login-week-mark > span { display: flex; min-height: 4.5rem; flex-direction: column; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.75rem 0.25rem; font-size: 0.6875rem; color: var(--muted); }
+.login-week-mark i { width: 0.35rem; height: 0.35rem; border-radius: 100%; background: var(--hairline); }
+.login-week-mark > .login-week-active { border-color: var(--accent); color: var(--accent); }
+.login-week-active i { background: var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-shortcut, .dashboard-day { transition: none; }
+}

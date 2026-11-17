@@ -1,10 +1,10 @@
 # Epic 3 UI → Claude integration handoff
 
-Updated 2026-11-17. UI-01 only. **Proposed contracts below are not existing exports unless explicitly marked implemented.** No dashboard/email/backend feature is complete in this PR.
+Updated 2026-11-17. UI-01 is merged in PR #37; UI-02 implements login and dashboard presentation. **Dashboard exports below now exist; email contracts remain proposed.** Dashboard routing/data, root publication, OAuth changes and email delivery are not integrated.
 
 ## 1. Dashboard props and real-data requirements
 
-UI-02 will finalize/export types alongside `MemberDashboard`; no component or `/home` route exists in UI-01. Proposed presentation contract:
+Implemented: `components/dashboard/MemberDashboard.tsx` exports `MemberDashboard({ state: DashboardState })`, `WeeklyOverview({ week: DashboardWeek })`, `DashboardLoading()` and re-exports its types from `components/dashboard/types.ts`. No `/home` route or dashboard query is added. Exact display contract (arrays are readonly in the source):
 
 ```ts
 type DashboardSession = {
@@ -21,11 +21,12 @@ type DashboardRoutine = {
   id: string; name: string; categoryLabel: string; detail: string;
   viewHref: string; scheduleHref: string;
 };
+type DashboardWeek = readonly [DashboardDay, DashboardDay, DashboardDay, DashboardDay, DashboardDay, DashboardDay, DashboardDay];
 type DashboardData = {
   displayName: string | null; dateLabel: string;
-  todaySessions: DashboardSession[];
-  week: DashboardDay[]; // exactly seven, Monday–Sunday
-  routines: DashboardRoutine[]; // member's own PERSONAL routines only
+  todaySessions: readonly DashboardSession[];
+  week: DashboardWeek; // exactly seven, Monday–Sunday
+  routines: readonly DashboardRoutine[]; // member's own PERSONAL routines only
   plannerHref: string; addSessionHref: string;
   myLibraryHref: string; sharedLibraryHref: string; createRoutineHref: string;
 };
@@ -41,7 +42,7 @@ Claude prepares member-scoped records and counts through the existing authorized
 
 Implemented UI-01 exports:
 
-- `components/marketing/LandingPage.tsx`: `LandingPage({ creatorRole?: string })`; default supplied role label.
+- `components/marketing/LandingPage.tsx`: `LandingPage({ creatorRole?: string })`; default “Founder & Developer”, approved local portrait.
 - `components/marketing/PublicHeader.tsx`: public navigation, brand/Beta and existing theme/mobile components. No viewer or admin data.
 - `components/marketing/metadata.ts`: `landingMetadata`, ready for public page only.
 - Existing `components/footer/SiteFooter.tsx` remains shared; do not duplicate it inside main.
@@ -53,7 +54,7 @@ Claude must coordinate these changes together:
 1. Explicitly add only `/` to `isPublicPath`; keep all planner/library/session/admin/export routes guarded.
 2. Replace root redirect with LandingPage and apply landingMetadata. Configure metadataBase from the verified deployment origin; set canonical only when known.
 3. Select PublicHeader for the root in the shared layout/header composition; retain AppHeader and guards for member routes. Ensure no duplicate header/footer/main landmarks. Root should not query private planner data or embed it in metadata.
-4. Implement `/home` as an authenticated page using requireMember/memberData and real prepared data passed into UI-02's dashboard. Do not render demo records to a member.
+4. Implement `/home` as an authenticated page using requireMember/memberData and real prepared data passed into `MemberDashboard`. Do not render demo records to a member.
 5. Replace member Planner links currently pointing at `/` with `/week/current`; update the signed-in login-page Planner link and brand destination deliberately. Public branding should link to `/`. Decide member Home navigation in UI-02 integration.
 6. Retain private route no-store/session handling and data-layer/RLS checks. Do not relax middleware matching globally.
 
@@ -98,8 +99,8 @@ The admin preview must not manufacture status transitions or call a fake send. R
 | Capability | UI status at UI-01 | Claude responsibility |
 | --- | --- | --- |
 | Landing and public shell | Implemented, reusable, not routed | Coordinate root publication/metadata/shell/navigation |
-| Dashboard | Proposed contract only; UI-02 pending review gate | Member route, data preparation, timezone, default login destination |
-| Login | Existing presentation unchanged; UI-02 planned | Preserve/integrate auth behavior; no provider redesign requested |
+| Dashboard | All requested presentational states implemented; fixture QA only; no `/home` route/data loader | Member route, data preparation, timezone, default login destination |
+| Login | Redesigned production `/login`, all existing branches and real form pending UI | Preserve/integrate auth behavior; no provider redesign requested |
 | Invitations | Existing functional page retained; UI-03 planned | Keep admin policy and membership semantics |
 | Invitation email | Proposed contract only; UI-03 planned | Sending, retries, persisted delivery state and secrets |
 | Planner/library/editor/session | Existing operations retained; visual refinements UI-03 | No data/persistence changes required by UI scope |
@@ -115,4 +116,17 @@ The admin preview must not manufacture status transitions or call a fake send. R
 - Email escaping, unsafe URL refusal, subject/preheader/text equivalence, invited-address copy, actual branding URL and responsive email-client rendering.
 - Run existing RLS, integration, auth, admin and journey tests after wiring, plus UI-02/UI-03 component states and final UI-04 viewport/zoom matrix.
 
-Do not mark these integrations complete before real authorized data and service behavior are exercised. UI-02 must not begin until UI-01 review.
+Do not mark these integrations complete before real authorized data and service behavior are exercised. UI-01 review is satisfied (PR #37 merged). UI-02 is submitted for its own manual review; UI-03 remains future work.
+
+
+## UI-02 integration details
+
+- `LoginView` receives `configured`, minimal `LoginViewer`, the existing mapped `error` string/null, and `providerForms: ReactNode`. `app/login/page.tsx` still reads config/viewer, awaits searchParams, sanitizes next and binds signInWithProvider. `ProviderSubmit` uses useFormStatus inside each original provider form; `ProviderButton` is its pure visual component. No OAuth/callback/sign-out/default redirect changes were made.
+- Login branches preserve unavailable → nonmember → member → anonymous precedence; mapped errors stay a separate `p[role=alert]`. Nonmembers' email is never printed. Existing member Planner link remains `/` until coordinated root publication. Preserve it in existing auth tests and update deliberately when root semantics change.
+- Dashboard session category uses existing `SessionType`; null time is “No set time”, null duration is omitted. `detail` is a prepared brief summary of the snapshot, not a live source-routine query. All hrefs are supplied by Claude's integration layer and must be validated, local application URLs derived from authorized ids/dates.
+- Supply the member's own routine selection, already ordered/capped (recommended up to three). Supply today's sessions, already sorted; do not silently drop sessions to fit the card layout. `week` is a seven-element readonly tuple in Monday–Sunday order; count values must be nonnegative integers. `isSelected` controls aria-current=date and outline, `isToday` marks the date; day links open the corresponding real planner date. The component performs no date arithmetic, queries, completion calculations or user aggregation.
+- Use status=loading during real loading, status=error on failure with a safe user-facing message and a working retryHref, and status=ready only after a successful data read. Never substitute empty arrays for failure. Null displayName uses a neutral greeting. `dateLabel` is supplied, so server and client cannot disagree about today.
+- `tests/ui/fixtures/dashboard.ts` and `tests/ui/fixtures/login.tsx` are the only UI-02 example data sources. `scripts/build-ui-preview.tsx` renders them to ignored `.next/ui-preview/*.html` as explicitly labelled examples. They are not Next routes and must never be imported into production pages/components. No preview bypass or seed member data exists in the application.
+- `npm run test:ui` checks all seven dashboard states and eight login states at 320/360/768/1024/1440 widths and short height in both themes. New `e2e/login-ui.spec.ts` verifies live login layout, next values, keyboard provider order and an intercepted real Server Action's pending state. Existing auth tests still own real Supabase provider handoff, fixed errors, member/nonmember and sign-out coverage.
+
+Remaining backend integration tests in section 8 still apply. Static screenshot harness uses fallback fonts and has no hydration; live Next/E2E checks cover actual login controls. Fixture retry/session/routine links are examples, not production records. UI-02 does not change the public-root handoff or introduce authentication behavior.

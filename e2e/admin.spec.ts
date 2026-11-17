@@ -66,7 +66,7 @@ test("M1: an admin can invite, sees the status, and can revoke", async ({
     // Mixed case and padding are normalised.
     await page.getByLabel("Email address").fill(`  ${email.toUpperCase()} `);
     await page.getByRole("button", { name: "Invite" }).click();
-    await expect(page.getByRole("status")).toHaveText("Invitation created.");
+    await expect(page.locator('p[role="status"]')).toHaveText("Invitation created.");
 
     const row = page.getByRole("listitem").filter({ hasText: email });
     await expect(row).toBeVisible();
