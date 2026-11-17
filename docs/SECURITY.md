@@ -12,6 +12,8 @@ check before a release. The security model itself (invite-only access, Row Level
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public by design | Vercel (Production), `.env.local` (local stack) | Git (production value) |
 | `SUPABASE_SECRET_KEY` | Secret; bypasses RLS | Vercel (Production, type **Secret**) | Git, browser bundles, Preview, chat, logs |
 | `TRAINGRID_ADMIN_USER_IDS` | Server-only config | Vercel (Production) | Git |
+| `RESEND_API_KEY` | Secret; sends email as your domain | Vercel (Production, type **Sensitive**) | Git, browser bundles, chat, logs |
+| `TRAINGRID_SITE_URL`, `TRAINGRID_EMAIL_FROM` | Server-only config | Vercel (Production) | — |
 | Supabase database password | Secret | Password manager | Anywhere else |
 | Google OAuth client secret | Secret | Supabase dashboard (Google provider) | Git, Vercel |
 | GitHub OAuth client secret | Secret | Supabase dashboard (GitHub provider) | Git, Vercel |
@@ -51,6 +53,7 @@ After `npm run build`, the secret key must not appear in `.next/static`:
 
 ```bash
 grep -rl "SUPABASE_SECRET_KEY" .next/static   # must print nothing
+grep -rl "RESEND_API_KEY" .next/static        # must print nothing
 ```
 
 ## GitHub repository settings

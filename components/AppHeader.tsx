@@ -18,7 +18,8 @@ export async function AppHeader() {
   const items: Array<{ key: string; render: (className: string) => React.ReactNode }> = [];
   if (isMember) {
     items.push(
-      { key: "planner", render: (c) => <NavLink href="/" className={c}>Planner</NavLink> },
+      { key: "home", render: (c) => <NavLink href="/home" className={c}>Home</NavLink> },
+      { key: "planner", render: (c) => <NavLink href="/week/current" className={c}>Planner</NavLink> },
       { key: "library", render: (c) => <NavLink href="/library" className={c}>Library</NavLink> },
       { key: "export", render: (c) => <a href="/api/export" className={c}>Export</a> },
     );
@@ -37,8 +38,9 @@ export async function AppHeader() {
     <header className="relative border-b border-line bg-card">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-3 sm:px-4">
         <div className="flex items-center gap-2">
+          {/* Members go to their home; everyone else to the public landing page. */}
           <Link
-            href={isMember ? "/" : "/login"}
+            href={isMember ? "/home" : "/"}
             className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
           >
             <BrandLogo className="h-6 w-6 rounded-[22%] dark:outline dark:outline-1 dark:outline-hairline" />

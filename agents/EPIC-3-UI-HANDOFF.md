@@ -178,3 +178,21 @@ No backend integration has been completed by UI-04. The remaining implementation
 | Existing app screens | Planner/library/editor/session/admin presentation with existing actions | No new backend dependency |
 
 Sections 1–8 remain the integration contract. Do not import test fixtures or the audit engine into application code, expose preview examples as member data, or enable send/resend before reviewed server integration. Retain all existing tests and add the auth/routing, member-data isolation/timezone/empty-error and delivery authorization/failure/retry cases in section 8. Re-run production accessibility and performance checks after wiring routes; inbox-client rendering and real-provider delivery checks remain required before claiming email delivery works.
+
+
+## Integration status (feat/epic-3-integrations, 2026-11-17)
+
+The responsibilities above are implemented; decisions are recorded as E3-I01–E3-I11 in `agents/DECISIONS.md`.
+
+| Surface | Now |
+| --- | --- |
+| Public `/` | `app/(marketing)/page.tsx` renders `LandingPage` with `landingMetadata`, `metadataBase` from `lib/site.ts`, canonical only when `TRAINGRID_SITE_URL` is set. Only `/` was added to `isPublicPath`. |
+| Shells | `app/(app)/layout.tsx` (AppHeader) and `app/(marketing)/layout.tsx` (PublicHeader) each own `main#main-content`; the root `not-found.tsx` renders its own; `app/(app)/error.tsx` keeps the header. |
+| `/home` | `app/(app)/home/page.tsx` → `requireMember` + `memberData` → `listSessionsForWeek` + `listOwnRoutinesForDashboard` → pure `prepareDashboard` (`lib/dashboard/prepare.ts`) → `MemberDashboard`. `loading.tsx` uses `DashboardLoading`. No fixtures imported. |
+| Time zone | `lib/time-zone.ts` (pure) + `lib/today.ts` (cookie). Planner `/week/current` and add-session defaults use the same "today". |
+| Auth routing | `safeNextPath` default `/home`; `/` → `/home`. Header: Home, Planner (`/week/current`), …; brand → `/home` for members, `/` otherwise. Login "Go to the planner" → `/week/current`. |
+| Email | `lib/email/config.ts`, `lib/email/resend.ts` (fetch transport), `lib/admin/invitation-email.ts` (orchestration), `lib/admin/invitations.ts` (`sendInvitationEmail`, admin-guarded), actions `inviteAction` (optional send) and `sendInvitationEmailAction`. Live per-row status and Send/Resend in `InvitationListView` via new optional `emailStatus` / `emailAction` slots. |
+| Database | `supabase/migrations/20261117000000_invitation_email_deliveries.sql`; pgTAP `08_invitation_email_deliveries.test.sql`. |
+| Tests | Unit: time zone, site origin, dashboard preparation, email config/transport, delivery model, redirect/route updates. Integration: dashboard isolation/timezone/revocation; delivery orchestration incl. concurrency. E2E: `home.spec.ts`, `invitation-email.spec.ts` (local mock provider `e2e/mock-resend.mjs`), updated protection/auth/admin/header/ui-03 specs. |
+
+Still open: inbox-client rendering and real-provider delivery must be checked once Resend is configured (docs/EMAIL_SETUP.md §5); delivery webhooks (bounced/delivered) are not implemented.

@@ -3,7 +3,8 @@ import { safeNextPath } from "./redirect";
 import { isApiPath, isPublicPath, loginPathFor } from "./routes";
 
 describe("isPublicPath", () => {
-  it("allows only the sign-in surfaces and the health check", () => {
+  it("allows only the landing page, the sign-in surfaces and the health check", () => {
+    expect(isPublicPath("/")).toBe(true);
     expect(isPublicPath("/login")).toBe(true);
     expect(isPublicPath("/login/")).toBe(true);
     expect(isPublicPath("/auth/callback")).toBe(true);
@@ -12,7 +13,11 @@ describe("isPublicPath", () => {
 
   it("treats everything else as private", () => {
     for (const path of [
-      "/",
+      "/home",
+      "/home/",
+      "//",
+      "/index",
+      "/week/current",
       "/week/2026-W46",
       "/library",
       "/library/lower-a",
@@ -42,6 +47,10 @@ describe("isApiPath", () => {
 });
 
 describe("loginPathFor", () => {
+  it("remembers /home like any other private page", () => {
+    expect(loginPathFor("/home", "")).toBe("/login?next=%2Fhome");
+  });
+
   it("goes to plain /login from the home page", () => {
     expect(loginPathFor("/", "")).toBe("/login");
   });

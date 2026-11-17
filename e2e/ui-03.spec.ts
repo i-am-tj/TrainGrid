@@ -41,8 +41,9 @@ test("admin email preview is honest, isolated, responsive and copyable", async (
   await expect(
     page.getByRole("heading", { name: "Invitations", exact: true }),
   ).toBeVisible();
+  // Sending is configured for E2E (mock provider), and the copy says so honestly.
   await expect(
-    page.getByText("No email is sent.", { exact: false }),
+    page.getByText("TrainGrid emails this sign-in link when the box is ticked.", { exact: false }),
   ).toBeVisible();
   await page.getByText("Preview invitation email", { exact: false }).click();
   await page
@@ -67,18 +68,10 @@ test("admin email preview is honest, isolated, responsive and copyable", async (
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toBe(`${baseURL}/login`);
-  await page
-    .getByText("Future email workflow · design preview", { exact: true })
-    .click();
-  for (const button of await page
-    .getByRole("button", {
-      name: /Send invitation email|Resend email|Preparing…/,
-    })
-    .all())
-    await expect(button).toBeDisabled();
+  // The live page has no hypothetical delivery examples; real status is in the list.
   await expect(
-    page.getByText("This does not confirm delivery.", { exact: false }),
-  ).toBeVisible();
+    page.getByText("Future email workflow · design preview", { exact: true }),
+  ).toHaveCount(0);
   for (const scheme of ["light", "dark"] as const) {
     await page.evaluate(
       (dark) => document.documentElement.classList.toggle("dark", dark),

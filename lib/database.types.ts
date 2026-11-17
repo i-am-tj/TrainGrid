@@ -5,7 +5,27 @@ export type Database = {
   
   "public": {
           Tables: {
-            "invitations": {
+            "invitation_email_deliveries": {
+                  Row: {
+                    "created_at": string,"failure_code": string | null,"finished_at": string | null,"id": string,"invitation_id": string,"provider": string,"provider_message_id": string | null,"requested_by": string | null,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"failure_code"?: string | null,"finished_at"?: string | null,"id"?: string,"invitation_id": string,"provider"?: string,"provider_message_id"?: string | null,"requested_by"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"failure_code"?: string | null,"finished_at"?: string | null,"id"?: string,"invitation_id"?: string,"provider"?: string,"provider_message_id"?: string | null,"requested_by"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "invitation_email_deliveries_invitation_id_fkey"
+      columns: ["invitation_id"]
+isOneToOne: false
+      referencedRelation: "invitations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"invitations": {
                   Row: {
                     "accepted_at": string | null,"accepted_by": string | null,"created_at": string,"email": string,"id": string,"invited_by": string | null,"revoked_at": string | null
                   }
@@ -107,6 +127,14 @@ isOneToOne: false
           Functions: {
             "accept_invitation":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"begin_invitation_email":
+{ Args: { "p_invitation_id": string,"p_requested_by": string }; Returns: {
+              "delivery_id": string,"outcome": string,"recipient_email": string
+            }[]
+                           },
+"complete_invitation_email":
+{ Args: { "p_delivery_id": string,"p_failure_code"?: string,"p_provider_message_id"?: string,"p_status": string }; Returns: string
                            },
 "is_member":
 { Args: Record<PropertyKey, never>; Returns: boolean

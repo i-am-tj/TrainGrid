@@ -182,7 +182,9 @@ export async function createLocalSessionFor(userId: string, name: string, date: 
 }
 
 /** Reads rows as the service role, to check what really happened. */
-export async function readRows(table: "routines" | "scheduled_sessions" | "invitations", filter: Record<string, string>) {
+export async function readRows(
+  table: "routines" | "scheduled_sessions" | "invitations" | "invitation_email_deliveries",
+  filter: Record<string, string>) {
   let query = serviceClient().from(table).select("*");
   for (const [column, value] of Object.entries(filter)) query = query.eq(column, value);
   const { data, error } = await query;

@@ -177,7 +177,7 @@ test("login refusal, error, unavailable and pending states are honest", async ({
   await expect(page.getByText("example.member@example.test")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Go to the planner" }),
-  ).toHaveAttribute("href", "/");
+  ).toHaveAttribute("href", "/week/current");
   await page.goto(`${preview}/login-pending.html`);
   await expect(
     page.getByRole("button", { name: "Continue with Google" }),

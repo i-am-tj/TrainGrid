@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  canEmailInvitation,
+  emailFeedback,
+  emailStatusLabel,
   invitationEmailSchema,
   invitationIdSchema,
   invitationStatus,
+  latestEmailDelivery,
   revokeKind,
+  type EmailDeliveryRow,
 } from "./invitation-model";
 
 describe("invitationStatus", () => {
@@ -60,5 +65,80 @@ describe("revokeKind", () => {
   it("offers nothing for an invitation that is already revoked", () => {
     expect(revokeKind({ accepted_at: at, accepted_by: MEMBER, revoked_at: at }, admins)).toBeNull();
     expect(revokeKind({ accepted_at: null, accepted_by: null, revoked_at: at }, admins)).toBeNull();
+  });
+});
+
+describe("invitation email delivery state", () => {
+  const now = new Date("2026-11-17T10:00:00Z");
+  const row = (status: string, created: string, extra: Partial<EmailDeliveryRow> = {}): EmailDeliveryRow => ({
+    status,
+    failure_code: null,
+    created_at: created,
+    finished_at: status === "preparing" ? null : created,
+    ...extra,
+  });
+
+  it("is not requested without attempts", () => {
+    expect(latestEmailDelivery([], now)).toEqual({ state: "not_requested", at: null, failureCode: null });
+    expect(latestEmailDelivery(null, now).state).toBe("not_requested");
+  });
+
+  it("follows the latest attempt only", () => {
+    const rows = [
+      row("failed", "2026-11-17T09:00:00Z", { failure_code: "timeout" }),
+      row("accepted", "2026-11-17T09:30:00Z"),
+    ];
+    expect(latestEmailDelivery(rows, now)).toEqual({
+      state: "accepted",
+      at: "2026-11-17T09:30:00Z",
+      failureCode: null,
+    });
+    expect(latestEmailDelivery([...rows, row("failed", "2026-11-17T09:45:00Z", { failure_code: "rate_limited" })], now))
+      .toMatchObject({ state: "failed", failureCode: "rate_limited" });
+  });
+
+  it("shows a stale in-flight attempt as failed, not as sending forever", () => {
+    expect(latestEmailDelivery([row("preparing", "2026-11-17T09:59:30Z")], now).state).toBe("preparing");
+    expect(latestEmailDelivery([row("preparing", "2026-11-17T09:50:00Z")], now)).toMatchObject({
+      state: "failed",
+      failureCode: "interrupted",
+    });
+  });
+
+  it("allows emailing only live, unaccepted invitations with nothing in flight", () => {
+    const idle = latestEmailDelivery([], now);
+    const sending = latestEmailDelivery([row("preparing", "2026-11-17T09:59:30Z")], now);
+    expect(canEmailInvitation({ accepted_at: null, revoked_at: null }, idle)).toBe(true);
+    expect(canEmailInvitation({ accepted_at: null, revoked_at: null }, sending)).toBe(false);
+    expect(canEmailInvitation({ accepted_at: "x", revoked_at: null }, idle)).toBe(false);
+    expect(canEmailInvitation({ accepted_at: null, revoked_at: "x" }, idle)).toBe(false);
+  });
+
+  it("labels an accepted request truthfully, never as delivered", () => {
+    const fmt = () => "17 Nov 2026, 09:30";
+    const accepted = emailStatusLabel(latestEmailDelivery([row("accepted", "2026-11-17T09:30:00Z")], now), fmt);
+    expect(accepted.label).toBe("Email accepted by provider · 17 Nov 2026, 09:30");
+    expect(accepted.label).not.toMatch(/deliver/i);
+    expect(emailStatusLabel(latestEmailDelivery([], now), fmt).label).toBe("Email not sent");
+    expect(
+      emailStatusLabel(latestEmailDelivery([row("failed", "2026-11-17T09:30:00Z", { failure_code: "timeout" })], now), fmt)
+        .label,
+    ).toBe("Email failed · 17 Nov 2026, 09:30 · invitation still valid");
+  });
+
+  it("gives admin feedback without provider details or delivery claims", () => {
+    const accepted = emailFeedback({ kind: "accepted" });
+    expect(accepted.tone).toBe("success");
+    expect(accepted.message).toContain("doesn’t confirm");
+    for (const code of ["provider_auth", "provider_rejected", "provider_unavailable", "timeout"]) {
+      const feedback = emailFeedback({ kind: "failed", code });
+      expect(feedback.message).toContain("The invitation is still valid");
+      expect(feedback.message).not.toContain(code);
+    }
+    expect(emailFeedback({ kind: "failed", code: "rate_limited" }).message).toContain("try again in a few minutes");
+    expect(emailFeedback({ kind: "refused", reason: "in_progress" }).message).toContain("already being sent");
+    expect(emailFeedback({ kind: "refused", reason: "revoked" }).tone).toBe("error");
+    expect(emailFeedback({ kind: "not_configured" }).message).toContain("isn’t set up");
+    expect(emailFeedback({ kind: "error" }).tone).toBe("error");
   });
 });

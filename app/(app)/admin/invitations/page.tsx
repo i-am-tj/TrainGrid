@@ -6,12 +6,24 @@ import { SectionLoader } from "@/components/LogoLoader";
 import { PageHeading } from "@/components/ui/Presentation";
 import { InvitationEmailPreview } from "@/components/admin/InvitationEmailPreview";
 import { InvitationListView } from "@/components/admin/InvitationListView";
-import { InviteForm, RevokeForm } from "@/components/admin/InvitationForms";
+import { InviteForm, RevokeForm, SendEmailForm } from "@/components/admin/InvitationForms";
 import { getAdminViewer } from "@/lib/admin/guard";
-import { invitationStatus, revokeKind } from "@/lib/admin/invitation-model";
-import { listInvitations, protectedUserIds } from "@/lib/admin/invitations";
+import {
+  canEmailInvitation,
+  emailStatusLabel,
+  invitationStatus,
+  latestEmailDelivery,
+  revokeKind,
+} from "@/lib/admin/invitation-model";
+import {
+  invitationEmailReady,
+  listInvitations,
+  protectedUserIds,
+} from "@/lib/admin/invitations";
 import { originFromHeaders } from "@/lib/auth/redirect";
+import { trustedLoginUrl } from "@/lib/site";
 import { isSecretKeyConfigured } from "@/lib/supabase/admin";
+import { getRequestTimeZone } from "@/lib/today";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +56,10 @@ export default async function InvitationsPage() {
   }
 
   const protectedIds = protectedUserIds(admin.userId);
-  const signInUrl = `${originFromHeaders(await headers())}/login`;
+  // The configured origin when known (it is what emails use), else this request's.
+  const signInUrl = trustedLoginUrl() ?? `${originFromHeaders(await headers())}/login`;
+  const emailReady = invitationEmailReady();
+  const timeZone = await getRequestTimeZone();
 
   return (
     <div className="mx-auto max-w-4xl px-3 py-8 sm:px-4 sm:py-10">
@@ -60,10 +75,12 @@ export default async function InvitationsPage() {
       <section className="ui-panel mt-7 px-5 py-6 sm:p-7">
         <h2 className="text-lg font-semibold tracking-tight">Invite someone</h2>
         <div className="mt-3">
-          <InviteForm />
+          <InviteForm emailReady={emailReady} />
         </div>
         <p className="mt-4 text-sm text-stone-600">
-          No email is sent. After inviting, send them this link yourself:
+          {emailReady
+            ? "TrainGrid emails this sign-in link when the box is ticked. You can also share it yourself:"
+            : "No email is sent. After inviting, send them this link yourself:"}
         </p>
         <p className="mt-1.5 rounded-md border border-line bg-white px-3 py-2 font-mono text-sm break-all select-all">
           {signInUrl}
@@ -81,7 +98,11 @@ export default async function InvitationsPage() {
             <SectionLoader label="Loading invitations…" minHeight="min-h-32" />
           }
         >
-          <InvitationList protectedIds={protectedIds} />
+          <InvitationList
+            protectedIds={protectedIds}
+            emailReady={emailReady}
+            timeZone={timeZone}
+          />
         </Suspense>
       </section>
     </div>
@@ -89,12 +110,28 @@ export default async function InvitationsPage() {
 }
 
 /** The invitation list, streamed behind a section loader; the invite form above is ready at once. */
-async function InvitationList({ protectedIds }: { protectedIds: Set<string> }) {
+async function InvitationList({
+  protectedIds,
+  emailReady,
+  timeZone,
+}: {
+  protectedIds: Set<string>;
+  emailReady: boolean;
+  timeZone: string;
+}) {
   const invitations = await listInvitations();
+  const formatTime = (iso: string) =>
+    new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone,
+    }).format(new Date(iso));
   return (
     <InvitationListView
       invitations={invitations.map((invitation) => {
         const kind = revokeKind(invitation, protectedIds);
+        const delivery = latestEmailDelivery(invitation.deliveries);
+        const pending = invitationStatus(invitation) === "Pending";
         return {
           id: invitation.id,
           email: invitation.email,
@@ -107,6 +144,19 @@ async function InvitationList({ protectedIds }: { protectedIds: Set<string> }) {
           revokedAccess: Boolean(
             invitation.accepted_at && invitation.revoked_at,
           ),
+          // Shown while emailing is possible, or once there is history to report.
+          emailStatus:
+            (emailReady && pending) || delivery.state !== "not_requested"
+              ? emailStatusLabel(delivery, formatTime)
+              : null,
+          emailAction:
+            emailReady && canEmailInvitation(invitation, delivery) ? (
+              <SendEmailForm
+                id={invitation.id}
+                email={invitation.email}
+                resend={delivery.state !== "not_requested"}
+              />
+            ) : null,
           action: kind ? (
             <RevokeForm
               id={invitation.id}

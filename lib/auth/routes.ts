@@ -2,10 +2,11 @@
  * Which paths can be reached without a session. Pure, no I/O.
  *
  * Everything is private unless listed here. New routes are therefore
- * protected by default.
+ * protected by default. "/" is the public landing page; it is matched
+ * exactly, so nothing below it becomes public.
  */
 
-const PUBLIC_PATHS = new Set(["/login", "/auth/callback", "/api/health"]);
+const PUBLIC_PATHS = new Set(["/", "/login", "/auth/callback", "/api/health"]);
 
 export function isPublicPath(pathname: string): boolean {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;

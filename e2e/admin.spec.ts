@@ -65,8 +65,8 @@ test("M1: an admin can invite, sees the status, and can revoke", async ({
 
     // Mixed case and padding are normalised.
     await page.getByLabel("Email address").fill(`  ${email.toUpperCase()} `);
-    await page.getByRole("button", { name: "Invite" }).click();
-    await expect(page.locator('p[role="status"]')).toHaveText("Invitation created.");
+    await page.getByRole("button", { name: "Invite", exact: true }).click();
+    await expect(page.locator("#invite-feedback")).toHaveText("Invitation created.");
 
     const row = page.getByRole("listitem").filter({ hasText: email });
     await expect(row).toBeVisible();
@@ -74,14 +74,14 @@ test("M1: an admin can invite, sees the status, and can revoke", async ({
 
     // A second invitation for the same address is refused.
     await page.getByLabel("Email address").fill(email);
-    await page.getByRole("button", { name: "Invite" }).click();
+    await page.getByRole("button", { name: "Invite", exact: true }).click();
     await expect(page.locator('p[role="alert"]')).toHaveText(
       "That email address already has an invitation.",
     );
 
     // Passes the browser's own check but is refused by the server.
     await page.getByLabel("Email address").fill("friend@localhost");
-    await page.getByRole("button", { name: "Invite" }).click();
+    await page.getByRole("button", { name: "Invite", exact: true }).click();
     await expect(page.locator('p[role="alert"]')).toHaveText("Enter a valid email address.");
 
     page.once("dialog", (dialog) => dialog.accept());
@@ -111,7 +111,7 @@ test("an admin revokes an accepted member's access; the member is locked out at 
   await signInAsLocalAdmin(context, baseURL!);
 
   try {
-    await memberPage.goto("/");
+    await memberPage.goto("/week/current");
     await expect(memberPage).toHaveURL(/\/week\//);
 
     await page.goto("/admin/invitations");
@@ -134,7 +134,7 @@ test("an admin revokes an accepted member's access; the member is locked out at 
     await expect(memberRow.getByRole("button")).toHaveCount(0);
 
     // The member's very next request is refused, without signing out.
-    await memberPage.goto("/");
+    await memberPage.goto("/week/current");
     await expect(memberPage).toHaveURL(/\/login$/);
     await expect(memberPage.getByText("TrainGrid is currently invite-only.")).toBeVisible();
     const exportResponse = await memberContext.request.get("/api/export", { maxRedirects: 0 });

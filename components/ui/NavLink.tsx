@@ -13,10 +13,10 @@ export function NavLink({
   className: string;
 }) {
   const path = usePathname();
-  const active =
-    href === "/"
-      ? path === "/" || path.startsWith("/week/")
-      : path === href || path.startsWith(`${href}/`);
+  // The planner link points at /week/current, which redirects to a real week.
+  const active = href.startsWith("/week/")
+    ? path.startsWith("/week/")
+    : path === href || path.startsWith(`${href}/`);
   return (
     <Link
       href={href}

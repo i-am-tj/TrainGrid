@@ -3,10 +3,6 @@
 import { useState } from "react";
 import { renderInvitationEmail } from "@/lib/email/invitation";
 import { btnSecondary, fieldClass } from "@/lib/ui";
-import {
-  EmailWorkflowPreview,
-  type EmailDeliveryPreviewState,
-} from "./EmailWorkflowPreview";
 
 export function InvitationEmailPreview({ loginUrl }: { loginUrl: string }) {
   const [open, setOpen] = useState(false);
@@ -18,7 +14,7 @@ export function InvitationEmailPreview({ loginUrl }: { loginUrl: string }) {
       <summary className="cursor-pointer rounded-2xl px-5 py-4 text-sm font-semibold focus-visible:outline-offset-4">
         Preview invitation email{" "}
         <span className="ml-2 font-normal text-stone-500">
-          · no email is sent
+          · preview only, nothing is sent
         </span>
       </summary>
       {open && <PreviewContent loginUrl={loginUrl} />}
@@ -38,7 +34,8 @@ function PreviewContent({ loginUrl }: { loginUrl: string }) {
     <div className="min-w-0 border-t border-line p-4 sm:p-5">
       <p className="text-sm leading-7 text-stone-600">
         This preview uses an example address. Change it to prepare copy for a
-        recipient. It does not create an invitation or send an email.
+        recipient. It does not create an invitation or send an email; sent
+        emails use the invited address and this deployment’s sign-in link.
       </p>
       <label
         htmlFor="preview-recipient"
@@ -106,27 +103,6 @@ function PreviewContent({ loginUrl }: { loginUrl: string }) {
           </details>
         </>
       )}
-      <details className="mt-6 border-t border-line pt-4">
-        <summary className="cursor-pointer py-2 text-sm font-medium">
-          Future email workflow · design preview
-        </summary>
-        <p className="mt-2 text-xs leading-6 text-stone-600">
-          Examples only. Sending and delivery tracking are not connected. These
-          are separate from Pending, Accepted and Revoked membership statuses.
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {(
-            [
-              "not_requested",
-              "preparing",
-              "accepted",
-              "failed",
-            ] as EmailDeliveryPreviewState[]
-          ).map((state) => (
-            <EmailWorkflowPreview key={state} state={state} />
-          ))}
-        </div>
-      </details>
     </div>
   );
 }

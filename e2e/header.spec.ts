@@ -45,7 +45,7 @@ test.describe("header menu", () => {
     await signInAsNewLocalMember(context, baseURL!);
   });
 
-  const LINKS = ["Planner", "Library", "Export"];
+  const LINKS = ["Home", "Planner", "Library", "Export"];
 
   /** The menu's close handlers exist only once React has hydrated the header. */
   const hydrated = async (page: Page) =>
@@ -100,10 +100,10 @@ test.describe("header menu", () => {
     await page.keyboard.press("Enter");
     await expect(banner.getByRole("link", { name: "Library", exact: true })).toBeVisible();
     await page.keyboard.press("Tab");
-    await expect(banner.getByRole("link", { name: "Planner", exact: true })).toBeFocused();
+    await expect(banner.getByRole("link", { name: "Home", exact: true })).toBeFocused();
 
     await page.keyboard.press("Escape");
-    await expect(banner.getByRole("link", { name: "Planner", exact: true })).toHaveCount(0);
+    await expect(banner.getByRole("link", { name: "Home", exact: true })).toHaveCount(0);
     await expect(banner.getByLabel("Open menu")).toBeFocused();
 
     await banner.getByLabel("Open menu").click();
@@ -148,5 +148,15 @@ test.describe("active member navigation", () => {
     await banner.getByRole("link", { name: "Planner", exact: true }).click();
     await expect(page).toHaveURL(/\/week\//);
     await expect(banner.getByRole("link", { name: "Planner", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(banner.getByRole("link", { name: "Home", exact: true })).not.toHaveAttribute("aria-current");
+  });
+
+  test("announces Home on /home, and the brand leads members home", async ({ page }) => {
+    await page.goto("/library");
+    const banner = page.getByRole("banner");
+    await banner.getByRole("link", { name: "TrainGrid", exact: true }).click();
+    await expect(page).toHaveURL(/\/home$/);
+    await expect(banner.getByRole("link", { name: "Home", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(banner.getByRole("link", { name: "Planner", exact: true })).not.toHaveAttribute("aria-current");
   });
 });

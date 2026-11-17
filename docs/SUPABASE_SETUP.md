@@ -24,6 +24,9 @@ A laptop or a preview build never holds production values.
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public | Publishable key (`sb_publishable_…`) |
 | `SUPABASE_SECRET_KEY` | Server only | Secret key (`sb_secret_…`); bypasses RLS. Used only by the admin invitation page. |
 | `TRAINGRID_ADMIN_USER_IDS` | Server only | Comma-separated Supabase user ids (UUIDs) of admins. |
+| `TRAINGRID_SITE_URL` | Server only | Public origin, e.g. `https://train-grid.vercel.app`; sign-in link in emails, metadata, canonical. |
+| `TRAINGRID_DEFAULT_TIME_ZONE` | Server only | Optional IANA zone for "today" before the browser reports its own. |
+| `RESEND_API_KEY`, `TRAINGRID_EMAIL_FROM`, `TRAINGRID_EMAIL_REPLY_TO` | Server only | Invitation email; see [EMAIL_SETUP.md](EMAIL_SETUP.md). Optional: without them no email is sent. |
 
 The two public values are sent to the browser on purpose. Data is protected by Supabase Auth and
 Row Level Security, not by hiding the publishable key. The app refuses to start its Supabase
