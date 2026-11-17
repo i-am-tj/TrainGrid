@@ -40,3 +40,8 @@ export const btnGhost =
 export const iconButton =
   "ui-control inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-line text-stone-700 hover:bg-stone-100";
 export const textLink = "rounded-sm text-accent underline underline-offset-4 hover:text-foreground";
+
+/** Compact size for buttons in dense rows (still a 32px target, above WCAG 2.2's 24px). */
+const compact = "min-h-8 px-2.5 py-1 text-xs";
+export const btnSecondaryCompact = btnSecondary.replace("min-h-10", "").replace("px-3 py-2 text-sm", compact);
+export const btnDangerCompact = btnDanger.replace("min-h-10", "").replace("px-3 py-2 text-sm", compact);

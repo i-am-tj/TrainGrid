@@ -22,6 +22,8 @@ Epic 3 integration: a public home page, a member dashboard and invitation emails
 - **Email setup**: `TRAINGRID_EMAIL_FROM` now also accepts `Name<address>` (no space before `<`)
   and normalises it, instead of silently treating it as "not configured". `docs/EMAIL_SETUP.md`
   follows Resend's current DNS records (DKIM TXT plus two SPF CNAMEs, no MX).
+- **Invitations list**: compact *Send/Resend email* and *Revoke* buttons side by side, and their
+  messages now span the full row instead of being squeezed into the narrow actions column.
 
 ## [0.2.1-beta] — 2026-11-14
 

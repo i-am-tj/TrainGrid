@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useMemo, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import {
   inviteAction,
@@ -10,7 +10,8 @@ import {
   type InvitationFormState,
 } from "@/lib/admin/actions";
 import type { EmailFeedback } from "@/lib/admin/invitation-model";
-import { btnDanger, btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
+import { btnDangerCompact, btnPrimary, btnSecondaryCompact, fieldClass } from "@/lib/ui";
+import { useRowFeedback, type RowFeedbackMessage } from "@/components/admin/RowFeedback";
 
 const FEEDBACK_STYLE: Record<EmailFeedback["tone"], string> = {
   success: "border-emerald-200 bg-emerald-50 text-emerald-800",
@@ -31,6 +32,19 @@ function EmailMessage({ feedback, id }: { feedback: EmailFeedback | null | undef
       {feedback.message}
     </p>
   );
+}
+
+/**
+ * Sends a row action's outcome to the row's full-width feedback line. Returns
+ * true when a row took it, so the form renders nothing inline.
+ */
+function useReportToRow(feedback: RowFeedbackMessage | null): boolean {
+  const report = useRowFeedback();
+  useEffect(() => {
+    if (report && feedback) report(feedback);
+    // Each action result is a new object, so a repeated message is re-announced.
+  }, [report, feedback]);
+  return report !== null;
 }
 
 function Message({ state, id }: { state: InvitationFormState; id?: string }) {
@@ -126,6 +140,12 @@ export function RevokeForm({
   kind: "invitation" | "access";
 }) {
   const [state, action] = useActionState(revokeAction, null);
+  const inRow = useReportToRow(
+    useMemo(
+      () => (state?.message ? { tone: state.ok ? "success" : "error", message: state.message } as const : null),
+      [state],
+    ),
+  );
   const question =
     kind === "access"
       ? `Revoke access for ${email}?\n\nThey lose access to TrainGrid straight away. Their routines and sessions are kept, and inviting this email again restores them.`
@@ -141,9 +161,9 @@ export function RevokeForm({
       <Submit
         label={kind === "access" ? "Revoke access" : "Revoke"}
         busy="Revoking…"
-        className={btnDanger}
+        className={btnDangerCompact}
       />
-      <Message state={state} />
+      {inRow ? null : <Message state={state} />}
     </form>
   );
 }
@@ -166,6 +186,7 @@ export function SendEmailForm({
     sendInvitationEmailAction,
     null,
   );
+  const inRow = useReportToRow(useMemo(() => (state ? { ...state, email: true } : null), [state]));
   return (
     <form action={action}>
       <input type="hidden" name="id" value={id} />
@@ -173,9 +194,9 @@ export function SendEmailForm({
         label={resend ? "Resend email" : "Send email"}
         busy="Sending…"
         accessibleLabel={`${resend ? "Resend" : "Send"} invitation email to ${email}`}
-        className={`${btnSecondary} w-full`}
+        className={btnSecondaryCompact}
       />
-      <EmailMessage feedback={state} />
+      {inRow ? null : <EmailMessage feedback={state} />}
     </form>
   );
 }

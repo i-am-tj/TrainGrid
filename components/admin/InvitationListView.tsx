@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { InvitationStatus } from "@/lib/admin/invitation-model";
 import { EmptyState } from "@/components/ui/Presentation";
+import { RowFeedbackOutlet, RowFeedbackProvider } from "@/components/admin/RowFeedback";
 export type InvitationListItem = {
   id: string;
   email: string;
@@ -42,48 +43,50 @@ export function InvitationListView({
     <div className="mt-4">
       <div
         aria-hidden="true"
-        className="hidden grid-cols-[minmax(0,1fr)_7rem_9rem] gap-4 px-5 pb-3 text-xs font-medium text-stone-600 md:grid"
+        className="hidden grid-cols-[minmax(0,1fr)_7rem_13rem] gap-4 px-5 pb-3 text-xs font-medium text-stone-600 md:grid"
       >
         <span>Recipient</span>
         <span>Membership</span>
-        <span>Access controls</span>
+        <span className="text-right">Access controls</span>
       </div>
       <ul className="divide-y divide-line rounded-2xl border border-line bg-card">
         {invitations.map((invitation) => (
-          <li
-            key={invitation.id}
-            className="grid min-w-0 gap-4 p-5 md:grid-cols-[minmax(0,1fr)_7rem_9rem] md:items-center"
-          >
-            <div className="min-w-0">
-              <p className="text-sm font-medium [overflow-wrap:anywhere]">
-                {invitation.email}
-              </p>
-              <p className="mt-1 text-xs leading-6 text-stone-600">
-                Invited {invitation.createdLabel}
-                {invitation.revokedAccess ? " · Access revoked, data kept" : ""}
-              </p>
-              {invitation.isAdmin && (
-                <p className="mt-1 text-xs text-accent">Admin · Protected</p>
-              )}
-              {invitation.emailStatus && (
-                <p
-                  className={`mt-1 text-xs leading-6 ${EMAIL_STYLE[invitation.emailStatus.tone]}`}
-                >
-                  {invitation.emailStatus.label}
-                </p>
-              )}
-            </div>
-            <div>
-              <span
-                className={`inline-flex rounded-md px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[invitation.status]}`}
-              >
-                {invitation.status}
-              </span>
-            </div>
-            <div className="min-w-0 space-y-2">
-              {invitation.emailAction}
-              {invitation.action}
-            </div>
+          <li key={invitation.id} className="min-w-0 p-5">
+            <RowFeedbackProvider>
+              <div className="grid min-w-0 gap-3 md:grid-cols-[minmax(0,1fr)_7rem_13rem] md:items-center md:gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium [overflow-wrap:anywhere]">
+                    {invitation.email}
+                  </p>
+                  <p className="mt-1 text-xs leading-6 text-stone-600">
+                    Invited {invitation.createdLabel}
+                    {invitation.revokedAccess ? " · Access revoked, data kept" : ""}
+                  </p>
+                  {invitation.isAdmin && (
+                    <p className="mt-1 text-xs text-accent">Admin · Protected</p>
+                  )}
+                  {invitation.emailStatus && (
+                    <p
+                      className={`text-xs leading-6 ${EMAIL_STYLE[invitation.emailStatus.tone]}`}
+                    >
+                      {invitation.emailStatus.label}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <span
+                    className={`inline-flex rounded-md px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[invitation.status]}`}
+                  >
+                    {invitation.status}
+                  </span>
+                </div>
+                <div className="flex min-w-0 flex-wrap items-center gap-2 md:justify-end">
+                  {invitation.emailAction}
+                  {invitation.action}
+                </div>
+              </div>
+              <RowFeedbackOutlet className="[&:not(:empty)]:mt-3" />
+            </RowFeedbackProvider>
           </li>
         ))}
       </ul>
