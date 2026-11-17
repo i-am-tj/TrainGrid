@@ -1,0 +1,109 @@
+# Runs the test suites on every pull request to main and on every push to main
+# (docs/CI.md). Uses only the local Supabase stack's fixed development keys;
+# no production secrets are available to, or needed by, this workflow.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: "22"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  checks:
+    name: Lint, types, unit tests, secrets, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run scan:secrets
+      # The build needs no Supabase settings: pages render on demand.
+      - run: npm run build
+
+  database:
+    name: Database (pgTAP) and integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # Installs the Supabase CLI pinned in package.json (devDependency).
+      - run: npm ci
+
+      - name: Start the local Supabase stack
+        run: npm run supabase:start
+
+      - name: Export the local stack's URL and keys
+        run: scripts/ci-supabase-env.sh >> "$GITHUB_ENV"
+
+      - run: npm run db:test
+      - run: npm run test:integration
+
+      - name: Stop the local Supabase stack
+        if: always()
+        run: npm run supabase:stop -- --no-backup
+
+  e2e:
+    name: End-to-end tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Start the local Supabase stack
+        run: npm run supabase:start
+
+      - name: Export the local stack's URL and keys
+        run: scripts/ci-supabase-env.sh >> "$GITHUB_ENV"
+
+      - run: npm run test:e2e
+
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: Stop the local Supabase stack
+        if: always()
+        run: npm run supabase:stop -- --no-backup
