@@ -206,13 +206,13 @@ body {
 .feature-card:hover { background: var(--surface-elevated); }
 .showcase-grid { display: grid; gap: 2rem; align-items: center; }
 .showcase-agenda { padding: 2rem 1rem; border-radius: 1rem; background: var(--background); }
-.creator-card { display: grid; overflow: hidden; }
-.creator-mark { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; background: var(--background); border-bottom: 1px solid var(--line); }
+.creator-card { overflow: hidden; }
+.creator-layout { display: flex; flex-wrap: wrap; gap: 2rem 2.5rem; align-items: center; }
+.creator-mark { display: flex; flex: 0 1 14rem; min-width: 0; margin-inline: auto; justify-content: center; }
+.creator-details { flex: 1 1 18rem; min-width: 0; }
 @keyframes enter-ui { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @media (min-width: 640px) {
   .feature-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .creator-card { grid-template-columns: 1fr 2fr; }
-  .creator-mark { border-bottom: 0; border-right: 1px solid var(--line); }
 }
 @media (min-width: 1024px) {
   .landing-hero { grid-template-columns: 0.9fr 1.1fr; gap: 3rem; }

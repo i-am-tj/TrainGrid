@@ -1,5 +1,5 @@
-import { DashboardLoading } from "@/components/dashboard/MemberDashboard";
+import { SectionLoader } from "@/components/LogoLoader";
 
 export default function HomeLoading() {
-  return <DashboardLoading />;
+  return <SectionLoader label="Loading your home…" minHeight="min-h-[60dvh]" />;
 }
