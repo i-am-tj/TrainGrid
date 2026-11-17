@@ -49,7 +49,9 @@ test("Schedule is the primary action on detail and preselects the routine", asyn
   const schedule = page.getByRole("link", { name: "Schedule Lower A" });
   await expect(schedule).toHaveClass(/bg-stone-900/);
   await schedule.click();
-  await expect(page).toHaveURL(/\/week\/current\/add\?routine=[0-9a-f-]{36}$/);
+  // The link targets /week/current/add, which redirects to the dated week;
+  // how long the intermediate URL is visible depends on the server.
+  await expect(page).toHaveURL(/\/week\/(current|\d{4}-W\d{2})\/add\?routine=[0-9a-f-]{36}$/);
   await expect(routineSelect(page).locator("option:checked")).toHaveText("Lower A");
 
   await page.locator('select[name="day"]').selectOption("3");
@@ -64,7 +66,9 @@ test("Schedule is the primary action on detail and preselects the routine", asyn
 test("Schedule on a list card preselects that routine", async ({ page }) => {
   await page.goto("/library?scope=global&type=running");
   await page.getByRole("link", { name: "Schedule Tempo / Threshold" }).click();
-  await expect(page).toHaveURL(/\/week\/current\/add\?routine=[0-9a-f-]{36}$/);
+  // The link targets /week/current/add, which redirects to the dated week;
+  // how long the intermediate URL is visible depends on the server.
+  await expect(page).toHaveURL(/\/week\/(current|\d{4}-W\d{2})\/add\?routine=[0-9a-f-]{36}$/);
   await expect(routineSelect(page).locator("option:checked")).toHaveText("Tempo / Threshold");
 });
 

@@ -92,7 +92,14 @@ jobs:
       - name: Export the local stack's URL and keys
         run: scripts/ci-supabase-env.sh >> "$GITHUB_ENV"
 
+      # E2E runs against a production build: `next dev` compiles each route on
+      # its first request, which on a CI runner outlasts the tests' timeouts.
+      - name: Build the app for E2E
+        run: npm run build
+
       - run: npm run test:e2e
+        env:
+          E2E_SERVER: build
 
       - name: Upload the Playwright report
         if: failure()
