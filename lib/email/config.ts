@@ -2,8 +2,8 @@
  * Email sending configuration. Pure: the environment is a parameter.
  *
  *   RESEND_API_KEY          secret, server only (starts with "re_")
- *   TRAINGRID_EMAIL_FROM    e.g. "TrainGrid <invites@mail.example.com>", on a
- *                           domain verified in Resend
+ *   TRAINGRID_EMAIL_FROM    e.g. "TrainGrid Invites <invites@traingrid.example.com>",
+ *                           on a domain verified in Resend
  *   TRAINGRID_EMAIL_REPLY_TO optional reply-to address
  *   RESEND_API_URL          optional; only the real Resend API or a local mock
  *                           (http://127.0.0.1 / localhost) for tests
@@ -27,11 +27,24 @@ export type EmailConfig = {
 
 const address = z.email().max(320);
 
-/** "Name <addr@domain>" or a bare address; the name may not contain <, > or quotes. */
+/**
+ * Parses "Name <addr@domain>" (the space before "<" is optional) or a bare
+ * address, and returns it in the canonical "Name <addr>" / "addr" form, or
+ * null. The name may not contain <, > or quotes.
+ */
+export function normalizeFromAddress(value: string): string | null {
+  const named = /^([^<>"\r\n]{1,100}?)\s*<([^<>\s]+)>$/.exec(value);
+  if (named) {
+    const name = named[1]!.trim();
+    const addr = named[2]!;
+    if (!name || !address.safeParse(addr).success) return null;
+    return `${name} <${addr}>`;
+  }
+  return address.safeParse(value).success ? value : null;
+}
+
 export function isValidFromAddress(value: string): boolean {
-  const named = /^([^<>"\r\n]{1,100}) <([^<>\s]+)>$/.exec(value);
-  const bare = named ? named[2]! : value;
-  return address.safeParse(bare).success;
+  return normalizeFromAddress(value) !== null;
 }
 
 function apiUrlFrom(raw: string | undefined): string | null {
@@ -53,12 +66,11 @@ function apiUrlFrom(raw: string | undefined): string | null {
 
 export function readEmailConfig(env: Env = process.env): EmailConfig | null {
   const apiKey = env.RESEND_API_KEY?.trim();
-  const from = env.TRAINGRID_EMAIL_FROM?.trim();
+  const from = normalizeFromAddress(env.TRAINGRID_EMAIL_FROM?.trim() ?? "");
   const replyTo = env.TRAINGRID_EMAIL_REPLY_TO?.trim() || null;
   const apiUrl = apiUrlFrom(env.RESEND_API_URL);
   if (!apiKey || !from || !apiUrl) return null;
   if (!/^re_[A-Za-z0-9_]+$/.test(apiKey)) return null;
-  if (!isValidFromAddress(from)) return null;
   if (replyTo && !address.safeParse(replyTo).success) return null;
   return { apiKey, apiUrl, from, replyTo };
 }

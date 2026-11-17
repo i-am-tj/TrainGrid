@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { isValidFromAddress, readEmailConfig, RESEND_API_URL, type EmailConfig } from "./config";
+import { isValidFromAddress, normalizeFromAddress, readEmailConfig, RESEND_API_URL, type EmailConfig } from "./config";
 import { classifyStatus, createResendTransport } from "./resend";
 
 const config: EmailConfig = {
@@ -48,6 +48,19 @@ describe("readEmailConfig", () => {
     expect(isValidFromAddress("TrainGrid <invites@mail.example.com>")).toBe(true);
     expect(isValidFromAddress("TrainGrid\r\nBcc: x@y.z <invites@mail.example.com>")).toBe(false);
     expect(isValidFromAddress('"Evil" <x@y>')).toBe(false);
+    expect(isValidFromAddress("<invites@mail.example.com>")).toBe(false);
+    expect(isValidFromAddress("TrainGrid <not an address>")).toBe(false);
+  });
+
+  it("accepts a From with no space before < and normalises it", () => {
+    const from = "TrainGrid Invites<invites@traingrid.example.com>";
+    expect(normalizeFromAddress(from)).toBe("TrainGrid Invites <invites@traingrid.example.com>");
+    expect(readEmailConfig({ ...base, TRAINGRID_EMAIL_FROM: from })?.from).toBe(
+      "TrainGrid Invites <invites@traingrid.example.com>",
+    );
+    expect(normalizeFromAddress("TrainGrid Invites   <invites@traingrid.example.com>")).toBe(
+      "TrainGrid Invites <invites@traingrid.example.com>",
+    );
   });
 });
 
