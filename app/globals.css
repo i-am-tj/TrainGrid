@@ -175,7 +175,6 @@ body {
   .ui-control:disabled { cursor: not-allowed; opacity: 0.55; }
   .ui-nav-link { position: relative; transition: color var(--motion-fast) var(--ease-ui), background-color var(--motion-fast) var(--ease-ui); }
   .ui-nav-link[aria-current="page"] { color: var(--foreground); background: var(--background); }
-  .ui-nav-link[aria-current="page"]::after { content: ""; position: absolute; bottom: 0; left: 0.5rem; right: 0.5rem; height: 2px; background: var(--accent); border-radius: 2px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ui-control, .ui-nav-link { transition: none; }

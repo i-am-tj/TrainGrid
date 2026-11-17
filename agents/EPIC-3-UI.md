@@ -237,3 +237,5 @@ Review screenshots:
 Claude dependencies: serve authenticated `/home`, prepare authorized real data (including dates/timezone, sorted sessions, seven days/counts and personal routines), supply safe working hrefs/retry behavior, coordinate root publication and post-login destination. See the updated exact contracts in EPIC-3-UI-HANDOFF.md. No API, schema, member policy, invitation semantics, scheduled persistence or production-data changes occurred.
 
 Remaining UI work: UI-03 invitations/email preview and planner/library/editor/session polish; UI-04 final responsive/zoom/contrast, motion/performance and integration regression. Review and manual merge only; UI-03 is not started.
+
+UI-02 review refinement: active member navigation uses the existing background highlight without the copper underline. Accessible aria-current and keyboard focus remain unchanged.
