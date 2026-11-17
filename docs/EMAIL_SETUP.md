@@ -21,49 +21,56 @@ no resend within a minute of an accepted one; at most five attempts per invitati
 ## 1. Create the Resend account and add your domain
 
 1. Sign up at resend.com.
-2. **Domains → Add domain.** Use a **subdomain** of the domain you own, for example
-   `mail.yourdomain.com`. Sending from a subdomain keeps the reputation of invitation mail
-   separate from any personal mail on the root domain. (The root domain also works.)
+2. **Domains → Add domain.** Use a **subdomain** of the domain you own. TrainGrid uses
+   `traingrid.iamtj.dev`. Sending from a subdomain keeps the reputation of invitation mail
+   separate from any personal mail on the root domain.
 3. Pick the **region** nearest your users (for Australia, Tokyo `ap-northeast-1` is closest).
-4. Resend now shows the DNS records to add — usually:
+4. Resend now shows the DNS records to add. For `traingrid.iamtj.dev` they are:
 
-   | Type | Name shown by Resend | Value (example; copy yours exactly) | Priority |
+   | Section in Resend | Type | Host (enter in Namecheap) | Value |
    | --- | --- | --- | --- |
-   | MX | `send.mail` | `feedback-smtp.<region>.amazonses.com` | 10 |
-   | TXT | `send.mail` | `v=spf1 include:amazonses.com ~all` | — |
-   | TXT | `resend._domainkey.mail` | `p=MIGfMA0GCSq…` (long DKIM key) | — |
+   | DKIM | **TXT** | `resend._domainkey.traingrid` | `p=MIGfMA…` (long key) |
+   | Enable Sending · SPF | **CNAME** | `rsend.traingrid` | `rsend-ap…mta.net` |
+   | Enable Sending · SPF | **CNAME** | `send.traingrid` | `send.for…mta.net` |
+   | DMARC (recommended) | **TXT** | `_dmarc` | `v=DMARC1; p=none;` |
 
-   Keep this page open; you will copy each value into Namecheap.
+   Resend's table truncates long hosts and values (`resend._[…]aingrid`, `rsend-ap[…]mta.net`).
+   **Click each one to copy it in full**; never type it from the screen.
+
+   **There is no MX record.** Resend's current setup handles bounces through the two CNAMEs, which
+   also carry SPF. An MX record is only needed if you turn on *receiving* mail at the domain,
+   which TrainGrid does not use. (Older Resend guides show an MX plus an SPF TXT on `send`; that
+   is the previous format.)
 
 ## 2. Add the records in Namecheap
 
-1. Namecheap → **Domain List** → **Manage** next to your domain → **Advanced DNS**.
-2. **Host field:** Namecheap adds your domain automatically, so enter only the part Resend shows
-   before your domain — e.g. `send.mail`, not `send.mail.yourdomain.com`. Entering the full name
-   creates `send.mail.yourdomain.com.yourdomain.com` and verification fails.
-3. **TXT records** — under *Host Records* → **Add New Record** → *TXT Record*:
-   - Host `send.mail`, Value `v=spf1 include:amazonses.com ~all`, TTL Automatic.
-   - Host `resend._domainkey.mail`, Value: the full DKIM key from Resend (no quotes, no line
-     breaks), TTL Automatic.
-4. **MX record** — MX records live under *Mail Settings* on the same page:
-   - Set *Mail Settings* to **Custom MX**, then **Add New Record**: Host `send.mail`, Value
-     `feedback-smtp.<region>.amazonses.com`, Priority `10`.
-   - ⚠️ If the domain currently uses Namecheap **Email Forwarding** or **Private Email** for your
-     own inbox, switching to *Custom MX* replaces those settings. Before switching, note the
-     existing root MX records (Namecheap's help page for your mail product lists them) and add
-     them back as Custom MX entries with Host `@`, so your personal mail keeps working. The
-     Resend MX is on `send.mail`, so it never conflicts with mail for the root domain.
-5. **DMARC (recommended):** add a TXT record, Host `_dmarc`, Value
-   `v=DMARC1; p=none; rua=mailto:you@yourdomain.com`. `p=none` only reports; tighten it to
-   `quarantine` once mail is verified as passing. Skip this if a `_dmarc` record already exists.
+1. Namecheap → **Domain List** → **Manage** next to `iamtj.dev` → **Advanced DNS** → *Host
+   Records* → **Add New Record**.
+2. **Host field:** Namecheap adds `iamtj.dev` automatically, so enter only the part before it —
+   `send.traingrid`, not `send.traingrid.iamtj.dev`. Entering the full name creates
+   `send.traingrid.iamtj.dev.iamtj.dev` and verification fails.
+3. Add each record from the table above with **TTL Automatic**:
+   - **TXT Record**, Host `resend._domainkey.traingrid`, Value: the full DKIM key (no quotes, no
+     line breaks).
+   - **CNAME Record**, Host `rsend.traingrid`, Value: the full target from Resend. Paste it without
+     `https://`; a trailing dot is fine.
+   - **CNAME Record**, Host `send.traingrid`, Value: the full target from Resend.
+   - **TXT Record**, Host `_dmarc`, Value `v=DMARC1; p=none;`. This record sits on the root
+     domain and covers all of `iamtj.dev`, including this subdomain; `p=none` only reports. If a
+     `_dmarc` record already exists, keep it and skip this one. To limit DMARC to TrainGrid mail
+     only, use Host `_dmarc.traingrid` instead.
+4. **A CNAME host can have no other record.** If `rsend.traingrid` or `send.traingrid` already has
+   a TXT or MX record (for example, from the older setup), delete it before adding the CNAME.
+5. **Leave *Mail Settings* alone.** No MX is needed, so there is no reason to switch to *Custom
+   MX*, and any Email Forwarding or Private Email on `iamtj.dev` keeps working.
 6. Click the ✓ to save each record. Back in Resend, press **Verify DNS records**. Namecheap
    usually propagates within minutes; it can take up to 48 hours. Until every record shows
    *Verified*, Resend refuses to send from the domain (the admin page will report a failed send).
 
 ## 3. Create an API key
 
-Resend → **API Keys → Create API key**: permission **Sending access**, domain: the one you just
-verified. Copy the key (it starts with `re_`); Resend shows it once.
+Resend → **API Keys → Create API key**: permission **Sending access**, domain
+`traingrid.iamtj.dev`. Copy the key (it starts with `re_`); Resend shows it once.
 
 ## 4. Configure Vercel
 
@@ -73,8 +80,8 @@ Preview only if you want previews to send real mail):
 | Variable | Value | Notes |
 | --- | --- | --- |
 | `RESEND_API_KEY` | `re_…` | Mark as **Sensitive**. Server only; never `NEXT_PUBLIC_`. |
-| `TRAINGRID_EMAIL_FROM` | `TrainGrid <invites@mail.yourdomain.com>` | Must be on the verified domain. |
-| `TRAINGRID_EMAIL_REPLY_TO` | `you@yourdomain.com` | Optional. Where replies go. |
+| `TRAINGRID_EMAIL_FROM` | `TrainGrid Invites <invites@traingrid.iamtj.dev>` | Must be on the verified domain. `Name <address>` or a bare address; the space before `<` is optional. |
+| `TRAINGRID_EMAIL_REPLY_TO` | an inbox you read | Optional. Where replies go. |
 | `TRAINGRID_SITE_URL` | `https://train-grid.vercel.app` (or your custom domain) | The sign-in link in every email and the canonical URL. Without it, Vercel's production domain is used. |
 | `TRAINGRID_DEFAULT_TIME_ZONE` | `Australia/Sydney` | Optional. Used only before a browser has reported its own zone. |
 
@@ -95,9 +102,10 @@ Redeploy (Deployments → … → **Redeploy**) so the new variables take effect
 
 | What you see | Likely cause |
 | --- | --- |
-| Admin page says "No email is sent" | A variable is missing or malformed: the key must start with `re_`, the From must be `Name <addr>` or a bare address, and redeploy after changing variables. |
+| Admin page says "No email is sent" | A variable is missing or malformed: the key must start with `re_`, the From must be `Name <addr>` (or `Name<addr>`) or a bare address, and redeploy after changing variables. |
 | "The email couldn't be sent" | Domain not verified yet, or the key lacks access to that domain. Resend → Emails / Logs shows why. The invitation itself is still valid. |
 | "The email service is busy" | Resend rate limit; wait a few minutes and use **Resend email**. |
-| Mail lands in spam | Add DMARC (step 2.5); make sure SPF and DKIM show *Verified* in Resend. |
+| Mail lands in spam | Add DMARC (step 2.3); make sure DKIM and both SPF CNAMEs show *Verified* in Resend. |
+| A record stays *Pending* | Host entered with the domain appended, a truncated value pasted, or another record on the same CNAME host. Check with `dig +short CNAME send.traingrid.iamtj.dev`. |
 
 Never paste the API key into a ticket, chat or commit. Rotate it in Resend if it is ever exposed.

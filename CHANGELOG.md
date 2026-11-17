@@ -19,6 +19,9 @@ Epic 3 integration: a public home page, a member dashboard and invitation emails
   the invitation valid. Requires Resend configuration; see `docs/EMAIL_SETUP.md`.
 - **Database**: new migration `20261117000000_invitation_email_deliveries.sql` (apply before or
   with the deploy; the invitations page keeps working without it).
+- **Email setup**: `TRAINGRID_EMAIL_FROM` now also accepts `Name<address>` (no space before `<`)
+  and normalises it, instead of silently treating it as "not configured". `docs/EMAIL_SETUP.md`
+  follows Resend's current DNS records (DKIM TXT plus two SPF CNAMEs, no MX).
 
 ## [0.2.1-beta] — 2026-11-14
 
