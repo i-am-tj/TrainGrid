@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { addWeeks, formatWeekLabel } from "@/lib/week";
-import { btnSecondary } from "@/lib/ui";
+import { btnPrimary, btnSecondary } from "@/lib/ui";
 import type { IsoDay } from "@/lib/domain";
 
 export function WeekNav({
@@ -19,11 +19,21 @@ export function WeekNav({
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
-        <Link href={`/week/${prev}`} className={btnSecondary} aria-label="Previous week">
+        <Link
+          href={`/week/${prev}`}
+          className={btnSecondary}
+          aria-label="Previous week"
+        >
           ←
         </Link>
-        <h1 className="truncate text-base font-semibold sm:text-lg">{formatWeekLabel(weekId)}</h1>
-        <Link href={`/week/${next}`} className={btnSecondary} aria-label="Next week">
+        <h1 className="text-base font-semibold leading-snug tracking-tight sm:text-xl">
+          {formatWeekLabel(weekId)}
+        </h1>
+        <Link
+          href={`/week/${next}`}
+          className={btnSecondary}
+          aria-label="Next week"
+        >
           →
         </Link>
       </div>
@@ -31,7 +41,7 @@ export function WeekNav({
         <Link href={todayHref} className={btnSecondary}>
           Today
         </Link>
-        <Link href={`/week/${weekId}/add`} className={btnSecondary}>
+        <Link href={`/week/${weekId}/add`} className={btnPrimary}>
           Add session
         </Link>
       </div>

@@ -3,13 +3,12 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { SectionLoader } from "@/components/LogoLoader";
+import { PageHeading } from "@/components/ui/Presentation";
+import { InvitationEmailPreview } from "@/components/admin/InvitationEmailPreview";
+import { InvitationListView } from "@/components/admin/InvitationListView";
 import { InviteForm, RevokeForm } from "@/components/admin/InvitationForms";
 import { getAdminViewer } from "@/lib/admin/guard";
-import {
-  invitationStatus,
-  revokeKind,
-  type InvitationStatus,
-} from "@/lib/admin/invitation-model";
+import { invitationStatus, revokeKind } from "@/lib/admin/invitation-model";
 import { listInvitations, protectedUserIds } from "@/lib/admin/invitations";
 import { originFromHeaders } from "@/lib/auth/redirect";
 import { isSecretKeyConfigured } from "@/lib/supabase/admin";
@@ -21,16 +20,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const STATUS_STYLE: Record<InvitationStatus, string> = {
-  Pending: "bg-amber-50 text-amber-900",
-  Accepted: "bg-emerald-50 text-emerald-900",
-  Revoked: "bg-stone-100 text-stone-600",
-};
-
 function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "UTC" }).format(
-    new Date(iso),
-  );
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(new Date(iso));
 }
 
 export default async function InvitationsPage() {
@@ -40,8 +34,8 @@ export default async function InvitationsPage() {
 
   if (!isSecretKeyConfigured()) {
     return (
-      <div className="mx-auto max-w-3xl px-3 py-8 sm:px-4">
-        <h1 className="text-xl font-semibold tracking-tight">Invitations</h1>
+      <div className="mx-auto max-w-4xl px-3 py-8 sm:px-4 sm:py-10">
+        <PageHeading eyebrow="Member access" title="Invitations" />
         <p className="mt-3 text-sm text-stone-700">
           Invitation management is not configured on this deployment.
         </p>
@@ -53,17 +47,18 @@ export default async function InvitationsPage() {
   const signInUrl = `${originFromHeaders(await headers())}/login`;
 
   return (
-    <div className="mx-auto max-w-3xl px-3 py-8 sm:px-4">
-      <h1 className="text-xl font-semibold tracking-tight">Invitations</h1>
-      <p className="mt-1.5 text-sm text-stone-600">
-        Only invited email addresses can use TrainGrid. An invitation is matched against the
-        verified email of the Google or GitHub account the person signs in with. Revoking an
-        accepted member removes their access but keeps their data; inviting the same email again
-        restores it. Admins cannot be revoked.
+    <div className="mx-auto max-w-4xl px-3 py-8 sm:px-4 sm:py-10">
+      <PageHeading eyebrow="Member access" title="Invitations" />
+      <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-600">
+        Only invited email addresses can use TrainGrid. An invitation is matched
+        against the verified email of the Google or GitHub account the person
+        signs in with. Revoking an accepted member removes their access but
+        keeps their data; inviting the same email again restores it. Admins
+        cannot be revoked.
       </p>
 
-      <section className="mt-6 rounded-2xl border border-line bg-card px-4 py-4 sm:px-5">
-        <h2 className="text-sm font-semibold">Invite someone</h2>
+      <section className="ui-panel mt-7 px-5 py-6 sm:p-7">
+        <h2 className="text-lg font-semibold tracking-tight">Invite someone</h2>
         <div className="mt-3">
           <InviteForm />
         </div>
@@ -75,9 +70,17 @@ export default async function InvitationsPage() {
         </p>
       </section>
 
-      <section className="mt-6">
-        <h2 className="text-sm font-semibold">All invitations</h2>
-        <Suspense fallback={<SectionLoader label="Loading invitations…" minHeight="min-h-32" />}>
+      <InvitationEmailPreview loginUrl={signInUrl} />
+
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold tracking-tight">
+          All invitations
+        </h2>
+        <Suspense
+          fallback={
+            <SectionLoader label="Loading invitations…" minHeight="min-h-32" />
+          }
+        >
           <InvitationList protectedIds={protectedIds} />
         </Suspense>
       </section>
@@ -89,45 +92,30 @@ export default async function InvitationsPage() {
 async function InvitationList({ protectedIds }: { protectedIds: Set<string> }) {
   const invitations = await listInvitations();
   return (
-    <>
-          {invitations.length === 0 ? (
-            <p className="mt-3 text-sm text-stone-600">No invitations yet.</p>
-          ) : (
-            <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-card">
-              {invitations.map((invitation) => {
-                const status = invitationStatus(invitation);
-                const kind = revokeKind(invitation, protectedIds);
-                const isAdminRow = Boolean(
-                  invitation.accepted_by && protectedIds.has(invitation.accepted_by.toLowerCase()),
-                );
-                return (
-                  <li
-                    key={invitation.id}
-                    className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium break-all">{invitation.email}</p>
-                      <p className="mt-0.5 text-xs text-stone-500">
-                        Invited {formatDate(invitation.created_at)}
-                        {isAdminRow ? " · Admin" : ""}
-                        {invitation.accepted_at && invitation.revoked_at ? " · Access revoked, data kept" : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`rounded-md px-2 py-1 text-xs font-medium ${STATUS_STYLE[status]}`}
-                      >
-                        {status}
-                      </span>
-                      {kind ? (
-                        <RevokeForm id={invitation.id} email={invitation.email} kind={kind} />
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-    </>
+    <InvitationListView
+      invitations={invitations.map((invitation) => {
+        const kind = revokeKind(invitation, protectedIds);
+        return {
+          id: invitation.id,
+          email: invitation.email,
+          createdLabel: formatDate(invitation.created_at),
+          status: invitationStatus(invitation),
+          isAdmin: Boolean(
+            invitation.accepted_by &&
+            protectedIds.has(invitation.accepted_by.toLowerCase()),
+          ),
+          revokedAccess: Boolean(
+            invitation.accepted_at && invitation.revoked_at,
+          ),
+          action: kind ? (
+            <RevokeForm
+              id={invitation.id}
+              email={invitation.email}
+              kind={kind}
+            />
+          ) : null,
+        };
+      })}
+    />
   );
 }

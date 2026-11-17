@@ -20,8 +20,8 @@ export default async function EditRoutinePage({
   if (!routine || !routine.isOwn) notFound();
 
   return (
-    <div className="mx-auto max-w-xl px-3 py-4 sm:px-4">
-      <h1 className="text-xl font-semibold">Edit {routine.name}</h1>
+    <div className="workout-body mx-auto max-w-2xl px-3 py-7 sm:px-4 sm:py-10">
+      <h1 className="text-3xl font-semibold leading-tight tracking-tight">Edit {routine.name}</h1>
       <div className="mt-6">
         <RoutineEditor routine={routine} />
       </div>

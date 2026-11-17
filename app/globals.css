@@ -250,3 +250,22 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .dashboard-shortcut, .dashboard-day { transition: none; }
 }
+
+/* UI-03: the shell measures header, controls and footer in normal flex flow.
+   A readable minimum grid (about four hour rows plus headings) lets short/zoomed
+   pages grow and scroll, rather than forcing the footer over calendar content. */
+.app-main { min-width: 0; }
+.workout-body { overflow-wrap: anywhere; }
+.library-routine-row { transition: background-color var(--motion-fast) var(--ease-ui); }
+.library-routine-row:hover { background: var(--background); }
+@media (min-width: 768px) {
+  body:has(.planner-page) { height: 100dvh; }
+  .app-main:has(.planner-page) { display: flex; flex-direction: column; }
+  /* A definite zero basis avoids resolving 0% against the full 24-hour intrinsic height. */
+  .planner-page, .planner-content, .planner-desktop { display: flex; flex-direction: column; flex: 1 1 0px; }
+  .planner-page { width: 100%; }
+  .planner-grid { height: 0; min-height: 18rem; flex: 1 1 0px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .library-routine-row { transition: none; }
+}

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { EQUIPMENT_LABELS, EQUIPMENT_TYPES, type EquipmentType } from "@/lib/domain";
+import {
+  EQUIPMENT_LABELS,
+  EQUIPMENT_TYPES,
+  type EquipmentType,
+} from "@/lib/domain";
 import type { PlannedItem } from "@/lib/data/model";
 import { parseYouTubeUrl } from "@/lib/youtube";
 import { btnSecondary, fieldClass } from "@/lib/ui";
@@ -34,7 +38,13 @@ function blank(): Draft {
 }
 
 function hasDetails(item: PlannedItem): boolean {
-  return Boolean(item.rest || item.target || item.notes || item.equipment.length || item.videoUrl);
+  return Boolean(
+    item.rest ||
+    item.target ||
+    item.notes ||
+    item.equipment.length ||
+    item.videoUrl,
+  );
 }
 
 export function WorkoutItemEditor({ initial }: { initial: PlannedItem[] }) {
@@ -45,7 +55,9 @@ export function WorkoutItemEditor({ initial }: { initial: PlannedItem[] }) {
   );
 
   function update(index: number, patch: Partial<PlannedItem>) {
-    setItems((current) => current.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+    setItems((current) =>
+      current.map((item, i) => (i === index ? { ...item, ...patch } : item)),
+    );
   }
 
   function toggleEquipment(index: number, tag: EquipmentType) {
@@ -55,7 +67,9 @@ export function WorkoutItemEditor({ initial }: { initial: PlannedItem[] }) {
         const has = item.equipment.includes(tag);
         return {
           ...item,
-          equipment: has ? item.equipment.filter((e) => e !== tag) : [...item.equipment, tag],
+          equipment: has
+            ? item.equipment.filter((e) => e !== tag)
+            : [...item.equipment, tag],
         };
       }),
     );
@@ -75,12 +89,24 @@ export function WorkoutItemEditor({ initial }: { initial: PlannedItem[] }) {
     <div className="space-y-3">
       {items.map((item, index) => {
         const videoDraft = item.videoUrl ?? "";
-        const videoInvalid = Boolean(videoDraft.trim()) && !parseYouTubeUrl(videoDraft);
+        const videoInvalid =
+          Boolean(videoDraft.trim()) && !parseYouTubeUrl(videoDraft);
         const n = index + 1;
         return (
-          <div key={item.key} className="rounded-md border border-line bg-white p-3">
-            <input type="hidden" name="itemId" value={item.persisted ? item.id : ""} />
-            <input type="hidden" name="itemEquipment" value={item.equipment.join(",")} />
+          <div
+            key={item.key}
+            className="rounded-xl border border-line bg-elevated p-4 sm:p-5"
+          >
+            <input
+              type="hidden"
+              name="itemId"
+              value={item.persisted ? item.id : ""}
+            />
+            <input
+              type="hidden"
+              name="itemEquipment"
+              value={item.equipment.join(",")}
+            />
 
             <label className="block text-sm font-medium">
               Workout item {n}
@@ -106,7 +132,7 @@ export function WorkoutItemEditor({ initial }: { initial: PlannedItem[] }) {
             </label>
 
             <details className="mt-2" open={hasDetails(item)}>
-              <summary className="cursor-pointer text-sm font-medium text-stone-700">
+              <summary className="cursor-pointer rounded-md py-2 text-sm font-medium text-stone-700">
                 More details
               </summary>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -153,7 +179,7 @@ export function WorkoutItemEditor({ initial }: { initial: PlannedItem[] }) {
                         key={tag}
                         type="button"
                         aria-pressed={on}
-                        className={`rounded-md border px-2 py-1 text-xs font-medium ${
+                        className={`ui-control min-h-10 rounded-md border px-2.5 py-2 text-xs font-medium ${
                           on
                             ? "border-stone-900 bg-stone-900 text-white"
                             : "border-stone-300 bg-white text-stone-800 hover:bg-stone-50"
@@ -174,7 +200,9 @@ export function WorkoutItemEditor({ initial }: { initial: PlannedItem[] }) {
                   value={videoDraft}
                   placeholder="https://www.youtube.com/watch?v=…"
                   inputMode="url"
-                  onChange={(e) => update(index, { videoUrl: e.target.value || null })}
+                  onChange={(e) =>
+                    update(index, { videoUrl: e.target.value || null })
+                  }
                 />
               </label>
               {videoInvalid ? (
@@ -206,7 +234,9 @@ export function WorkoutItemEditor({ initial }: { initial: PlannedItem[] }) {
                 className={btnSecondary}
                 onClick={() =>
                   setItems((current) =>
-                    current.length === 1 ? [blank()] : current.filter((_, i) => i !== index),
+                    current.length === 1
+                      ? [blank()]
+                      : current.filter((_, i) => i !== index),
                   )
                 }
               >

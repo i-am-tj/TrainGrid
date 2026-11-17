@@ -1,4 +1,6 @@
 /** Static component QA harness. No Next route, auth bypass, database access or deployment. */
+import { InvitationFixture } from "../tests/ui/fixtures/invitations";
+import { renderInvitationEmail } from "../lib/email/invitation";
 import type { ReactNode } from "react";
 import { MemberDashboard } from "../components/dashboard/MemberDashboard";
 import { dashboardFixtures } from "../tests/ui/fixtures/dashboard";
@@ -51,6 +53,15 @@ async function main() {
   };
   for (const [name, state] of Object.entries(dashboardFixtures))
     await writeFixture(`dashboard-${name}`, <MemberDashboard state={state} />);
+  await writeFixture("invitations-ready", <InvitationFixture />);
+  await writeFixture("invitations-empty", <InvitationFixture empty />);
+  await writeFile(
+    path.join(directory, "invitation-email.html"),
+    renderInvitationEmail({
+      recipientEmail: "example.member@example.test",
+      loginUrl: "http://ui-preview.test/login",
+    }).html,
+  );
   for (const name of loginFixtures)
     await writeFixture(`login-${name}`, <LoginFixtureView name={name} />);
   console.log(

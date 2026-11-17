@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ActionSubmit } from "@/components/ui/ActionSubmit";
 import { deleteRoutineAction, upsertRoutineAction } from "@/lib/actions";
 import type { Routine } from "@/lib/data/model";
 import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
@@ -11,7 +12,10 @@ import { WorkoutItemEditor } from "./WorkoutItemEditor";
 export function RoutineEditor({ routine }: { routine: Routine | null }) {
   return (
     <div className="space-y-6">
-      <form action={upsertRoutineAction} className="space-y-4">
+      <form
+        action={upsertRoutineAction}
+        className="ui-panel space-y-5 p-4 sm:p-6"
+      >
         {routine ? <input type="hidden" name="id" value={routine.id} /> : null}
 
         <label className="block text-sm font-medium">
@@ -27,7 +31,11 @@ export function RoutineEditor({ routine }: { routine: Routine | null }) {
 
         <label className="block text-sm font-medium">
           Type
-          <select name="type" className={fieldClass} defaultValue={routine?.category ?? "strength"}>
+          <select
+            name="type"
+            className={fieldClass}
+            defaultValue={routine?.category ?? "strength"}
+          >
             {SESSION_TYPES.map((t) => (
               <option key={t} value={t}>
                 {SESSION_TYPE_LABELS[t]}
@@ -52,9 +60,7 @@ export function RoutineEditor({ routine }: { routine: Routine | null }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button type="submit" className={btnPrimary}>
-            Save
-          </button>
+          <ActionSubmit label="Save" busy="Saving…" className={btnPrimary} />
           {routine ? (
             <Link href={`/library/${routine.id}`} className={btnSecondary}>
               Cancel
@@ -80,9 +86,11 @@ export function RoutineEditor({ routine }: { routine: Routine | null }) {
           }}
         >
           <input type="hidden" name="id" value={routine.id} />
-          <button type="submit" className={btnDanger}>
-            Delete routine
-          </button>
+          <ActionSubmit
+            label="Delete routine"
+            busy="Deleting…"
+            className={btnDanger}
+          />
         </form>
       ) : null}
     </div>

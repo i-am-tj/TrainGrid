@@ -38,7 +38,10 @@ export function WeekGrid({
   return (
     <div
       ref={scroller}
-      className="mt-3 max-h-[calc(100vh-9rem)] overflow-auto rounded-lg border border-line bg-card"
+      className="planner-grid mt-3 overflow-auto rounded-xl border border-line bg-card"
+      role="region"
+      aria-label="Weekly calendar time grid"
+      tabIndex={0}
     >
       <div
         className="grid min-w-[720px]"
@@ -75,7 +78,7 @@ export function WeekGrid({
           return (
             <div
               key={`u-${i}`}
-              className={`min-h-[${UNTIMED}px] border-b border-l border-line p-1 ${
+              className={`border-b border-l border-line p-1 ${
                 isToday ? "bg-amber-50/40" : ""
               }`}
               style={{ minHeight: UNTIMED }}
@@ -158,7 +161,7 @@ function HourRow({
             <Link
               prefetch={false}
               href={`/week/${weekId}/add?day=${day}&time=${time}`}
-              className="mt-0.5 block min-h-[1.25rem] text-[10px] text-transparent hover:text-stone-500"
+              className="mt-0.5 block min-h-[1.25rem] text-[10px] text-transparent hover:text-stone-500 focus-visible:text-stone-700"
               aria-label={`Add session ${formatShortDate(date)} ${time}`}
             >
               +

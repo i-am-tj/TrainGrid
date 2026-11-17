@@ -2,23 +2,38 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ActionSubmit } from "@/components/ui/ActionSubmit";
 import type { ScheduledSessionRecord } from "@/lib/data/model";
 import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
 import {
   deleteScheduledSessionAction,
   updateScheduledSession,
 } from "@/lib/actions";
-import { datesOfWeek, formatLongDay, isValidWeekId, TIME_OPTIONS } from "@/lib/week";
+import {
+  datesOfWeek,
+  formatLongDay,
+  isValidWeekId,
+  TIME_OPTIONS,
+} from "@/lib/week";
 import { btnDanger, btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
 
-export function EditSessionForm({ session }: { session: ScheduledSessionRecord }) {
+export function EditSessionForm({
+  session,
+}: {
+  session: ScheduledSessionRecord;
+}) {
   const [weekId, setWeekId] = useState(session.weekId);
   const [untimed, setUntimed] = useState(session.startTime === null);
-  const dates = isValidWeekId(weekId) ? datesOfWeek(weekId) : datesOfWeek(session.weekId);
+  const dates = isValidWeekId(weekId)
+    ? datesOfWeek(weekId)
+    : datesOfWeek(session.weekId);
 
   return (
     <div className="space-y-6">
-      <form action={updateScheduledSession} className="space-y-4">
+      <form
+        action={updateScheduledSession}
+        className="ui-panel space-y-5 p-4 sm:p-6"
+      >
         <input type="hidden" name="id" value={session.id} />
 
         <label className="block text-sm font-medium">
@@ -58,7 +73,11 @@ export function EditSessionForm({ session }: { session: ScheduledSessionRecord }
             </select>
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <input type="hidden" name="untimed" value={untimed ? "true" : "false"} />
+            <input
+              type="hidden"
+              name="untimed"
+              value={untimed ? "true" : "false"}
+            />
             <input
               type="checkbox"
               checked={untimed}
@@ -116,9 +135,7 @@ export function EditSessionForm({ session }: { session: ScheduledSessionRecord }
         </label>
 
         <div className="flex flex-wrap gap-2">
-          <button type="submit" className={btnPrimary}>
-            Save
-          </button>
+          <ActionSubmit label="Save" busy="Saving…" className={btnPrimary} />
           <Link href={`/session/${session.id}`} className={btnSecondary}>
             Cancel
           </Link>
@@ -128,7 +145,9 @@ export function EditSessionForm({ session }: { session: ScheduledSessionRecord }
       <form
         action={deleteScheduledSessionAction}
         onSubmit={(e) => {
-          if (!confirm("Remove this session from the week? Its routine is kept.")) {
+          if (
+            !confirm("Remove this session from the week? Its routine is kept.")
+          ) {
             e.preventDefault();
           }
         }}
@@ -136,9 +155,7 @@ export function EditSessionForm({ session }: { session: ScheduledSessionRecord }
         <input type="hidden" name="id" value={session.id} />
         <input type="hidden" name="weekId" value={session.weekId} />
         <input type="hidden" name="day" value={session.day} />
-        <button type="submit" className={btnDanger}>
-          Delete
-        </button>
+        <ActionSubmit label="Delete" busy="Deleting…" className={btnDanger} />
       </form>
     </div>
   );

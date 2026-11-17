@@ -12,7 +12,13 @@ import { SourceLabel } from "./SourceLabel";
  * read-only: there is no Edit control, and the edit URL does not open an
  * editor. Schedule is the primary action (E2-05).
  */
-export function RoutineDetail({ routine, copied = false }: { routine: Routine; copied?: boolean }) {
+export function RoutineDetail({
+  routine,
+  copied = false,
+}: {
+  routine: Routine;
+  copied?: boolean;
+}) {
   return (
     <div>
       <Link href="/library" className="text-sm text-stone-600 hover:underline">
@@ -21,14 +27,16 @@ export function RoutineDetail({ routine, copied = false }: { routine: Routine; c
 
       <header className="mt-4">
         <div className="flex flex-wrap items-center gap-y-1">
-          <h1 className="text-xl font-semibold">{routine.name}</h1>
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight [overflow-wrap:anywhere]">
+            {routine.name}
+          </h1>
           <SourceLabel isOwn={routine.isOwn} />
         </div>
-        <p className="mt-1 text-sm text-stone-600">
+        <p className="mt-2 text-sm leading-7 text-stone-600">
           {SESSION_TYPE_LABELS[routine.category]}
           {routine.description ? ` · ${routine.description}` : ""}
         </p>
-        <p className="mt-1 text-sm text-stone-600">
+        <p className="mt-2 text-sm leading-7 text-stone-600">
           {routineAtAGlance(routine.items.length, equipmentUsed(routine.items))}
         </p>
         <p className="mt-1 text-xs text-stone-500">
@@ -62,7 +70,8 @@ export function RoutineDetail({ routine, copied = false }: { routine: Routine; c
           role="status"
           className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
         >
-          Copied to My Library. This copy is yours to edit; the TrainGrid routine is unchanged.
+          Copied to My Library. This copy is yours to edit; the TrainGrid
+          routine is unchanged.
         </p>
       ) : null}
 

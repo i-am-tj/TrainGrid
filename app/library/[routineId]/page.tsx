@@ -21,7 +21,7 @@ export default async function RoutinePage({
   }
 
   return (
-    <div className="mx-auto max-w-xl px-3 py-4 sm:px-4">
+    <div className="workout-body mx-auto max-w-2xl px-3 py-7 sm:px-4 sm:py-10">
       {/* One-time confirmation after copying (E2-D10); shown only on the member's own routine. */}
       <RoutineDetail routine={routine} copied={(await searchParams).copied === "1"} />
     </div>

@@ -2,25 +2,43 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
-import { inviteAction, revokeAction, type InvitationFormState } from "@/lib/admin/actions";
+import {
+  inviteAction,
+  revokeAction,
+  type InvitationFormState,
+} from "@/lib/admin/actions";
 import { btnDanger, btnPrimary, fieldClass } from "@/lib/ui";
 
-function Message({ state }: { state: InvitationFormState }) {
+function Message({ state, id }: { state: InvitationFormState; id?: string }) {
   if (!state?.message) return null;
   return (
     <p
+      id={id}
       role={state.ok ? "status" : "alert"}
-      className={`mt-2 text-sm ${state.ok ? "text-emerald-800" : "text-red-800"}`}
+      className={`mt-3 rounded-lg border px-3 py-2 text-sm leading-6 ${state.ok ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-800"}`}
     >
       {state.message}
     </p>
   );
 }
 
-function Submit({ label, busy, className }: { label: string; busy: string; className: string }) {
+function Submit({
+  label,
+  busy,
+  className,
+}: {
+  label: string;
+  busy: string;
+  className: string;
+}) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} aria-busy={pending} className={`${className} disabled:opacity-60`}>
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className={`${className} disabled:opacity-60`}
+    >
       {pending ? busy : label}
     </button>
   );
@@ -36,7 +54,10 @@ export function InviteForm() {
 
   return (
     <form ref={form} action={action}>
-      <label htmlFor="invite-email" className="text-sm font-medium text-stone-800">
+      <label
+        htmlFor="invite-email"
+        className="text-sm font-medium text-stone-800"
+      >
         Email address
       </label>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
@@ -48,11 +69,13 @@ export function InviteForm() {
           maxLength={320}
           autoComplete="off"
           placeholder="friend@example.com"
+          aria-invalid={state?.ok === false}
+          aria-describedby={state?.message ? "invite-feedback" : undefined}
           className={`${fieldClass} sm:flex-1`}
         />
         <Submit label="Invite" busy="Inviting…" className={btnPrimary} />
       </div>
-      <Message state={state} />
+      <Message state={state} id="invite-feedback" />
     </form>
   );
 }
