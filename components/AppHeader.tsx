@@ -49,9 +49,9 @@ export async function AppHeader() {
             Beta
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
           {items.length > 0 ? (
-            <nav aria-label="Main" className="hidden items-center justify-end gap-x-2 text-sm sm:flex">
+            <nav aria-label="Main" className="hidden min-w-0 flex-wrap items-center justify-end gap-x-2 text-sm sm:flex">
               {items.map((item) => (
                 <div key={item.key}>{item.render(desktopItem)}</div>
               ))}

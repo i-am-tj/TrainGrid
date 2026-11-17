@@ -22,7 +22,7 @@ export const TYPE_TINT: Record<SessionType, string> = {
 };
 
 export const fieldClass =
-  "ui-control mt-1 w-full min-h-10 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 shadow-sm focus:border-stone-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2";
+  "ui-control mt-1 w-full min-h-10 rounded-md border border-stone-500 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-500 shadow-sm focus:border-stone-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2";
 
 export const btnPrimary =
   "ui-control inline-flex min-h-10 items-center justify-center rounded-md bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2";

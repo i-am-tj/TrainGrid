@@ -30,10 +30,10 @@ export function EmailWorkflowPreview({
   const [title, description] = COPY[state];
   return (
     <article className="rounded-lg border border-line bg-background p-4">
-      <p className="text-[10px] uppercase tracking-widest text-stone-500">
+      <p className="text-[10px] uppercase tracking-widest text-stone-600">
         Design preview
       </p>
-      <h4 className="mt-2 text-sm font-semibold">{title}</h4>
+      <h3 className="mt-2 text-sm font-semibold">{title}</h3>
       <p className="mt-2 text-xs leading-6 text-stone-600">{description}</p>
       <button
         type="button"

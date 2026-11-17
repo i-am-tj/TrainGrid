@@ -189,7 +189,7 @@ export function MemberDashboard({ state }: { state: DashboardState }) {
               >
                 <p className="ui-eyebrow">
                   {routine.categoryLabel}{" "}
-                  <span className="text-stone-500">· Mine</span>
+                  <span className="text-stone-600">· Mine</span>
                 </p>
                 <h3 className="mt-3 text-base font-semibold leading-7 [overflow-wrap:anywhere]">
                   <Link
@@ -294,7 +294,7 @@ export function WeeklyOverview({ week }: { week: DashboardWeek }) {
                 {day.dayLabel}
               </span>
               <span
-                className={`inline-flex size-5 items-center justify-center rounded-full text-[10px] ${day.plannedCount ? "bg-stone-900 text-white" : "text-stone-500"}`}
+                className={`inline-flex size-5 items-center justify-center rounded-full text-[10px] ${day.plannedCount ? "bg-stone-900 text-white" : "text-stone-600"}`}
               >
                 {day.plannedCount || "—"}
               </span>
@@ -353,7 +353,7 @@ function QuickActions({ data }: { data: DashboardData }) {
                   {description}
                 </span>
               </span>
-              <span aria-hidden="true" className="ml-auto text-stone-500">
+              <span aria-hidden="true" className="ml-auto text-stone-600">
                 ↗
               </span>
             </Link>

@@ -29,11 +29,13 @@ export function EmptyState({
   children,
   action,
   icon,
+  headingTag: Heading = "h3",
 }: {
   title: string;
   children: ReactNode;
   action?: ReactNode;
   icon?: ReactNode;
+  headingTag?: "h2" | "h3";
 }) {
   return (
     <div className="ui-panel border-dashed px-5 py-10 text-center">
@@ -43,7 +45,7 @@ export function EmptyState({
       >
         {icon ?? "▦"}
       </span>
-      <h2 className="font-semibold">{title}</h2>
+      <Heading className="font-semibold">{title}</Heading>
       <div className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-600">
         {children}
       </div>

@@ -28,7 +28,7 @@ export function LoginView({
           className="min-w-0 p-6 sm:p-10 lg:p-12"
           aria-labelledby="login-title"
         >
-          <div className="flex items-center gap-2 text-sm font-semibold">
+          <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
             <BrandLogo className="size-7" />
             TrainGrid
             <span className="ml-1 rounded-md border border-line px-1.5 text-[11px] font-normal text-stone-600">
@@ -38,7 +38,7 @@ export function LoginView({
           <p className="ui-eyebrow mt-10">Your week starts here</p>
           <h1
             id="login-title"
-            className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
+            className="mt-4 text-3xl font-semibold leading-tight tracking-tight [overflow-wrap:anywhere] sm:text-4xl"
           >
             Welcome to TrainGrid
           </h1>

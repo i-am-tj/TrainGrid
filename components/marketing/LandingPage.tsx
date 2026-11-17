@@ -52,10 +52,10 @@ export function LandingPage({
     <div className="landing">
       <section className="landing-hero landing-container">
         <div className="hero-copy">
-          <div className="mb-8 flex items-center gap-2 text-sm font-semibold">
+          <div className="mb-8 flex flex-wrap items-center gap-2 text-sm font-semibold">
             <BrandLogo className="size-7" />
             TrainGrid
-            <span className="ml-1 rounded-md border border-line px-2 py-0.5 text-[11px] font-normal text-stone-500">
+            <span className="ml-1 rounded-md border border-line px-2 py-0.5 text-[11px] font-normal text-stone-600">
               Invite-only Beta
             </span>
           </div>
@@ -77,7 +77,7 @@ export function LandingPage({
               Explore features
             </a>
           </div>
-          <p className="mt-5 text-xs leading-5 text-stone-500">
+          <p className="mt-5 text-xs leading-5 text-stone-600">
             Built for planning. Bring your own motivation.
           </p>
         </div>
@@ -87,9 +87,9 @@ export function LandingPage({
             <PlannerPreview />
           </div>
           <div className="sm:hidden">
-            <AgendaPreview />
+            <AgendaPreview headingTag="p" />
           </div>
-          <p className="mt-4 text-right font-mono text-[10px] uppercase tracking-widest text-stone-500">
+          <p className="mt-4 text-right font-mono text-[10px] uppercase tracking-widest text-stone-600">
             01 — Make room for the work
           </p>
         </div>
@@ -159,13 +159,13 @@ export function LandingPage({
             </div>
             <div>
               <LibraryPreview />
-              <p className="mt-4 text-xs text-stone-500">
+              <p className="mt-4 text-xs text-stone-600">
                 02 — Find your next routine
               </p>
             </div>
             <div>
               <WorkoutPreview />
-              <p className="mt-4 text-xs text-stone-500">
+              <p className="mt-4 text-xs text-stone-600">
                 03 — Know the planned work
               </p>
             </div>
@@ -221,7 +221,7 @@ export function LandingPage({
               loading="lazy"
               className="aspect-square w-56 rounded-2xl border border-hairline object-cover"
             />
-            <span className="mt-5 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
+            <span className="mt-5 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-600">
               Made with intention
             </span>
           </div>

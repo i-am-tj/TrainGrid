@@ -33,8 +33,8 @@ export function PublicHeader() {
   );
   return (
     <header className="relative z-30 border-b border-line bg-card">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:px-4">
-        <div className="flex items-center gap-2">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-3 py-3 sm:px-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
@@ -46,9 +46,9 @@ export function PublicHeader() {
             Beta
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <nav aria-label="Main" className="hidden sm:block">
-            <ul className="flex items-center gap-2">{links}</ul>
+            <ul className="flex min-w-0 flex-wrap items-center gap-2">{links}</ul>
           </nav>
           <ThemeToggle />
           <MobileMenu>{links}</MobileMenu>

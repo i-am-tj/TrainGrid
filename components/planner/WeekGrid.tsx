@@ -58,7 +58,7 @@ export function WeekGrid({
                 isToday ? "bg-amber-50" : ""
               }`}
             >
-              <div className="text-[11px] font-semibold tracking-wide text-stone-500">
+              <div className="text-[11px] font-semibold tracking-wide text-stone-600">
                 {heading.weekday}
               </div>
               <div className="text-sm font-semibold">{heading.dayNum}</div>
@@ -66,7 +66,7 @@ export function WeekGrid({
           );
         })}
 
-        <div className="border-b border-line bg-stone-50 px-1 py-1 text-[10px] text-stone-500">
+        <div className="border-b border-line bg-stone-50 px-1 py-1 text-[10px] text-stone-600">
           —
         </div>
         {dates.map((date, i) => {
@@ -86,7 +86,7 @@ export function WeekGrid({
               <Link
                 prefetch={false}
                 href={`/week/${weekId}/add?day=${day}&untimed=1`}
-                className="mb-1 block text-[10px] text-stone-400 hover:text-stone-700"
+                className="mb-1 block text-[10px] text-stone-600 hover:text-stone-700"
               >
                 + untimed
               </Link>
@@ -130,7 +130,7 @@ function HourRow({
   return (
     <>
       <div
-        className="border-b border-line px-1 py-1 text-[11px] text-stone-500"
+        className="border-b border-line px-1 py-1 text-[11px] text-stone-600"
         style={{ minHeight: ROW }}
       >
         {formatHourLabel(hour)}
@@ -161,7 +161,7 @@ function HourRow({
             <Link
               prefetch={false}
               href={`/week/${weekId}/add?day=${day}&time=${time}`}
-              className="mt-0.5 block min-h-[1.25rem] text-[10px] text-transparent hover:text-stone-500 focus-visible:text-stone-700"
+              className="mt-0.5 block min-h-6 text-[10px] text-transparent hover:text-stone-600 focus-visible:text-stone-700"
               aria-label={`Add session ${formatShortDate(date)} ${time}`}
             >
               +

@@ -13,7 +13,8 @@ the plan, the state of the work, and the reasoning behind it.
 | [STORY_REPORTS.md](STORY_REPORTS.md) | Completion report per story, and the epic completion report |
 | [EPIC-1.md](EPIC-1.md) | Epic 1 specification, verbatim (complete) |
 | [EPIC-3-UI.md](EPIC-3-UI.md) | Epic 3 UI audit, design system, component inventory and route contracts |
-| [EPIC-3-UI-HANDOFF.md](EPIC-3-UI-HANDOFF.md) | Implemented UI exports and proposed backend integration contracts for Claude |
+| [EPIC-3-UI-HANDOFF.md](EPIC-3-UI-HANDOFF.md) | Implemented UI exports and backend integration contracts for Claude |
+| [EPIC-3-UI-VERIFICATION.md](EPIC-3-UI-VERIFICATION.md) | Final frontend regression matrix, screenshots, performance evidence and limits |
 
 Formal architecture decision records live in `docs/adr/`.
 

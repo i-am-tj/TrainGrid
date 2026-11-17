@@ -60,10 +60,21 @@ for (const theme of ["light", "dark"] as const) {
           .evaluate((el) => getComputedStyle(el).animationName),
       ).toBe("none");
       if (width === 360 || (width === 1440 && height === 900)) {
-        const portrait = page.getByRole("img", { name: "Tanuj Chakraborty", exact: true });
+        const portrait = page.getByRole("img", {
+          name: "Tanuj Chakraborty",
+          exact: true,
+        });
         await portrait.scrollIntoViewIfNeeded();
-        await expect.poll(() => portrait.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBe(1170);
-        await portrait.evaluate((image) => (image as HTMLImageElement).decode());
+        await expect
+          .poll(() =>
+            portrait.evaluate(
+              (image) => (image as HTMLImageElement).naturalWidth,
+            ),
+          )
+          .toBe(1170);
+        await portrait.evaluate((image) =>
+          (image as HTMLImageElement).decode(),
+        );
         await page.evaluate(() => window.scrollTo(0, 0));
         await mkdir("docs/images/epic-3", { recursive: true });
         await page.screenshot({
@@ -81,9 +92,7 @@ test("semantic navigation, focus, public-only content and feature anchor", async
   await page.goto("http://ui-preview.test/");
   await page.keyboard.press("Tab");
   await expect(
-    page
-      .getByRole("banner")
-      .getByRole("link", { name: "TrainGrid", exact: true }),
+    page.getByRole("link", { name: "Skip to content", exact: true }),
   ).toBeFocused();
   expect(
     await page
@@ -95,11 +104,20 @@ test("semantic navigation, focus, public-only content and feature anchor", async
   await expect(
     page.getByRole("heading", { name: "Tanuj Chakraborty" }),
   ).toBeVisible();
-  await expect(page.getByText("Founder & Developer", { exact: true })).toBeVisible();
-  const portrait = page.getByRole("img", { name: "Tanuj Chakraborty", exact: true });
+  await expect(
+    page.getByText("Founder & Developer", { exact: true }),
+  ).toBeVisible();
+  const portrait = page.getByRole("img", {
+    name: "Tanuj Chakraborty",
+    exact: true,
+  });
   await portrait.scrollIntoViewIfNeeded();
   await expect(portrait).toBeVisible();
-  await expect.poll(() => portrait.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBe(1170);
+  await expect
+    .poll(() =>
+      portrait.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    )
+    .toBe(1170);
   await expect(
     page.getByRole("link", { name: "Invitations", exact: true }),
   ).toHaveCount(0);

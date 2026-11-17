@@ -23,7 +23,7 @@ export function SiteFooter() {
   return (
     <footer className="w-full border-t border-line bg-card">
       {/* Same container, gutters and height as the header. */}
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center justify-items-center gap-2 px-3 py-3 sm:px-4 md:grid-cols-[1fr_auto_1fr] md:gap-3 md:py-2">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center justify-items-center gap-2 px-3 py-3 sm:px-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-3 md:py-2">
         <p className="credit-underline text-center text-sm text-stone-600 md:justify-self-start md:text-left">
           <span className="underline-reveal">Made with</span>{" "}
           <span className="relative -top-px inline-block text-[0.8em]" role="img" aria-label="love">
@@ -57,12 +57,12 @@ export function SiteFooter() {
 
         <nav
           aria-labelledby="footer-find-me"
-          className="flex items-center gap-1.5 md:justify-self-end"
+          className="flex min-w-0 max-w-full flex-wrap items-center justify-center gap-1.5 md:justify-self-end"
         >
           <p id="footer-find-me" className="whitespace-nowrap text-sm text-stone-600">
             <span className="underline-reveal">Follow me</span>
           </p>
-          <ul className="flex items-center">
+          <ul className="flex min-w-0 flex-wrap items-center justify-center">
             {SOCIAL_LINKS.map(({ name, href, Icon }) => (
               <li key={name} className="flex">
                 <a

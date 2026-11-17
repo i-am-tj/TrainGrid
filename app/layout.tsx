@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { NavigationLoader } from "@/components/NavigationLoader";
+import { SkipLink } from "@/components/ui/SkipLink";
 import { SiteFooter } from "@/components/footer/SiteFooter";
 import "./globals.css";
 
@@ -66,8 +67,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
       <body className="min-h-dvh flex flex-col">
+        <SkipLink />
         <AppHeader />
-        <main className="app-main flex-1">{children}</main>
+        <main id="main-content" tabIndex={-1} className="app-main flex-1">{children}</main>
         <SiteFooter />
         <Suspense fallback={null}>
           <NavigationLoader />

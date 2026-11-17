@@ -221,7 +221,7 @@ function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
           <section key={type} aria-labelledby={`group-${type}`}>
             <h2
               id={`group-${type}`}
-              className="text-xs font-semibold uppercase tracking-wide text-stone-500"
+              className="text-xs font-semibold uppercase tracking-wide text-stone-600"
             >
               {SESSION_TYPE_LABELS[type]}
             </h2>
@@ -240,7 +240,7 @@ function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
                       {r.name}
                       <SourceLabel isOwn={r.isOwn} />
                     </div>
-                    <div className="text-xs leading-6 text-stone-500 [overflow-wrap:anywhere]">
+                    <div className="text-xs leading-6 text-stone-600 [overflow-wrap:anywhere]">
                       {TYPE_SHORT[r.category]}
                       {r.description ? ` · ${r.description}` : ""}
                     </div>
