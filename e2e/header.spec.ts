@@ -108,8 +108,8 @@ test.describe("header menu", () => {
 
     await banner.getByLabel("Open menu").click();
     await expect(banner.getByRole("link", { name: "Library", exact: true })).toBeVisible();
-    // The open menu overlays the top of the page; click well below it.
-    await page.mouse.click(180, 760);
+    // Click the page gutter below the menu, avoiding routine links that navigate.
+    await page.mouse.click(4, 760);
     await expect(banner.getByRole("link", { name: "Library", exact: true })).toHaveCount(0);
   });
 
@@ -129,5 +129,24 @@ test.describe("header menu", () => {
       expect(Math.abs(boxes[i]!.y - boxes[0]!.y)).toBeLessThan(2);
       expect(boxes[i]!.x).toBeGreaterThan(boxes[i - 1]!.x);
     }
+  });
+});
+
+
+test.describe("active member navigation", () => {
+  test.beforeEach(async ({ context, baseURL }) => {
+    test.skip((await supabaseState(baseURL!)) !== "ok", "Local Supabase stack is not running");
+    test.skip(!hasLocalSecretKey(), "SUPABASE_SECRET_KEY is not set for the local stack");
+    await signInAsNewLocalMember(context, baseURL!);
+  });
+
+  test("announces Library and Planner on their respective routes", async ({ page }) => {
+    await page.goto("/library");
+    const banner = page.getByRole("banner");
+    await expect(banner.getByRole("link", { name: "Library", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(banner.getByRole("link", { name: "Planner", exact: true })).not.toHaveAttribute("aria-current");
+    await banner.getByRole("link", { name: "Planner", exact: true }).click();
+    await expect(page).toHaveURL(/\/week\//);
+    await expect(banner.getByRole("link", { name: "Planner", exact: true })).toHaveAttribute("aria-current", "page");
   });
 });

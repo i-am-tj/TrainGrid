@@ -4,7 +4,7 @@ test("the footer shows the social links, monogram and credit on every page", asy
   await page.goto("/login");
   const footer = page.getByRole("contentinfo");
 
-  await expect(footer.getByText("Find me on")).toBeVisible();
+  await expect(footer.getByText("Follow me")).toBeVisible();
   for (const [name, href] of [
     ["X", "https://x.com/_i_am_tj_"],
     ["GitHub", "https://github.com/i-am-tj"],
@@ -46,4 +46,23 @@ for (const [scheme, accent, hairline] of [
 test("the TJ ring fades like iamtj.dev's (300 ms colour transition)", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByTestId("monogram")).toHaveCSS("transition-duration", "0.3s");
+});
+
+
+test("footer places credit, TJ ring and social links in reading order", async ({ page }) => {
+  for (const width of [360, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/login");
+    const footer = page.getByRole("contentinfo");
+    const credit = (await footer.locator(".credit-underline").boundingBox())!;
+    const ring = (await page.getByTestId("monogram").boundingBox())!;
+    const social = (await footer.getByRole("navigation").boundingBox())!;
+    if (width === 1440) {
+      expect(credit.x + credit.width).toBeLessThan(ring.x);
+      expect(ring.x + ring.width).toBeLessThan(social.x);
+    } else {
+      expect(credit.y + credit.height).toBeLessThanOrEqual(ring.y);
+      expect(ring.y + ring.height).toBeLessThanOrEqual(social.y);
+    }
+  }
 });

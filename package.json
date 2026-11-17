@@ -24,7 +24,8 @@
     "import:legacy": "tsx scripts/import-legacy-schedule.ts",
     "typecheck": "next typegen && tsc --noEmit",
     "test:all": "npm run lint && npm run typecheck && npm test && npm run db:test && npm run test:integration && npm run test:e2e && npm run build",
-    "scan:secrets": "tsx scripts/scan-secrets.ts"
+    "scan:secrets": "tsx scripts/scan-secrets.ts",
+    "test:ui": "node --import tsx scripts/build-ui-preview.tsx && playwright test --config playwright.ui.config.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

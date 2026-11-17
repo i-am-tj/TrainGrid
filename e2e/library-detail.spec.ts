@@ -109,5 +109,6 @@ test("detail actions work from the keyboard", async ({ page }) => {
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Schedule Lower A" })).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/week\/current\/add\?routine=/);
+  // The current-week alias may already have resolved to its canonical week.
+  await expect(page).toHaveURL(/\/week\/(?:current|\d{4}-W\d{2})\/add\?routine=/);
 });

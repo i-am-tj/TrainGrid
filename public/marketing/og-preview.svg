@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<rect width="1200" height="630" fill="#f4f1ea"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" x="64" y="56" width="40" height="40">
+  <title>TrainGrid</title>
+  <rect width="32" height="32" rx="7" fill="#1c1917"/>
+  <rect x="5" y="5" width="6" height="6" rx="1.5" fill="#fffcf7" fill-opacity="0.22"/>
+  <rect x="13" y="5" width="6" height="6" rx="1.5" fill="#fffcf7" fill-opacity="0.22"/>
+  <rect x="21" y="5" width="6" height="6" rx="1.5" fill="#f59e0b"/>
+  <rect x="5" y="13" width="6" height="6" rx="1.5" fill="#fffcf7" fill-opacity="0.22"/>
+  <rect x="13" y="13" width="6" height="6" rx="1.5" fill="#fffcf7"/>
+  <rect x="21" y="13" width="6" height="6" rx="1.5" fill="#fffcf7" fill-opacity="0.22"/>
+  <rect x="5" y="21" width="6" height="6" rx="1.5" fill="#fffcf7"/>
+  <rect x="13" y="21" width="6" height="6" rx="1.5" fill="#fffcf7" fill-opacity="0.22"/>
+  <rect x="21" y="21" width="6" height="6" rx="1.5" fill="#fffcf7" fill-opacity="0.22"/>
+</svg>
+
+<text x="120" y="85" fill="#1c1917" font-family="Arial,sans-serif" font-size="26" font-weight="700">TrainGrid</text>
+<text x="64" y="218" fill="#9a4e24" font-family="Arial,sans-serif" font-size="14" letter-spacing="3">A CLEAR PLAN. SPACE TO TRAIN.</text>
+<text x="60" y="309" fill="#1c1917" font-family="Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Plan the week.</text>
+<text x="60" y="393" fill="#9a4e24" font-family="Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Own the work.</text>
+<text x="64" y="452" fill="#57534e" font-family="Arial,sans-serif" font-size="21">Your training week, thoughtfully together.</text>
+<text x="64" y="563" fill="#57534e" font-family="Arial,sans-serif" font-size="14">WEEKLY PLANNER  /  WORKOUT LIBRARY  /  PERSONAL ROUTINES</text>
+<rect x="680" y="156" width="460" height="330" rx="18" fill="#fffcf7" stroke="#e7e0d4"/>
+<text x="704" y="192" fill="#1c1917" font-family="Arial,sans-serif" font-size="17" font-weight="700">Your week, at a glance.</text>
+<text x="704" y="218" fill="#57534e" font-family="Arial,sans-serif" font-size="11">EXAMPLE TRAINING WEEK</text>
+<g stroke="#e7e0d4"><path d="M700 245h420M700 303h420M700 361h420M700 419h420M760 245v200M820 245v200M880 245v200M940 245v200M1000 245v200M1060 245v200"/></g>
+<g font-family="Arial,sans-serif" font-size="10" fill="#57534e" text-anchor="middle"><text x="730" y="237">MON</text><text x="790" y="237">TUE</text><text x="850" y="237">WED</text><text x="910" y="237">THU</text><text x="970" y="237">FRI</text><text x="1030" y="237">SAT</text><text x="1090" y="237">SUN</text></g>
+<g fill="#eaf3f8"><rect x="704" y="257" width="52" height="75" rx="4"/><rect x="824" y="257" width="52" height="75" rx="4"/><rect x="1004" y="270" width="52" height="125" rx="4"/></g><g fill="#f8eddb"><rect x="764" y="347" width="52" height="75" rx="4"/><rect x="884" y="347" width="52" height="75" rx="4"/></g><rect x="944" y="315" width="52" height="60" rx="4" fill="#e6f2eb"/>
+<g font-family="Arial,sans-serif" fill="#1c1917" font-size="9"><text x="709" y="281">Easy run</text><text x="829" y="281">Intervals</text><text x="769" y="372">Lower A</text><text x="889" y="372">Upper A</text><text x="949" y="340">Plyo</text><text x="1009" y="294">Long run</text></g>
+<rect x="1004" y="57" width="136" height="30" rx="7" fill="none" stroke="#e7e0d4"/><text x="1072" y="77" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#57534e">INVITE-ONLY BETA</text>
+</svg>

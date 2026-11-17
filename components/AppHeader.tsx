@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NavLink } from "@/components/ui/NavLink";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MobileMenu } from "@/components/MobileMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -17,15 +18,15 @@ export async function AppHeader() {
   const items: Array<{ key: string; render: (className: string) => React.ReactNode }> = [];
   if (isMember) {
     items.push(
-      { key: "planner", render: (c) => <Link href="/" className={c}>Planner</Link> },
-      { key: "library", render: (c) => <Link href="/library" className={c}>Library</Link> },
+      { key: "planner", render: (c) => <NavLink href="/" className={c}>Planner</NavLink> },
+      { key: "library", render: (c) => <NavLink href="/library" className={c}>Library</NavLink> },
       { key: "export", render: (c) => <a href="/api/export" className={c}>Export</a> },
     );
   }
   if (isAdmin) {
     items.push({
       key: "invitations",
-      render: (c) => <Link href="/admin/invitations" className={c}>Invitations</Link>,
+      render: (c) => <NavLink href="/admin/invitations" className={c}>Invitations</NavLink>,
     });
   }
   if (viewer.status !== "anonymous") {
