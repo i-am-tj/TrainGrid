@@ -6,11 +6,21 @@ import { defineConfig, devices } from "@playwright/test";
 const envFile = path.join(__dirname, ".env.local");
 if (existsSync(envFile)) process.loadEnvFile(envFile);
 
+/**
+ * E2E_SERVER=build runs the suite against a production build (`next start`;
+ * run `npm run build` first). CI uses it: `next dev` compiles each route on
+ * its first request, which on a CI runner can take longer than a test's
+ * timeouts. Locally the default stays `next dev`.
+ */
+const useBuild = process.env.E2E_SERVER === "build";
+
 export default defineConfig({
   testDir: "e2e",
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
+  // On CI a failed test runs once more; Playwright still reports it as flaky.
+  retries: process.env.CI ? 1 : 0,
   expect: { timeout: 10_000 },
   use: {
     baseURL: "http://127.0.0.1:3010",
@@ -25,7 +35,9 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-      command: "npx next dev --hostname 127.0.0.1 --port 3010",
+      command: useBuild
+        ? "npx next start --hostname 127.0.0.1 --port 3010"
+        : "npx next dev --hostname 127.0.0.1 --port 3010",
       url: "http://127.0.0.1:3010",
       reuseExistingServer: false,
       timeout: 120_000,

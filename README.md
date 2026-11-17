@@ -96,6 +96,8 @@ npm run test:all          # all of the above, plus lint, typecheck and build
 npm run scan:secrets      # look for credentials in the repository
 ```
 
+Pull requests to `main` run lint, typecheck, unit, database, integration and E2E tests in GitHub Actions: see [docs/CI.md](docs/CI.md).
+
 ```text
 traingrid/
 ├── app/                  # Next.js routes (planner, sessions, library, admin, auth)
