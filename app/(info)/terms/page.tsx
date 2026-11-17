@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   alternates: canonicalUrl("/terms") ? { canonical: canonicalUrl("/terms")! } : undefined,
 };
 
-const UPDATED = "17 November 2026";
+const UPDATED = "18 November 2026";
 
 export default function TermsPage() {
   const email = contactEmail();

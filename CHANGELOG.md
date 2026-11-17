@@ -7,7 +7,7 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
-## [1.0.0] — 2026-11-17
+## [1.0.0] — 2026-11-18
 
 TrainGrid 1.0: the first release for early-access members. A home that knows your day, a warmer
 first visit, a direct line for feedback, and TrainGrid on your phone’s home screen.

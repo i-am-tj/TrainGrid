@@ -6,7 +6,7 @@ every merge, and production database changes are applied by the owner (see `supa
 
 ## Versions
 
-[Semantic Versioning](https://semver.org/). TrainGrid reached **1.0.0** on 17 November 2026, its
+[Semantic Versioning](https://semver.org/). TrainGrid reached **1.0.0** on 18 November 2026, its
 first release for early-access members. From then on:
 
 | Change | Version | Example |

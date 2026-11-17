@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   alternates: canonicalUrl("/privacy") ? { canonical: canonicalUrl("/privacy")! } : undefined,
 };
 
-const UPDATED = "17 November 2026";
+const UPDATED = "18 November 2026";
 
 /**
  * The privacy notice. Written from what the code and database actually do;
