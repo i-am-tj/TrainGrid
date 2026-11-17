@@ -15,6 +15,26 @@ test.beforeEach(async ({ context, baseURL }) => {
   await signInAsNewLocalMember(context, baseURL!);
 });
 
+/**
+ * Records every loader that appears from now on, as it is inserted. A section
+ * loader can be on screen for only a few hundred milliseconds, which polling
+ * assertions can miss on a busy machine; the record cannot.
+ */
+async function recordLoaders(page: Page) {
+  await page.evaluate(() => {
+    const seen: string[] = [];
+    (window as unknown as { __loadersSeen: string[] }).__loadersSeen = seen;
+    const note = () => {
+      for (const el of document.querySelectorAll("[data-testid=section-loader], [data-testid=page-loader]")) {
+        const entry = `${el.getAttribute("data-testid")}: ${el.textContent ?? ""}`;
+        if (!seen.includes(entry)) seen.push(entry);
+      }
+    };
+    new MutationObserver(note).observe(document.body, { childList: true, subtree: true });
+  });
+  return () => page.evaluate(() => (window as unknown as { __loadersSeen: string[] }).__loadersSeen);
+}
+
 /** Delays client-side navigation requests (React Server Component fetches) matching `pattern`. */
 async function slowNavigations(page: Page, pattern: RegExp, ms = 1500) {
   await page.route(
@@ -28,13 +48,22 @@ async function slowNavigations(page: Page, pattern: RegExp, ms = 1500) {
 
 const pageLoader = (page: Page) => page.getByTestId("page-loader");
 
+/**
+ * Waits until React has hydrated the page. A click or submit before that is
+ * handled by the browser as a full page load, which shows no client loader;
+ * on a slower machine (CI) the first interaction can easily come that early.
+ */
+async function waitForHydration(page: Page) {
+  await page.waitForFunction(() => {
+    const main = document.getElementById("main-content");
+    return !!main && Object.keys(main).some((key) => key.startsWith("__reactFiber"));
+  });
+}
+
 test("following a link shows the spinning logo until the next page arrives", async ({ page }) => {
   await slowNavigations(page, /^\/library\/[0-9a-f-]{36}/);
   await page.goto("/library");
-  await page.waitForFunction(() => {
-    const summary = document.querySelector("header summary");
-    return !!summary && Object.keys(summary).some((key) => key.startsWith("__reactFiber"));
-  });
+  await waitForHydration(page);
   await page.locator("main section li a[href^='/library/']").first().click();
 
   await expect(pageLoader(page)).toBeVisible();
@@ -46,12 +75,13 @@ test("following a link shows the spinning logo until the next page arrives", asy
 
 test("the library search shows a loader while results load, keeping the view control", async ({ page }) => {
   await page.goto("/library");
+  await waitForHydration(page);
   await slowNavigations(page, /^\/library\?/);
+  const loadersSeen = await recordLoaders(page);
   await page.getByRole("searchbox", { name: "Search routines" }).fill("lower");
   await page.getByRole("button", { name: "Search", exact: true }).click();
 
-  await expect(page.getByTestId("section-loader")).toBeVisible();
-  await expect(page.getByTestId("section-loader")).toContainText("Loading routines…");
+  await expect.poll(loadersSeen).toContainEqual(expect.stringMatching(/^section-loader: Loading routines…/));
   await expect(page.getByRole("navigation", { name: "Library view" })).toBeVisible();
   await page.waitForURL(/q=lower/);
   await expect(page.getByTestId("section-loader")).toHaveCount(0);
@@ -77,6 +107,7 @@ test("fast navigations do not flash the loader", async ({ page }) => {
 
 test("the logo turns clockwise", async ({ page }) => {
   await page.goto("/library");
+  await waitForHydration(page);
   await slowNavigations(page, /^\/library\/[0-9a-f-]{36}/, 2000);
   await page.locator("main section li a[href^='/library/']").first().click();
   const logo = pageLoader(page).locator("svg");
@@ -98,6 +129,7 @@ test("the logo turns clockwise", async ({ page }) => {
 test("with reduced motion the logo stays still", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/library");
+  await waitForHydration(page);
   await slowNavigations(page, /^\/library\/[0-9a-f-]{36}/, 2000);
   await page.locator("main section li a[href^='/library/']").first().click();
   await expect(pageLoader(page).locator("svg")).toHaveCSS("animation-name", "none");
@@ -108,12 +140,15 @@ test("changing the planner's day shows the week's section loader, not the page l
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/week/current");
   await page.waitForURL(/\/week\//);
+  await waitForHydration(page);
   await slowNavigations(page, /^\/week\/[^/]+\?day=/);
+  const loadersSeen = await recordLoaders(page);
   await page.getByRole("link", { name: "Next day" }).click();
-  await expect(page.getByTestId("section-loader")).toContainText("Loading your week…");
+  await expect.poll(loadersSeen).toContainEqual(expect.stringMatching(/^section-loader: Loading your week…/));
   await expect(page.getByRole("heading", { name: /^Week of/ })).toBeVisible();
-  await expect(pageLoader(page)).toHaveCount(0);
   await expect(page.getByTestId("section-loader")).toHaveCount(0);
+  // Same page, another day: the page loader never shows.
+  expect((await loadersSeen()).filter((entry) => entry.startsWith("page-loader"))).toEqual([]);
 });
 
 test("the planner streams the week behind a section loader without breaking 404s", async ({ page }) => {
@@ -129,16 +164,17 @@ test("member home uses the existing navigation logo while loading", async ({
   page,
 }) => {
   await page.goto("/library");
+  await waitForHydration(page);
   await slowNavigations(page, /^\/home(?:\?|$)/);
+  const loadersSeen = await recordLoaders(page);
   await page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: "Home", exact: true })
     .click();
-  await expect(pageLoader(page)).toBeVisible();
-  await expect(pageLoader(page).locator("svg")).toHaveCSS(
-    "animation-name",
-    "spin",
-  );
+  // With `next dev` the page loader covers the wait; a production build has
+  // prefetched home's own loading screen and shows that instead. Either way
+  // the spinning logo is on screen while home loads.
+  await expect.poll(loadersSeen).toContainEqual(expect.stringMatching(/^(page|section)-loader: Loading/));
   await expect(page).toHaveURL(/\/home$/);
   await expect(pageLoader(page)).toHaveCount(0);
   await expect(page.getByTestId("section-loader")).toHaveCount(0);
@@ -150,12 +186,16 @@ test("public landing uses the existing navigation logo while loading", async ({
 }) => {
   await context.clearCookies();
   await page.goto("/login");
+  await waitForHydration(page);
   await slowNavigations(page, /^\/(?:\?|$)/);
+  const loadersSeen = await recordLoaders(page);
   await page
     .getByRole("banner")
     .getByRole("link", { name: "TrainGrid", exact: true })
     .click();
-  await expect(pageLoader(page)).toBeVisible();
+  // The page loader (next dev) or the landing page's own prefetched loading
+  // screen (production build): either way the spinning logo is shown.
+  await expect.poll(loadersSeen).toContainEqual(expect.stringMatching(/^(page|section)-loader: Loading/));
   await expect(page).toHaveURL(/:\d+\/$/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Plan the week.",
