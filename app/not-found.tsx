@@ -1,13 +1,20 @@
-import Link from "next/link";
+import { AppHeader } from "@/components/AppHeader";
+import { NotFoundContent } from "@/components/NotFoundContent";
 
+/**
+ * 404 for URLs that match no route. It renders outside the route group
+ * layouts, so it brings the header and main landmark itself. notFound()
+ * thrown by an app page is handled by app/(app)/not-found.tsx instead, inside
+ * the app layout. Both show the same content, so the admin page's 404 is
+ * indistinguishable from a page that does not exist.
+ */
 export default function NotFound() {
   return (
-    <div className="mx-auto my-10 max-w-xl rounded-2xl border border-line bg-card px-5 py-10 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">Not found</h1>
-      <p className="mt-3 text-sm leading-7 text-stone-600">Session or page not found.</p>
-      <Link href="/" className="mt-4 inline-flex min-h-10 items-center rounded-sm text-accent underline underline-offset-4">
-        Back to planner
-      </Link>
-    </div>
+    <>
+      <AppHeader />
+      <main id="main-content" tabIndex={-1} className="app-main flex-1">
+        <NotFoundContent />
+      </main>
+    </>
   );
 }

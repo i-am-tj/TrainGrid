@@ -13,6 +13,8 @@ import {
  */
 
 const PRIVATE_PAGES = [
+  "/home",
+  "/week/current",
   "/week/2026-W46",
   "/week/2026-W46/add",
   "/library",
@@ -26,9 +28,10 @@ const PRIVATE_PAGES = [
   "/does-not-exist",
 ];
 
-test("A1: an anonymous visitor is sent to login from the home page", async ({ page }) => {
+test("A1: an anonymous visitor sees the public landing page at /, with no member links", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Plan the week.");
   await expect(page.getByRole("link", { name: "Planner" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Library" })).toHaveCount(0);
 });
@@ -43,7 +46,7 @@ test("A1: every private page redirects an anonymous visitor to login", async ({ 
 });
 
 test("A1: private pages send no planner content to an anonymous request", async ({ request }) => {
-  for (const path of ["/", "/library", "/week/2026-W46"]) {
+  for (const path of ["/home", "/library", "/week/2026-W46"]) {
     const response = await request.get(path, { maxRedirects: 0 });
     expect(response.status(), path).toBe(307);
     expect(response.headers()["location"], path).toContain("/login");
@@ -88,7 +91,7 @@ test.describe("with a session", () => {
   }) => {
     await signInAsNewLocalUser(context, baseURL!);
 
-    for (const path of ["/", "/library", "/week/2026-W46"]) {
+    for (const path of ["/home", "/library", "/week/2026-W46"]) {
       await page.goto(path);
       await expect(page, path).toHaveURL(/\/login$/);
     }
@@ -107,7 +110,7 @@ test.describe("with a session", () => {
     test.skip(!hasLocalSecretKey(), "SUPABASE_SECRET_KEY is not set for the local stack");
     await signInAsNewLocalMember(context, baseURL!);
 
-    await page.goto("/");
+    await page.goto("/week/current");
     await expect(page).toHaveURL(/\/week\//);
     await page.getByRole("link", { name: "Library" }).click();
     await expect(page).toHaveURL(/\/library$/);
@@ -127,7 +130,7 @@ test("the header fits a phone-width screen for an admin, the widest case", async
   await signInAsLocalAdmin(context, baseURL!);
 
   await page.setViewportSize({ width: 360, height: 800 });
-  await page.goto("/");
+  await page.goto("/home");
   // On phones the links are behind the menu button (E2-D21).
   await page.getByRole("banner").getByLabel("Open menu").click();
   await expect(page.getByRole("banner").getByRole("button", { name: "Sign out" })).toBeVisible();

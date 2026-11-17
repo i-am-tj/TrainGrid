@@ -5,9 +5,33 @@ import { useFormStatus } from "react-dom";
 import {
   inviteAction,
   revokeAction,
+  sendInvitationEmailAction,
+  type EmailActionState,
   type InvitationFormState,
 } from "@/lib/admin/actions";
-import { btnDanger, btnPrimary, fieldClass } from "@/lib/ui";
+import type { EmailFeedback } from "@/lib/admin/invitation-model";
+import { btnDanger, btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
+
+const FEEDBACK_STYLE: Record<EmailFeedback["tone"], string> = {
+  success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-900",
+  error: "border-red-200 bg-red-50 text-red-800",
+};
+
+/** The email outcome, kept apart from the invitation's own message. */
+function EmailMessage({ feedback, id }: { feedback: EmailFeedback | null | undefined; id?: string }) {
+  if (!feedback) return null;
+  return (
+    <p
+      id={id}
+      role={feedback.tone === "error" ? "alert" : "status"}
+      data-email-feedback={feedback.tone}
+      className={`mt-2 rounded-lg border px-3 py-2 text-sm leading-6 ${FEEDBACK_STYLE[feedback.tone]}`}
+    >
+      {feedback.message}
+    </p>
+  );
+}
 
 function Message({ state, id }: { state: InvitationFormState; id?: string }) {
   if (!state?.message) return null;
@@ -44,7 +68,7 @@ function Submit({
   );
 }
 
-export function InviteForm() {
+export function InviteForm({ emailReady = false }: { emailReady?: boolean }) {
   const [state, action] = useActionState(inviteAction, null);
   const form = useRef<HTMLFormElement>(null);
 
@@ -75,7 +99,19 @@ export function InviteForm() {
         />
         <Submit label="Invite" busy="Inviting…" className={btnPrimary} />
       </div>
+      {emailReady ? (
+        <label className="mt-3 flex min-h-10 items-center gap-2 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            name="send_email"
+            defaultChecked
+            className="size-4 accent-stone-900"
+          />
+          Email the invitation to this address
+        </label>
+      ) : null}
       <Message state={state} id="invite-feedback" />
+      <EmailMessage feedback={state?.email} id="invite-email-feedback" />
     </form>
   );
 }
@@ -109,5 +145,62 @@ export function RevokeForm({
       />
       <Message state={state} />
     </form>
+  );
+}
+
+/**
+ * Sends or re-sends the email for one invitation. The server decides whether
+ * that is allowed (admin, live and not yet accepted, nothing in flight); the
+ * pending state only stops a double click.
+ */
+export function SendEmailForm({
+  id,
+  email,
+  resend,
+}: {
+  id: string;
+  email: string;
+  resend: boolean;
+}) {
+  const [state, action] = useActionState<EmailActionState, FormData>(
+    sendInvitationEmailAction,
+    null,
+  );
+  return (
+    <form action={action}>
+      <input type="hidden" name="id" value={id} />
+      <SubmitWithLabel
+        label={resend ? "Resend email" : "Send email"}
+        busy="Sending…"
+        accessibleLabel={`${resend ? "Resend" : "Send"} invitation email to ${email}`}
+        className={`${btnSecondary} w-full`}
+      />
+      <EmailMessage feedback={state} />
+    </form>
+  );
+}
+
+function SubmitWithLabel({
+  label,
+  busy,
+  accessibleLabel,
+  className,
+}: {
+  label: string;
+  busy: string;
+  accessibleLabel: string;
+  className: string;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      aria-label={pending ? busy : accessibleLabel}
+      className={`${className} disabled:opacity-60`}
+    >
+      {pending ? busy : label}
+    </button>
   );
 }

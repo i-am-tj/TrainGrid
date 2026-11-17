@@ -56,7 +56,7 @@ test("Journey 3 — multi-session day, timed and untimed, then reschedule", asyn
   await page.locator('select[name="time"]').selectOption("18:00");
   await page.getByRole("button", { name: "Save" }).click();
 
-  await page.goto("/");
+  await page.goto("/week/current");
   await expect(page.getByRole("link", { name: "Speed / Power, 07:00" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Lower B, 08:30" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Lower B, 18:00" })).toBeVisible();
@@ -74,7 +74,7 @@ test("rescheduling to a week that does not exist is refused", async ({ page }) =
 
   await page.goto(sessionUrl);
   await expect(page.getByText(/· 07:00/)).toBeVisible();
-  await page.goto("/");
+  await page.goto("/week/current");
   await expect(page.getByRole("link", { name: "Easy Run, 07:00" })).toBeVisible();
 });
 
@@ -93,7 +93,7 @@ test("Journey 4 — duplicate week copies independent sessions", async ({ page }
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByText("Copied week only")).toBeVisible();
 
-  await page.goto("/");
+  await page.goto("/week/current");
   await page.getByRole("link", { name: "Easy Run, 07:00" }).click();
   await expect(page.getByText("Copied week only")).toHaveCount(0);
 });
@@ -108,7 +108,7 @@ test("D2, D3: editing or deleting a routine never changes a scheduled session", 
   await page.getByRole("button", { name: "Save" }).click();
   await page.waitForURL(/\/library\/[0-9a-f-]{36}$/);
 
-  await page.goto("/");
+  await page.goto("/week/current");
   await page.getByRole("link", { name: "My Tempo, 07:00" }).click();
   await page.waitForURL(/\/session\/[0-9a-f-]{36}$/);
   await expect(page.getByText("20 min", { exact: true })).toBeVisible();
@@ -183,7 +183,7 @@ test("another member cannot open my session", async ({ page, browser, baseURL })
     const response = await otherPage.goto(sessionUrl);
     expect(response?.status()).toBe(404);
     await expect(otherPage.getByText("Upper A")).toHaveCount(0);
-    await otherPage.goto("/");
+    await otherPage.goto("/week/current");
     await expect(otherPage.getByRole("link", { name: "Upper A, 09:00" })).toHaveCount(0);
   } finally {
     await other.close();

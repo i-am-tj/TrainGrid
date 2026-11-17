@@ -9,7 +9,16 @@ export type InvitationListItem = {
   isAdmin: boolean;
   revokedAccess: boolean;
   action: ReactNode;
+  /** Live email status text, prepared by the server from the delivery log. */
+  emailStatus?: { label: string; tone: "neutral" | "success" | "warning" } | null;
+  /** The send/resend form, when the server allows sending for this row. */
+  emailAction?: ReactNode;
 };
+const EMAIL_STYLE = {
+  neutral: "text-stone-600",
+  success: "text-emerald-800",
+  warning: "text-amber-900",
+} as const;
 const STATUS_STYLE: Record<InvitationStatus, string> = {
   Pending: "bg-amber-50 text-amber-900",
   Accepted: "bg-emerald-50 text-emerald-900",
@@ -56,6 +65,13 @@ export function InvitationListView({
               {invitation.isAdmin && (
                 <p className="mt-1 text-xs text-accent">Admin · Protected</p>
               )}
+              {invitation.emailStatus && (
+                <p
+                  className={`mt-1 text-xs leading-6 ${EMAIL_STYLE[invitation.emailStatus.tone]}`}
+                >
+                  {invitation.emailStatus.label}
+                </p>
+              )}
             </div>
             <div>
               <span
@@ -64,7 +80,10 @@ export function InvitationListView({
                 {invitation.status}
               </span>
             </div>
-            <div className="min-w-0">{invitation.action}</div>
+            <div className="min-w-0 space-y-2">
+              {invitation.emailAction}
+              {invitation.action}
+            </div>
           </li>
         ))}
       </ul>

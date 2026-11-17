@@ -3,13 +3,16 @@
  * Pure functions: no Next.js or Supabase imports, so they are unit-testable.
  */
 
-const DEFAULT_NEXT_PATH = "/";
+/** Where a member lands after sign-in when no page was asked for. */
+export const DEFAULT_NEXT_PATH = "/home";
 
 /**
  * Returns a same-site path to send the user to after sign-in.
  *
- * Anything that is not a plain absolute path on this site falls back to "/",
- * so a crafted link cannot bounce a freshly signed-in user to another origin.
+ * Anything that is not a plain absolute path on this site falls back to
+ * /home, so a crafted link cannot bounce a freshly signed-in user to another
+ * origin. "/" (the public landing page) also means /home: nobody signs in to
+ * read the marketing page.
  */
 export function safeNextPath(raw: unknown): string {
   if (typeof raw !== "string") return DEFAULT_NEXT_PATH;
@@ -32,6 +35,7 @@ export function safeNextPath(raw: unknown): string {
   if (parsed.pathname === "/login" || parsed.pathname.startsWith("/auth/")) {
     return DEFAULT_NEXT_PATH;
   }
+  if (parsed.pathname === "/") return DEFAULT_NEXT_PATH;
   return `${parsed.pathname}${parsed.search}`;
 }
 

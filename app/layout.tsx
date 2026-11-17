@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Suspense } from "react";
-import { AppHeader } from "@/components/AppHeader";
 import { NavigationLoader } from "@/components/NavigationLoader";
 import { SkipLink } from "@/components/ui/SkipLink";
 import { SiteFooter } from "@/components/footer/SiteFooter";
+import { siteMetadataBase } from "@/lib/site";
+import { TIME_ZONE_COOKIE } from "@/lib/time-zone";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,6 +28,9 @@ const displaySerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
+  // Absolute URLs for Open Graph images and canonical links. Unset (null) when
+  // the deployment origin is not known; Next.js then falls back to the request.
+  metadataBase: siteMetadataBase(),
   title: "TrainGrid",
   description: "A lightweight 7-day training planner and workout reference.",
 };
@@ -41,10 +45,23 @@ export const viewport: Viewport = {
 export const dynamic = "force-dynamic";
 
 /**
- * Applies the theme before the first paint, so a dark page never flashes
- * light: the saved choice (ThemeToggle), else the system setting.
+ * Runs before the first paint:
+ *
+ *   1. applies the theme, so a dark page never flashes light: the saved choice
+ *      (ThemeToggle), else the system setting;
+ *   2. records the browser's IANA time zone in a cookie, so the server decides
+ *      "today" for /home and the planner in the member's own time zone
+ *      (lib/time-zone.ts). The value is validated on the server before use.
  */
 const THEME_INIT = `(function () {
+  try {
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    var name = "${TIME_ZONE_COOKIE}=";
+    if (tz && document.cookie.split("; ").indexOf(name + encodeURIComponent(tz)) === -1) {
+      document.cookie = name + encodeURIComponent(tz) + "; path=/; max-age=31536000; samesite=lax" +
+        (location.protocol === "https:" ? "; secure" : "");
+    }
+  } catch (e) {}
   try {
     var saved = localStorage.getItem("theme");
     var theme = saved === "light" || saved === "dark"
@@ -68,8 +85,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-dvh flex flex-col">
         <SkipLink />
-        <AppHeader />
-        <main id="main-content" tabIndex={-1} className="app-main flex-1">{children}</main>
+        {/*
+          The header and <main id="main-content"> come from the route group
+          layouts: app/(marketing) for the public landing page, app/(app) for
+          everything else. not-found.tsx and error.tsx render their own.
+        */}
+        {children}
         <SiteFooter />
         <Suspense fallback={null}>
           <NavigationLoader />

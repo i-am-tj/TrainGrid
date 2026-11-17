@@ -3,8 +3,9 @@ import { AddSessionForm } from "@/components/session/AddSessionForm";
 import { isRealWeekId } from "@/lib/calendar-date";
 import { findGlobalRoutineIdBySlug, listRoutines } from "@/lib/data/routines";
 import { memberData } from "@/lib/data/server";
+import { getRequestToday } from "@/lib/today";
 import type { IsoDay } from "@/lib/domain";
-import { isValidTime, todayParts } from "@/lib/week";
+import { isValidTime } from "@/lib/week";
 
 export default async function AddSessionPage({
   params,
@@ -22,7 +23,7 @@ export default async function AddSessionPage({
   const { db, userId } = await memberData();
   const { weekId: rawWeekId } = await params;
   const query = await searchParams;
-  const today = todayParts();
+  const today = await getRequestToday();
 
   if (rawWeekId === "current") {
     const q = new URLSearchParams();

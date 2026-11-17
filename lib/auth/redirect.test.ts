@@ -11,11 +11,22 @@ describe("safeNextPath", () => {
     expect(safeNextPath("/week/2026-W46?day=4")).toBe("/week/2026-W46?day=4");
   });
 
-  it("falls back to / for missing or non-string input", () => {
-    expect(safeNextPath(undefined)).toBe("/");
-    expect(safeNextPath(null)).toBe("/");
-    expect(safeNextPath("")).toBe("/");
-    expect(safeNextPath(42)).toBe("/");
+  it("falls back to /home for missing or non-string input", () => {
+    expect(safeNextPath(undefined)).toBe("/home");
+    expect(safeNextPath(null)).toBe("/home");
+    expect(safeNextPath("")).toBe("/home");
+    expect(safeNextPath(42)).toBe("/home");
+  });
+
+  it("sends a member to /home rather than the public landing page", () => {
+    expect(safeNextPath("/")).toBe("/home");
+    expect(safeNextPath("/?utm_source=x")).toBe("/home");
+    expect(safeNextPath("/home")).toBe("/home");
+  });
+
+  it("keeps an explicitly requested member page, with its query", () => {
+    expect(safeNextPath("/week/current?day=3")).toBe("/week/current?day=3");
+    expect(safeNextPath("/admin/invitations")).toBe("/admin/invitations");
   });
 
   it("rejects anything that could leave the site", () => {
@@ -29,19 +40,19 @@ describe("safeNextPath", () => {
       "/ok\nSet-Cookie: x=1",
       "/path\\with\\backslash",
     ]) {
-      expect(safeNextPath(value), value).toBe("/");
+      expect(safeNextPath(value), value).toBe("/home");
     }
   });
 
   it("does not send the user back into the sign-in flow", () => {
-    expect(safeNextPath("/login")).toBe("/");
-    expect(safeNextPath("/login?error=x")).toBe("/");
-    expect(safeNextPath("/auth/callback?code=abc")).toBe("/");
+    expect(safeNextPath("/login")).toBe("/home");
+    expect(safeNextPath("/login?error=x")).toBe("/home");
+    expect(safeNextPath("/auth/callback?code=abc")).toBe("/home");
   });
 
   it("drops fragments and rejects overlong values", () => {
     expect(safeNextPath("/library#top")).toBe("/library");
-    expect(safeNextPath(`/${"a".repeat(600)}`)).toBe("/");
+    expect(safeNextPath(`/${"a".repeat(600)}`)).toBe("/home");
   });
 });
 
@@ -82,8 +93,11 @@ describe("originFromHeaders", () => {
 });
 
 describe("buildCallbackUrl", () => {
-  it("points at /auth/callback on the given origin", () => {
+  it("points at /auth/callback on the given origin, with no next for the default", () => {
     expect(buildCallbackUrl("https://train-grid.vercel.app", "/")).toBe(
+      "https://train-grid.vercel.app/auth/callback",
+    );
+    expect(buildCallbackUrl("https://train-grid.vercel.app", "/home")).toBe(
       "https://train-grid.vercel.app/auth/callback",
     );
   });

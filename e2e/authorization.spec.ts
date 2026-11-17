@@ -244,14 +244,14 @@ test.describe("admin actions replayed by others", () => {
       // Capture a real invite request.
       await page.getByLabel("Email address").fill(created);
       const inviteRequest = page.waitForRequest((r) => r.method() === "POST" && !!r.headers()["next-action"]);
-      await page.getByRole("button", { name: "Invite" }).click();
+      await page.getByRole("button", { name: "Invite", exact: true }).click();
       const invite = await inviteRequest;
-      await expect(page.getByRole("status")).toHaveText("Invitation created.");
+      await expect(page.locator("#invite-feedback")).toHaveText("Invitation created.");
       const inviteBody = invite.postDataBuffer()!.toString("utf8").split(created).join(target);
 
       // Capture a real revoke request, for the admin's own pending invitation.
       await page.getByLabel("Email address").fill(pending);
-      await page.getByRole("button", { name: "Invite" }).click();
+      await page.getByRole("button", { name: "Invite", exact: true }).click();
       await expect(page.getByRole("listitem").filter({ hasText: pending })).toBeVisible();
       const [pendingRow] = await readRows("invitations", { email: pending });
       const [memberRow] = await readRows("invitations", { email: memberEmail });

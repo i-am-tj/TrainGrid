@@ -10,13 +10,13 @@ import { isRealWeekId } from "@/lib/calendar-date";
 import type { Db } from "@/lib/data/model";
 import { toPlannerSession } from "@/lib/data/planner";
 import { memberData } from "@/lib/data/server";
+import { getRequestToday } from "@/lib/today";
 import { countSessionsByWeek, listSessionsForWeek } from "@/lib/data/sessions";
 import type { IsoDay } from "@/lib/domain";
 import {
   addWeeks,
   formatWeekLabel,
   nearbyWeekIds,
-  todayParts,
 } from "@/lib/week";
 
 export default async function WeekPage({
@@ -29,7 +29,7 @@ export default async function WeekPage({
   const { db, userId } = await memberData();
   const { weekId: rawWeekId } = await params;
   const query = await searchParams;
-  const today = todayParts();
+  const today = await getRequestToday();
 
   if (rawWeekId === "current") {
     redirect(`/week/${today.weekId}?day=${query.day ?? today.day}`);

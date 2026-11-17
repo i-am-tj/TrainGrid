@@ -16,16 +16,30 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3010",
     trace: "on-first-retry",
   },
-  webServer: {
-    command: "npx next dev --hostname 127.0.0.1 --port 3010",
-    url: "http://127.0.0.1:3010",
-    reuseExistingServer: false,
-    timeout: 120_000,
-    env: {
-      ...process.env,
-      // Fixed id of the local E2E admin (see e2e/local-supabase.ts).
-      TRAINGRID_ADMIN_USER_IDS: "e2e00000-0000-4000-8000-00000000ad01",
+  webServer: [
+    {
+      // Local stand-in for the email provider; never sends real mail.
+      command: "node e2e/mock-resend.mjs",
+      url: "http://127.0.0.1:3011",
+      reuseExistingServer: false,
+      timeout: 30_000,
     },
-  },
+    {
+      command: "npx next dev --hostname 127.0.0.1 --port 3010",
+      url: "http://127.0.0.1:3010",
+      reuseExistingServer: false,
+      timeout: 120_000,
+      env: {
+        ...process.env,
+        // Fixed id of the local E2E admin (see e2e/local-supabase.ts).
+        TRAINGRID_ADMIN_USER_IDS: "e2e00000-0000-4000-8000-00000000ad01",
+        // Trusted origin for invitation links, and the mock email provider.
+        TRAINGRID_SITE_URL: "http://127.0.0.1:3010",
+        RESEND_API_URL: "http://127.0.0.1:3011",
+        RESEND_API_KEY: "re_local_e2e_mock",
+        TRAINGRID_EMAIL_FROM: "TrainGrid <invites@example.test>",
+      },
+    },
+  ],
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });

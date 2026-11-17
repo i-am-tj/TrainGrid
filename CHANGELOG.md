@@ -4,6 +4,22 @@ All notable changes to TrainGrid. Versions follow [Semantic Versioning](https://
 while TrainGrid is in beta, each epic is a minor release (`0.<epic>.0-beta`) and fixes between
 epics are patch releases. How releases are made: [docs/RELEASING.md](docs/RELEASING.md).
 
+## [Unreleased]
+
+Epic 3 integration: a public home page, a member dashboard and invitation emails.
+
+- **Public landing page at `/`** for everyone, with its own header. Nothing private is rendered
+  there; the planner moved to `/week/current` and the header gains **Home**.
+- **`/home`**: today's planned sessions, this week's planned counts (Monday–Sunday) and your own
+  routines, with loading, empty and error states. Signing in now lands here.
+- **Today in your time zone**: `/home` and the planner decide "today" in your browser's time
+  zone instead of the server's (UTC), so the day no longer changes at 10–11 am in Australia.
+- **Invitation emails** (admins): tick *Email the invitation* when inviting, or send/resend from
+  the list. Status reads "accepted by provider" — never "delivered" — and a failed send leaves
+  the invitation valid. Requires Resend configuration; see `docs/EMAIL_SETUP.md`.
+- **Database**: new migration `20261117000000_invitation_email_deliveries.sql` (apply before or
+  with the deploy; the invitations page keeps working without it).
+
 ## [0.2.1-beta] — 2026-11-14
 
 Faster-feeling navigation, with loading feedback everywhere.

@@ -61,8 +61,9 @@ select is(
      from pg_class c
      join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'public' and c.relkind = 'r'
-      -- invitations is deliberately closed: no policies, no privileges.
-      and c.relname <> 'invitations'
+      -- invitations and its email delivery log are deliberately closed:
+      -- no policies, no privileges for API roles.
+      and c.relname not in ('invitations', 'invitation_email_deliveries')
       and not exists (
         select 1 from pg_policies p
          where p.schemaname = 'public' and p.tablename = c.relname

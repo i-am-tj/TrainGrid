@@ -101,7 +101,7 @@ test("with reduced motion the logo stays still", async ({ page }) => {
 
 test("changing the planner's day shows the week's section loader, not the page loader", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
-  await page.goto("/");
+  await page.goto("/week/current");
   await page.waitForURL(/\/week\//);
   await slowNavigations(page, /^\/week\/[^/]+\?day=/);
   await page.getByRole("link", { name: "Next day" }).click();
@@ -113,7 +113,7 @@ test("changing the planner's day shows the week's section loader, not the page l
 
 test("the planner streams the week behind a section loader without breaking 404s", async ({ page }) => {
   // The page shell (week navigation) and data both render; an invalid week is still a real 404.
-  await page.goto("/");
+  await page.goto("/week/current");
   await expect(page.getByRole("heading", { name: /^Week of/ })).toBeVisible();
   await expect(page.getByText("Duplicate week onto")).toBeVisible();
   const response = await page.goto("/week/2026-W99");

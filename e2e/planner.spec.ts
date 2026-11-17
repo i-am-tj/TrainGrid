@@ -8,7 +8,7 @@ test.beforeEach(async ({ context, baseURL }) => {
 });
 
 test("planner shows seven days Monday to Sunday", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/week/current");
   for (const day of ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]) {
     await expect(page.getByText(day, { exact: true }).first()).toBeVisible();
   }
@@ -21,13 +21,13 @@ test("planner shows seven days Monday to Sunday", async ({ page }) => {
 });
 
 test("story 14: no read-only or 'clone this repo' notice remains", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/week/current");
   await expect(page.getByText(/read-only|clone this repo|peeking at/i)).toHaveCount(0);
   await expect(page.getByText("Published", { exact: false })).toHaveCount(0);
 });
 
 test("empty states offer a way to add", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/week/current");
   await expect(page.getByText("No sessions this week.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Add session" }).first()).toBeVisible();
   await page.goto("/library");
@@ -95,7 +95,7 @@ test("D6: structured fields stay apart; 'Rest:' typed in notes stays in notes", 
 
 test("mobile agenda is used at a phone width", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/week/current");
   await expect(page.getByRole("link", { name: "Next day" })).toBeVisible();
   await expect(page.getByRole("link", { name: "+ Add" })).toBeVisible();
   const overflow = await page.evaluate(

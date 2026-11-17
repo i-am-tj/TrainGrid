@@ -83,7 +83,7 @@ export function LoginView({
                     {viewer.email ?? viewer.displayName}
                   </span>
                 </p>
-                <Link href="/" className={`${btnPrimary} mt-5`}>
+                <Link href="/week/current" className={`${btnPrimary} mt-5`}>
                   Go to the planner
                 </Link>
               </div>
