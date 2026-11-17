@@ -32,6 +32,8 @@ export type DashboardRoutineInput = {
 export type DashboardInput = {
   today: MemberToday;
   displayName: string | null;
+  /** True during the member's first session after accepting their invitation. */
+  firstVisit?: boolean;
   /** Every session of today's ISO week, for this member only. */
   weekSessions: readonly ScheduledSessionRecord[];
   /** The member's own PERSONAL routines, already ordered and capped. */
@@ -78,12 +80,31 @@ function weekHref(weekId: string, day: number): string {
   return `/week/${weekId}?day=${day}`;
 }
 
-export function prepareDashboard({
+export type DashboardFrame = Omit<DashboardData, "todaySessions" | "week" | "routines">;
+
+/** The parts of the dashboard that need no query: greeting, date and links. */
+export function prepareDashboardFrame({
   today,
   displayName,
-  weekSessions,
-  routines,
-}: DashboardInput): DashboardData {
+  firstVisit = false,
+}: Pick<DashboardInput, "today" | "displayName" | "firstVisit">): DashboardFrame {
+  return {
+    displayName,
+    firstVisit,
+    dateLabel: formatDashboardDate(today.date),
+    plannerHref: weekHref(today.weekId, today.day),
+    addSessionHref: `/week/${today.weekId}/add?day=${today.day}`,
+    myLibraryHref: "/library?scope=mine",
+    sharedLibraryHref: "/library?scope=global",
+    createRoutineHref: "/library/new",
+  };
+}
+
+/** Today's sessions and the week's planned counts, from one read of the week. */
+export function prepareDashboardWeek(
+  today: MemberToday,
+  weekSessions: readonly ScheduledSessionRecord[],
+): Pick<DashboardData, "todaySessions" | "week"> {
   const monday = mondayOfIsoWeek(today.weekId);
   const counts = new Map<string, number>();
   for (const session of weekSessions) {
@@ -122,8 +143,16 @@ export function prepareDashboard({
       }),
     );
 
+  return { todaySessions, week };
+}
+
+/** The member's routines, with links that schedule them for today. */
+export function prepareDashboardRoutines(
+  today: MemberToday,
+  routines: readonly DashboardRoutineInput[],
+): DashboardRoutine[] {
   const addSessionHref = `/week/${today.weekId}/add?day=${today.day}`;
-  const preparedRoutines = routines.map(
+  return routines.map(
     (routine): DashboardRoutine => ({
       id: routine.id,
       name: routine.name,
@@ -133,17 +162,18 @@ export function prepareDashboard({
       scheduleHref: `${addSessionHref}&routine=${encodeURIComponent(routine.id)}`,
     }),
   );
+}
 
+export function prepareDashboard({
+  today,
+  displayName,
+  firstVisit = false,
+  weekSessions,
+  routines,
+}: DashboardInput): DashboardData {
   return {
-    displayName,
-    dateLabel: formatDashboardDate(today.date),
-    todaySessions,
-    week,
-    routines: preparedRoutines,
-    plannerHref: weekHref(today.weekId, today.day),
-    addSessionHref,
-    myLibraryHref: "/library?scope=mine",
-    sharedLibraryHref: "/library?scope=global",
-    createRoutineHref: "/library/new",
+    ...prepareDashboardFrame({ today, displayName, firstVisit }),
+    ...prepareDashboardWeek(today, weekSessions),
+    routines: prepareDashboardRoutines(today, routines),
   };
 }

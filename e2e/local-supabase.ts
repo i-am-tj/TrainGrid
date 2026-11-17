@@ -84,6 +84,15 @@ export async function makeLocalMember(userId: string, displayName = "E2E Member"
   if (error) throw new Error(`Could not create local profile: ${error.message}`);
 }
 
+/** Makes a member's profile look a day old, as for a member who joined in an earlier session. */
+export async function backdateLocalProfile(userId: string) {
+  const { error } = await serviceClient()
+    .from("profiles")
+    .update({ created_at: new Date(Date.now() - 86_400_000).toISOString() })
+    .eq("id", userId);
+  if (error) throw new Error(`Could not backdate local profile: ${error.message}`);
+}
+
 /** Creates a throwaway member and signs the browser in as them. */
 export async function signInAsNewLocalMember(context: BrowserContext, baseURL: string) {
   const user = await signInAsNewLocalUser(context, baseURL);

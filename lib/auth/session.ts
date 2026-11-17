@@ -4,11 +4,19 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isFirstVisit } from "@/lib/auth/first-visit";
 
 export type Viewer =
   | { status: "anonymous" }
   | { status: "not_member"; userId: string; email: string | null }
-  | { status: "member"; userId: string; email: string | null; displayName: string | null };
+  | {
+      status: "member";
+      userId: string;
+      email: string | null;
+      displayName: string | null;
+      /** First session since accepting the invitation (lib/auth/first-visit.ts). */
+      firstVisit: boolean;
+    };
 
 /**
  * Who is making this request.
@@ -37,7 +45,7 @@ async function viewerForRequest(): Promise<Viewer> {
 
   const profile = await supabase
     .from("profiles")
-    .select("display_name, revoked_at")
+    .select("display_name, revoked_at, created_at")
     .eq("id", userId)
     .maybeSingle();
 
@@ -52,6 +60,7 @@ async function viewerForRequest(): Promise<Viewer> {
     userId,
     email,
     displayName: typeof displayName === "string" && displayName ? displayName : null,
+    firstVisit: isFirstVisit(data.claims.amr, profile.data.created_at),
   };
 }
 

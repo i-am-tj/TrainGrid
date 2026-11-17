@@ -24,6 +24,19 @@ Epic 3 integration: a public home page, a member dashboard and invitation emails
   follows Resend's current DNS records (DKIM TXT plus two SPF CNAMEs, no MX).
 - **Invitations list**: compact *Send/Resend email* and *Revoke* buttons side by side, and their
   messages now span the full row instead of being squeezed into the narrow actions column.
+- **Slow loading is explained and retried once**: after 5 seconds every loader says "This is
+  taking longer than usual. Trying again…" and asks the server once more; after 20 seconds it
+  suggests checking the connection or reloading.
+- **Loaders say where you are going**: following a link to the planner shows "Loading your
+  calendar…" (home, library, invitations likewise), and the planner's own section loader uses
+  the same words.
+- **Home loads by section**: the greeting, titles and quick actions appear at once; today's
+  sessions, the week and your routines each stream in behind their own loader, and a failed
+  read affects only its section.
+- **Home links**: *View full planner*, *Browse My Library* and *Browse TrainGrid routines* sweep
+  an underline in on hover without changing colour; quick-action arrows take the icon's colour.
+- **"Welcome" on your first visit**: the first session after accepting an invitation greets you
+  with "Welcome"; later sign-ins say "Welcome back".
 
 ## [0.2.1-beta] — 2026-11-14
 

@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState } from "./local-supabase";
@@ -110,7 +111,7 @@ test("changing the planner's day shows the week's section loader, not the page l
   await page.waitForURL(/\/week\//);
   await slowNavigations(page, /^\/week\/[^/]+\?day=/);
   await page.getByRole("link", { name: "Next day" }).click();
-  await expect(page.getByTestId("section-loader")).toContainText("Loading your week…");
+  await expect(page.getByTestId("section-loader")).toContainText("Loading your calendar…");
   await expect(page.getByRole("heading", { name: /^Week of/ })).toBeVisible();
   await expect(pageLoader(page)).toHaveCount(0);
   await expect(page.getByTestId("section-loader")).toHaveCount(0);
@@ -125,7 +126,7 @@ test("the planner streams the week behind a section loader without breaking 404s
   expect(response?.status()).toBe(404);
 });
 
-test("member home uses the existing navigation logo while loading", async ({
+test("member home names the destination while loading, then streams its sections", async ({
   page,
 }) => {
   await page.goto("/library");
@@ -139,9 +140,116 @@ test("member home uses the existing navigation logo while loading", async ({
     "animation-name",
     "spin",
   );
+  await expect(pageLoader(page).getByRole("status")).toContainText("Loading your home…");
   await expect(page).toHaveURL(/\/home$/);
   await expect(pageLoader(page)).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "My routines", exact: true })).toBeVisible();
   await expect(page.getByTestId("section-loader")).toHaveCount(0);
+});
+
+test("going to the planner says it is loading the calendar", async ({ page }) => {
+  await page.goto("/library");
+  await slowNavigations(page, /^\/week\//);
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Planner", exact: true }).click();
+  await expect(pageLoader(page).getByRole("status")).toContainText("Loading your calendar…");
+  await expect(page.getByRole("heading", { name: /^Week of/ })).toBeVisible();
+  await expect(pageLoader(page)).toHaveCount(0);
+});
+
+/**
+ * Holds the first RSC request matching `pattern` for `ms` and later ones for
+ * `laterMs`, and counts them all, so a retry and its message are observable.
+ */
+async function slowFirstRequest(page: Page, pattern: RegExp, ms: number, laterMs = 3000) {
+  const seen = { count: 0 };
+  await page.route(
+    (url) => pattern.test(url.pathname + url.search),
+    async (route) => {
+      if (route.request().headers()["rsc"] === "1") {
+        seen.count += 1;
+        await new Promise((resolve) => setTimeout(resolve, seen.count === 1 ? ms : laterMs));
+      }
+      await route.continue().catch(() => {});
+    },
+  );
+  return seen;
+}
+
+test("a slow page says so after five seconds and asks the server again", async ({ page }) => {
+  test.slow();
+  await page.goto("/library");
+  await page.waitForFunction(() => {
+    const summary = document.querySelector("header summary");
+    return !!summary && Object.keys(summary).some((key) => key.startsWith("__reactFiber"));
+  });
+  const requests = await slowFirstRequest(page, /^\/library\/[0-9a-f-]{36}/, 9000);
+  await page.locator("main section li a[href^='/library/']").first().click();
+
+  await expect(pageLoader(page)).toBeVisible();
+  await expect(pageLoader(page).getByTestId("loader-detail")).toHaveCount(0);
+  await expect(pageLoader(page).getByTestId("loader-detail")).toHaveText(
+    "This is taking longer than usual. Trying again…",
+    { timeout: 7000 },
+  );
+  // The retry is a second request for the same page, which is not held up.
+  await page.waitForURL(/\/library\/[0-9a-f-]{36}$/, { timeout: 8000 });
+  expect(requests.count).toBeGreaterThanOrEqual(2);
+  await expect(pageLoader(page)).toHaveCount(0);
+});
+
+/**
+ * Makes one server-side read genuinely slow: holds an exclusive lock on the
+ * routines table of the local database for `ms`, so the server streams the
+ * page and keeps that section waiting. Resolves once the lock is held.
+ */
+async function lockRoutinesTable(ms: number): Promise<{ released: Promise<void> } | null> {
+  // Statements go one by one over stdin, so "locked" is printed while the lock is held.
+  const child = spawn("docker", ["exec", "-i", "supabase_db_traingrid", "psql", "-U", "postgres", "-At", "-f", "-"]);
+  child.stdin.end(
+    `begin;\nlock table public.routines in access exclusive mode;\nselect 'locked';\nselect pg_sleep(${ms / 1000});\ncommit;\n`,
+  );
+  const released = new Promise<void>((resolve) => child.on("close", () => resolve()));
+  const locked = await new Promise<boolean>((resolve) => {
+    child.stdout.on("data", (chunk: Buffer) => {
+      if (chunk.toString().includes("locked")) resolve(true);
+    });
+    child.on("error", () => resolve(false));
+    child.on("close", () => resolve(false));
+  });
+  return locked ? { released } : null;
+}
+
+test("a slow section says so after five seconds and asks the server again", async ({ page }) => {
+  test.slow();
+  const lock = await lockRoutinesTable(9000);
+  test.skip(!lock, "Needs docker access to the local database container");
+  const requests: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === "/home") requests.push(request.headers()["rsc"] ?? "document");
+  });
+
+  await page.goto("/home", { waitUntil: "commit" });
+  // The frame and the unaffected sections arrive; the routines wait behind their loader.
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Weekly planned sessions" })).toBeVisible();
+  const loader = page.getByTestId("section-loader").filter({ hasText: "Loading your routines…" });
+  await expect(loader).toBeVisible();
+  const note = loader.getByText("This is taking longer than usual. Trying again…");
+  await expect(note).toBeHidden();
+  await expect(note).toBeVisible({ timeout: 7000 });
+  await expect(page.getByTestId("slow-section-announcer")).toHaveText(
+    "This is taking longer than usual. Trying again…",
+  );
+  // The retry is one fresh request for the page's data, not a loop, and the
+  // loader it re-renders keeps the note on screen.
+  await expect.poll(() => requests.filter((kind) => kind === "1").length).toBe(1);
+  await page.waitForTimeout(1500);
+  await expect(page.getByTestId("section-loader").getByText("This is taking longer than usual. Trying again…")).toBeVisible();
+
+  await lock!.released;
+  await expect(page.getByRole("heading", { name: "Make a routine your own." })).toBeVisible();
+  await expect(page.getByTestId("section-loader")).toHaveCount(0);
+  expect(requests.filter((kind) => kind === "1")).toHaveLength(1);
 });
 
 test("public landing uses the existing navigation logo while loading", async ({

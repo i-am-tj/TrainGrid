@@ -44,22 +44,64 @@ export function MemberDashboard({ state }: { state: DashboardState }) {
     );
   const { data } = state;
   return (
+    <DashboardShell
+      frame={data}
+      today={<TodaySessionList sessions={data.todaySessions} addSessionHref={data.addSessionHref} />}
+      week={<WeekSummary week={data.week} />}
+      routines={
+        <RoutineCards
+          routines={data.routines}
+          createRoutineHref={data.createRoutineHref}
+          sharedLibraryHref={data.sharedLibraryHref}
+        />
+      }
+    />
+  );
+}
+
+export type DashboardFrameData = Omit<DashboardData, "todaySessions" | "week" | "routines">;
+
+/** "Welcome" on the member's first visit after accepting the invitation, then "Welcome back". */
+export function greeting({ displayName, firstVisit }: Pick<DashboardData, "displayName" | "firstVisit">): string {
+  const word = firstVisit ? "Welcome" : "Welcome back";
+  return displayName ? `${word}, ${displayName}.` : `${word}.`;
+}
+
+/** A link whose underline sweeps in on hover and focus; its colour stays put. */
+const revealLink =
+  "underline-reveal-parent rounded-sm text-accent inline-flex min-h-10 items-center text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2";
+
+/**
+ * The page frame: greeting, section titles, their actions and the quick
+ * actions need no query and render at once. The three data slots (today's
+ * sessions, the week's counts, the routines) may stream in separately.
+ */
+export function DashboardShell({
+  frame,
+  today,
+  week,
+  routines,
+}: {
+  frame: DashboardFrameData;
+  today: ReactNode;
+  week: ReactNode;
+  routines: ReactNode;
+}) {
+  return (
     <div className="dashboard-container">
       <header className="flex flex-col items-start justify-between gap-6 border-b border-line pb-8 sm:flex-row sm:items-end">
         <div className="min-w-0">
           <p className="ui-eyebrow">Your training, thoughtfully together</p>
-          <p className="mt-4 text-sm text-stone-600">{data.dateLabel}</p>
+          <p className="mt-4 text-sm text-stone-600">{frame.dateLabel}</p>
           <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight [overflow-wrap:anywhere] sm:text-4xl">
-            {data.displayName
-              ? `Welcome back, ${data.displayName}.`
-              : "Welcome back."}
+            {greeting(frame)}
           </h1>
           <p className="mt-3 text-sm leading-7 text-stone-600">
             A clear look at today, with the rest of the week in view.
           </p>
         </div>
         <Link
-          href={data.plannerHref}
+          href={frame.plannerHref}
           className={`${btnPrimary} shrink-0 gap-5`}
         >
           Open weekly planner <span aria-hidden="true">↗</span>
@@ -71,73 +113,12 @@ export function MemberDashboard({ state }: { state: DashboardState }) {
             id="today-title"
             title="Today’s planned sessions"
             action={
-              <Link href={data.addSessionHref} className={btnSecondary}>
+              <Link href={frame.addSessionHref} className={btnSecondary}>
                 + Add session
               </Link>
             }
           />
-          {data.todaySessions.length ? (
-            <ul className="mt-5 space-y-3">
-              {data.todaySessions.map((session) => (
-                <li
-                  key={session.id}
-                  className={`ui-panel min-w-0 border-l-[3px] p-5 ${TYPE_BAR[session.category]}`}
-                >
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span
-                      className={`rounded-md px-2 py-1 font-medium ${TYPE_TINT[session.category]}`}
-                    >
-                      {SESSION_TYPE_LABELS[session.category]}
-                    </span>
-                    <span className="font-mono text-stone-600">
-                      {session.timeLabel ?? "No set time"}
-                      {session.durationLabel
-                        ? ` · ${session.durationLabel}`
-                        : ""}
-                    </span>
-                  </div>
-                  <h3 className="mt-3 text-lg font-semibold leading-snug tracking-tight [overflow-wrap:anywhere]">
-                    <Link
-                      href={session.href}
-                      className="rounded-sm hover:underline underline-offset-4"
-                    >
-                      {session.name}
-                    </Link>
-                  </h3>
-                  {session.detail && (
-                    <p className="mt-2 text-sm leading-7 text-stone-600 [overflow-wrap:anywhere]">
-                      {session.detail}
-                    </p>
-                  )}
-                  <Link
-                    href={session.href}
-                    className={`${textLink} mt-4 inline-flex min-h-10 items-center text-sm`}
-                    aria-label={`Open session: ${session.name}`}
-                  >
-                    Open session{" "}
-                    <span aria-hidden="true" className="ml-3">
-                      ↗
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="mt-5">
-              <EmptyState
-                title="A little space in your day."
-                icon={<PlanningIcon name="week" />}
-                action={
-                  <Link href={data.addSessionHref} className={btnSecondary}>
-                    Plan a session
-                  </Link>
-                }
-              >
-                Nothing is planned for today. Add a session when you’re ready,
-                or keep the day open.
-              </EmptyState>
-            </div>
-          )}
+          {today}
         </section>
         <aside className="min-w-0 space-y-7" aria-label="Week and shortcuts">
           <section className="ui-panel p-4 sm:p-5" aria-labelledby="week-title">
@@ -145,23 +126,15 @@ export function MemberDashboard({ state }: { state: DashboardState }) {
             <p className="mt-2 text-xs leading-6 text-stone-600">
               Planned sessions · Monday–Sunday
             </p>
-            <WeeklyOverview week={data.week} />
-            <p className="mt-4 text-xs leading-6 text-stone-600">
-              {data.week.every((day) => day.plannedCount === 0)
-                ? "An open week. Start with one session and build from there."
-                : "Your plan has room to move. Open any day to make it yours."}
-            </p>
-            <Link
-              href={data.plannerHref}
-              className={`${textLink} mt-3 inline-flex min-h-10 items-center text-sm`}
-            >
-              View full planner{" "}
+            {week}
+            <Link href={frame.plannerHref} className={`${revealLink} mt-3`}>
+              <span className="underline-reveal">View full planner</span>
               <span aria-hidden="true" className="ml-3">
                 ↗
               </span>
             </Link>
           </section>
-          <QuickActions data={data} />
+          <QuickActions data={frame} />
         </aside>
       </div>
       <section
@@ -172,7 +145,7 @@ export function MemberDashboard({ state }: { state: DashboardState }) {
           id="routines-title"
           title="My routines"
           action={
-            <Link href={data.createRoutineHref} className={btnSecondary}>
+            <Link href={frame.createRoutineHref} className={btnSecondary}>
               + Create routine
             </Link>
           }
@@ -180,79 +153,183 @@ export function MemberDashboard({ state }: { state: DashboardState }) {
         <p className="mt-2 text-sm leading-6 text-stone-600">
           Familiar work, ready for another week.
         </p>
-        {data.routines.length ? (
-          <ul className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {data.routines.map((routine) => (
-              <li
-                key={routine.id}
-                className="ui-panel flex min-w-0 flex-col p-5"
-              >
-                <p className="ui-eyebrow">
-                  {routine.categoryLabel}{" "}
-                  <span className="text-stone-600">· Mine</span>
-                </p>
-                <h3 className="mt-3 text-base font-semibold leading-7 [overflow-wrap:anywhere]">
-                  <Link
-                    href={routine.viewHref}
-                    className="rounded-sm hover:underline underline-offset-4"
-                  >
-                    {routine.name}
-                  </Link>
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-stone-600 [overflow-wrap:anywhere]">
-                  {routine.detail}
-                </p>
-                <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-5">
-                  <Link
-                    href={routine.viewHref}
-                    className={`${textLink} inline-flex min-h-10 items-center text-sm`}
-                    aria-label={`View routine: ${routine.name}`}
-                  >
-                    View routine
-                  </Link>
-                  <Link
-                    href={routine.scheduleHref}
-                    className={btnSecondary}
-                    aria-label={`Schedule routine: ${routine.name}`}
-                  >
-                    Schedule
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="mt-5">
-            <EmptyState
-              title="Make a routine your own."
-              icon={<PlanningIcon name="routine" />}
-              action={
-                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-                  <Link href={data.createRoutineHref} className={btnSecondary}>
-                    Create your first routine
-                  </Link>
-                  <Link href={data.sharedLibraryHref} className={`${textLink} inline-flex min-h-10 items-center text-sm`}>
-                    Browse TrainGrid routines
-                  </Link>
-                </div>
-              }
-            >
-              Create a personal routine or copy one from the shared library.
-              Your routines are only visible to you.
-            </EmptyState>
-          </div>
-        )}
-        <Link
-          href={data.myLibraryHref}
-          className={`${textLink} mt-5 inline-flex min-h-10 items-center text-sm`}
-        >
-          Browse My Library{" "}
+        {routines}
+        <Link href={frame.myLibraryHref} className={`${revealLink} mt-5`}>
+          <span className="underline-reveal">Browse My Library</span>
           <span aria-hidden="true" className="ml-3">
             ↗
           </span>
         </Link>
       </section>
     </div>
+  );
+}
+
+/** A section's own failure: the rest of the page stays usable. */
+export function DashboardSectionError({ message, retryHref = "/home" }: { message: string; retryHref?: string }) {
+  return (
+    <div className="mt-5">
+      <InlineMessage tone="error">{message}</InlineMessage>
+      <Link href={retryHref} className={`${btnSecondary} mt-3`}>
+        Try again
+      </Link>
+    </div>
+  );
+}
+
+export function TodaySessionList({
+  sessions,
+  addSessionHref,
+}: {
+  sessions: DashboardData["todaySessions"];
+  addSessionHref: string;
+}) {
+  if (!sessions.length)
+    return (
+      <div className="mt-5">
+        <EmptyState
+          title="A little space in your day."
+          icon={<PlanningIcon name="week" />}
+          action={
+            <Link href={addSessionHref} className={btnSecondary}>
+              Plan a session
+            </Link>
+          }
+        >
+          Nothing is planned for today. Add a session when you’re ready,
+          or keep the day open.
+        </EmptyState>
+      </div>
+    );
+  return (
+    <ul className="mt-5 space-y-3">
+      {sessions.map((session) => (
+        <li
+          key={session.id}
+          className={`ui-panel min-w-0 border-l-[3px] p-5 ${TYPE_BAR[session.category]}`}
+        >
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span
+              className={`rounded-md px-2 py-1 font-medium ${TYPE_TINT[session.category]}`}
+            >
+              {SESSION_TYPE_LABELS[session.category]}
+            </span>
+            <span className="font-mono text-stone-600">
+              {session.timeLabel ?? "No set time"}
+              {session.durationLabel ? ` · ${session.durationLabel}` : ""}
+            </span>
+          </div>
+          <h3 className="mt-3 text-lg font-semibold leading-snug tracking-tight [overflow-wrap:anywhere]">
+            <Link
+              href={session.href}
+              className="rounded-sm hover:underline underline-offset-4"
+            >
+              {session.name}
+            </Link>
+          </h3>
+          {session.detail && (
+            <p className="mt-2 text-sm leading-7 text-stone-600 [overflow-wrap:anywhere]">
+              {session.detail}
+            </p>
+          )}
+          <Link
+            href={session.href}
+            className={`${textLink} mt-4 inline-flex min-h-10 items-center text-sm`}
+            aria-label={`Open session: ${session.name}`}
+          >
+            Open session{" "}
+            <span aria-hidden="true" className="ml-3">
+              ↗
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function WeekSummary({ week }: { week: DashboardWeek }) {
+  return (
+    <>
+      <WeeklyOverview week={week} />
+      <p className="mt-4 text-xs leading-6 text-stone-600">
+        {week.every((day) => day.plannedCount === 0)
+          ? "An open week. Start with one session and build from there."
+          : "Your plan has room to move. Open any day to make it yours."}
+      </p>
+    </>
+  );
+}
+
+export function RoutineCards({
+  routines,
+  createRoutineHref,
+  sharedLibraryHref,
+}: {
+  routines: DashboardData["routines"];
+  createRoutineHref: string;
+  sharedLibraryHref: string;
+}) {
+  if (!routines.length)
+    return (
+      <div className="mt-5">
+        <EmptyState
+          title="Make a routine your own."
+          icon={<PlanningIcon name="routine" />}
+          action={
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+              <Link href={createRoutineHref} className={btnSecondary}>
+                Create your first routine
+              </Link>
+              <Link href={sharedLibraryHref} className={revealLink}>
+                <span className="underline-reveal">Browse TrainGrid routines</span>
+              </Link>
+            </div>
+          }
+        >
+          Create a personal routine or copy one from the shared library.
+          Your routines are only visible to you.
+        </EmptyState>
+      </div>
+    );
+  return (
+    <ul className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {routines.map((routine) => (
+        <li key={routine.id} className="ui-panel flex min-w-0 flex-col p-5">
+          <p className="ui-eyebrow">
+            {routine.categoryLabel}{" "}
+            <span className="text-stone-600">· Mine</span>
+          </p>
+          <h3 className="mt-3 text-base font-semibold leading-7 [overflow-wrap:anywhere]">
+            <Link
+              href={routine.viewHref}
+              className="rounded-sm hover:underline underline-offset-4"
+            >
+              {routine.name}
+            </Link>
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-stone-600 [overflow-wrap:anywhere]">
+            {routine.detail}
+          </p>
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-5">
+            <Link
+              href={routine.viewHref}
+              className={`${textLink} inline-flex min-h-10 items-center text-sm`}
+              aria-label={`View routine: ${routine.name}`}
+            >
+              View routine
+            </Link>
+            <Link
+              href={routine.scheduleHref}
+              className={btnSecondary}
+              aria-label={`Schedule routine: ${routine.name}`}
+            >
+              Schedule
+            </Link>
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -306,7 +383,7 @@ export function WeeklyOverview({ week }: { week: DashboardWeek }) {
   );
 }
 
-function QuickActions({ data }: { data: DashboardData }) {
+function QuickActions({ data }: { data: DashboardFrameData }) {
   const actions = [
     [
       "Add session",
@@ -338,7 +415,7 @@ function QuickActions({ data }: { data: DashboardData }) {
           <li key={title}>
             <Link
               href={href!}
-              className="dashboard-shortcut flex min-h-16 min-w-0 items-center gap-3 rounded-lg px-4 py-3"
+              className="dashboard-shortcut group flex min-h-16 min-w-0 items-center gap-3 rounded-lg px-4 py-3"
             >
               <svg
                 aria-hidden="true"
@@ -353,7 +430,10 @@ function QuickActions({ data }: { data: DashboardData }) {
                   {description}
                 </span>
               </span>
-              <span aria-hidden="true" className="ml-auto text-stone-600">
+              <span
+                aria-hidden="true"
+                className="dashboard-shortcut-arrow ml-auto text-stone-600 group-hover:text-accent group-focus-visible:text-accent"
+              >
                 ↗
               </span>
             </Link>
