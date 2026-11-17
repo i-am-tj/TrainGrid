@@ -90,12 +90,12 @@ test("the logo turns clockwise", async ({ page }) => {
   await page.waitForURL(/\/library\/[0-9a-f-]{36}$/);
 });
 
-test("with reduced motion the logo pulses instead of spinning", async ({ page }) => {
+test("with reduced motion the logo stays still", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/library");
   await slowNavigations(page, /^\/library\/[0-9a-f-]{36}/, 2000);
   await page.locator("main section li a[href^='/library/']").first().click();
-  await expect(pageLoader(page).locator("svg")).toHaveCSS("animation-name", "pulse");
+  await expect(pageLoader(page).locator("svg")).toHaveCSS("animation-name", "none");
   await page.waitForURL(/\/library\/[0-9a-f-]{36}$/);
 });
 

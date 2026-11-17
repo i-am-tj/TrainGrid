@@ -63,6 +63,7 @@ export function InvitationFixture({ empty = false }: { empty?: boolean }) {
         Membership status is independent from email delivery. These are example
         records; no email is sent.
       </p>
+      <h2 className="mt-6 text-lg font-semibold">All invitations</h2>
       <InvitationListView invitations={empty ? [] : examples} />
       <h2 className="mt-8 text-lg font-semibold">
         Future email workflow · design preview

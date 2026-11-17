@@ -33,7 +33,7 @@ export function InvitationListView({
     <div className="mt-4">
       <div
         aria-hidden="true"
-        className="hidden grid-cols-[minmax(0,1fr)_7rem_9rem] gap-4 px-5 pb-3 text-xs font-medium text-stone-500 md:grid"
+        className="hidden grid-cols-[minmax(0,1fr)_7rem_9rem] gap-4 px-5 pb-3 text-xs font-medium text-stone-600 md:grid"
       >
         <span>Recipient</span>
         <span>Membership</span>
@@ -49,7 +49,7 @@ export function InvitationListView({
               <p className="text-sm font-medium [overflow-wrap:anywhere]">
                 {invitation.email}
               </p>
-              <p className="mt-1 text-xs leading-6 text-stone-500">
+              <p className="mt-1 text-xs leading-6 text-stone-600">
                 Invited {invitation.createdLabel}
                 {invitation.revokedAccess ? " · Access revoked, data kept" : ""}
               </p>

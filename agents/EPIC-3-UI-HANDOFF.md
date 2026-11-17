@@ -1,6 +1,6 @@
 # Epic 3 UI → Claude integration handoff
 
-Updated 2026-11-17. UI-01 is merged in PR #37 and UI-02 in PR #38. UI-03 implements invitations/email presentation and existing-screen refinements. **Dashboard and email-template exports below now exist; live delivery remains unimplemented.** Dashboard routing/data, root publication, OAuth changes and email delivery are not integrated.
+Updated 2026-11-17. UI-01–03 are merged in PRs #37–39. UI-04 completes frontend polish and regression coverage; see EPIC-3-UI-VERIFICATION.md for evidence and limits. **Dashboard and email-template exports below now exist; live delivery remains unimplemented.** Dashboard routing/data, root publication, OAuth changes and email delivery are not integrated.
 
 ## 1. Dashboard props and real-data requirements
 
@@ -160,3 +160,21 @@ No fake send timers, provider calls, secrets, delivery fields or retries are imp
 The planner uses the actual header/control/footer sizes in normal flex flow with 100dvh. A definite `0px` flex basis is intentional through the planner containers: changing it to `0%` can restore intrinsic 24-hour height. The 18rem minimum calendar viewport protects a readable set of rows and lets short/zoomed documents grow; it is not a fixed calendar height. There is no body overflow lock. Twenty-four hours, untimed/timed stacking, links and morning-scroll code are preserved. Responsive day agenda and the library's URL filters/sliding scope pill retain their original behavior. `ActionSubmit` adds real form-pending visuals without moving actions, field payloads or native confirmations.
 
 Claude needs no new backend integration for the viewport or existing editor refinements. Dashboard/root responsibilities from UI-01/UI-02 remain open and unchanged. Add actual provider/invitation orchestration tests listed in section 8 when integrating delivery, including recipient validation, trusted logo/login origin, HTML/text parity, safe failure/retry messaging, and membership success combined with email failure. Check the final email in the selected provider's supported inbox clients before claiming delivery integration complete.
+
+
+## UI-04 final integration boundary
+
+Frontend presentation is ready for review, with the existing theme, approved founder portrait/role, footer order, background-only active navigation and library sliding pill preserved. A native skip link targets `main#main-content`; maintain that unique id and focusable main landmark when changing layouts. Reduced-motion loaders are static. Form borders and secondary labels use existing darker palette roles for contrast; header/footer/provider controls wrap at enlarged text sizes.
+
+No backend integration has been completed by UI-04. The remaining implementation responsibilities are:
+
+| Surface | Implemented | Claude integration still required |
+| --- | --- | --- |
+| Public landing | Reusable page, assets, metadata, states | Safely publish `/` alongside auth default-destination changes; no private data in public HTML |
+| Member dashboard | Typed ready/loading/error and empty variants | Authenticated `/home`, member-scoped prepared records/counts/timezone, real links and retry behavior |
+| OAuth | Existing working actions and redesigned states | Coordinate post-login destination and `next` semantics with root publication |
+| Invitation email | HTML/text renderer and guarded preview/copy | Trusted canonical URL, active-invitation authorization, actual provider request, persisted outcomes and authorized retry |
+| Delivery workflow | Labelled disabled design examples | Separate live delivery adapter; provider accepted must never mean delivered; preserve membership success on send failure |
+| Existing app screens | Planner/library/editor/session/admin presentation with existing actions | No new backend dependency |
+
+Sections 1–8 remain the integration contract. Do not import test fixtures or the audit engine into application code, expose preview examples as member data, or enable send/resend before reviewed server integration. Retain all existing tests and add the auth/routing, member-data isolation/timezone/empty-error and delivery authorization/failure/retry cases in section 8. Re-run production accessibility and performance checks after wiring routes; inbox-client rendering and real-provider delivery checks remain required before claiming email delivery works.

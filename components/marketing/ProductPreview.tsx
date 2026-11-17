@@ -8,7 +8,7 @@ export function PlannerPreview() {
     >
       <figcaption className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-4">
         <span className="font-semibold">Your week, at a glance.</span>
-        <span className="text-xs text-stone-500">Example training week</span>
+        <span className="text-xs text-stone-600">Example training week</span>
       </figcaption>
       <div className="preview-week" aria-hidden="true">
         <div className="preview-days">
@@ -70,7 +70,7 @@ export function PlannerPreview() {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-line px-4 py-3 text-xs text-stone-500">
+      <div className="flex items-center justify-between border-t border-line px-4 py-3 text-xs text-stone-600">
         <span>Monday–Sunday. Timed or untimed.</span>
         <span aria-hidden="true">↗</span>
       </div>
@@ -78,7 +78,11 @@ export function PlannerPreview() {
   );
 }
 
-export function AgendaPreview() {
+export function AgendaPreview({
+  headingTag: Heading = "h3",
+}: {
+  headingTag?: "h3" | "p";
+}) {
   return (
     <div className="product-frame mx-auto max-w-xs p-5">
       <div
@@ -86,12 +90,12 @@ export function AgendaPreview() {
         aria-hidden="true"
       />
       <p className="ui-eyebrow">Wednesday · Example agenda</p>
-      <h3 className="mt-2 text-2xl font-semibold tracking-tight">
+      <Heading className="mt-2 text-2xl font-semibold tracking-tight">
         A little structure.
         <br />A lot of freedom.
-      </h3>
+      </Heading>
       <div className="mt-6 border-l-2 border-accent pl-4">
-        <p className="text-xs text-stone-500">07:00 · Running · 45 min</p>
+        <p className="text-xs text-stone-600">07:00 · Running · 45 min</p>
         <p className="mt-2 font-semibold">Intervals</p>
         <p className="mt-1 text-sm leading-6 text-stone-600">
           Warm up, find your rhythm, then 6 × 400m.
@@ -100,7 +104,7 @@ export function AgendaPreview() {
           Open planned workout ↗
         </span>
       </div>
-      <p className="mt-8 border-t border-line pt-4 text-xs text-stone-500">
+      <p className="mt-8 border-t border-line pt-4 text-xs text-stone-600">
         Your plan travels with you.
       </p>
     </div>
@@ -113,8 +117,8 @@ export function LibraryPreview() {
       <p className="ui-eyebrow">Example library</p>
       <div className="mt-4 inline-flex rounded-full border border-line bg-background p-1 text-xs">
         <span className="rounded-full bg-card px-4 py-2">All</span>
-        <span className="px-4 py-2 text-stone-500">TrainGrid</span>
-        <span className="px-4 py-2 text-stone-500">Mine</span>
+        <span className="px-4 py-2 text-stone-600">TrainGrid</span>
+        <span className="px-4 py-2 text-stone-600">Mine</span>
       </div>
       {[
         ["Lower A", "Lift · 5 items · Barbell, Dumbbell"],
@@ -122,7 +126,7 @@ export function LibraryPreview() {
       ].map(([name, detail]) => (
         <div key={name} className="mt-4 rounded-lg border border-line p-4">
           <p className="font-medium">{name}</p>
-          <p className="mt-1 text-xs leading-5 text-stone-500">{detail}</p>
+          <p className="mt-1 text-xs leading-5 text-stone-600">{detail}</p>
           <span className="mt-3 inline-block text-xs text-accent">
             View routine ↗
           </span>
@@ -137,7 +141,7 @@ export function WorkoutPreview() {
     <div className="product-frame p-5">
       <p className="ui-eyebrow">Example workout detail</p>
       <h3 className="mt-3 text-xl font-semibold">Lower A</h3>
-      <p className="mt-1 text-xs text-stone-500">
+      <p className="mt-1 text-xs text-stone-600">
         Strength · Your session’s own workout snapshot
       </p>
       <div className="mt-5 border-t border-line pt-4">
@@ -147,11 +151,11 @@ export function WorkoutPreview() {
         </p>
         <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
           <div>
-            <dt className="text-stone-500">Rest</dt>
+            <dt className="text-stone-600">Rest</dt>
             <dd className="mt-1">2–3 minutes</dd>
           </div>
           <div>
-            <dt className="text-stone-500">Target</dt>
+            <dt className="text-stone-600">Target</dt>
             <dd className="mt-1">RPE 7–8</dd>
           </div>
         </dl>
@@ -159,7 +163,7 @@ export function WorkoutPreview() {
           Barbell
         </span>
       </div>
-      <p className="mt-5 border-t border-line pt-4 text-xs leading-5 text-stone-500">
+      <p className="mt-5 border-t border-line pt-4 text-xs leading-5 text-stone-600">
         Changing the source routine leaves this planned session intact.
       </p>
     </div>

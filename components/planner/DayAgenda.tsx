@@ -103,7 +103,7 @@ export function DayAgenda({
       <div className="mt-4 space-y-3">
         {untimed.length > 0 ? (
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-600">
               Untimed
             </h3>
             <div className="mt-2 flex flex-col gap-2">
@@ -118,7 +118,7 @@ export function DayAgenda({
           <section className="space-y-2">
             {timed.map((s) => (
               <div key={s.id} className="flex gap-3">
-                <div className="w-12 shrink-0 pt-1 text-xs text-stone-500">
+                <div className="w-12 shrink-0 pt-1 text-xs text-stone-600">
                   {s.time}
                 </div>
                 <div className="min-w-0 flex-1">

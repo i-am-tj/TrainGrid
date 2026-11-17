@@ -39,7 +39,7 @@ export function RoutineDetail({
         <p className="mt-2 text-sm leading-7 text-stone-600">
           {routineAtAGlance(routine.items.length, equipmentUsed(routine.items))}
         </p>
-        <p className="mt-1 text-xs text-stone-500">
+        <p className="mt-1 text-xs text-stone-600">
           {routine.isOwn ? "Your routine" : "TrainGrid library · read-only"}
         </p>
       </header>

@@ -68,7 +68,7 @@ export function LibraryHeader() {
       </p>
 
       <nav aria-label="Library view" className="mt-5 flex justify-center">
-        <ul className="relative grid grid-cols-3 rounded-full border border-line bg-stone-200/50 p-1">
+        <ul className="relative grid w-full max-w-[18.625rem] grid-cols-3 rounded-full border border-line bg-stone-200/50 p-1">
           <li
             aria-hidden="true"
             data-testid="library-view-pill"
@@ -85,10 +85,10 @@ export function LibraryHeader() {
                   scroll={false}
                   onClick={onTabClick(s.id)}
                   aria-current={current ? "page" : undefined}
-                  className={`inline-flex min-h-10 w-24 items-center justify-center rounded-full px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 motion-reduce:transition-none ${
+                  className={`inline-flex min-h-10 min-w-0 w-full [overflow-wrap:anywhere] items-center justify-center rounded-full px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 motion-reduce:transition-none ${
                     active === s.id
                       ? "text-stone-900"
-                      : "text-stone-500 hover:text-stone-800"
+                      : "text-stone-600 hover:text-stone-800"
                   }`}
                 >
                   {s.label}

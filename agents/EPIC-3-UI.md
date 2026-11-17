@@ -1,8 +1,8 @@
 # Epic 3 — TrainGrid product experience and frontend
 
-Status: UI-01 merged (PR #37), UI-02 merged (PR #38); UI-03 ready for review from reviewed main `fba6fc1`.
+Status: UI-01–03 merged (PRs #37–39); UI-04 final frontend verification and handoff, based on reviewed main `4984124`.
 Audit date: 2026-11-17. Reviewed-main base: `f3a0770` (PR #36).
-Branch: `codex/epic-3-ui-01`. This document distinguishes implementation from future work.
+Current branch: `codex/epic-3-ui-04`. Historical reports below retain their original bases. This document distinguishes implementation from future work.
 
 ## Scope and delivery sequence
 
@@ -292,3 +292,11 @@ Review screenshots (live local test app, except standalone email):
 Additional routine, add/edit/customize-session and dark-state captures are included in the same directory (28 total). Development indicators are excluded from app images. QA records are disposable local examples. All invitations/email component fixtures are kept under tests and ignored preview output, never exposed as application routes.
 
 Deferred to Claude: actual sending/provider acceptance/failure/retry persistence; canonical origin and active-invitation validation for sending; selected-provider inbox-client verification; previously documented dashboard/root/post-login integration. No backend-dependent delivery feature is marked complete. Remaining frontend work is UI-04 final cross-workstream accessibility/contrast, responsive/zoom, motion/performance and integration regression. Manual review/merge only; UI-04 is not started.
+
+## UI-04 — final polish and frontend handoff
+
+Based on reviewed main `4984124` (merged UI-03 PR #39). Added skip-to-main access, static reduced-motion loaders, corrected heading structure, stronger existing text/control contrast roles, and enlarged-text reflow across navigation/footer/provider controls/library scopes. The approved theme, founder photo/role, footer order, background-only active tab and library sliding selection remain intact.
+
+The component suite now covers 48 cases, with test-only axe checks across 19 presentation variants in both themes and narrow/desktop widths. Eight additional checks audit optimized live screens, keyboard/preview behavior, form-boundary contrast, network payload and layout stability. Public assets have explicit budgets; no production test engine or new runtime package is introduced.
+
+The full validation matrix, measurements, desktop/mobile screenshot links, commands and honest audit limits are in [EPIC-3-UI-VERIFICATION.md](EPIC-3-UI-VERIFICATION.md). Final integration ownership is recorded in [EPIC-3-UI-HANDOFF.md](EPIC-3-UI-HANDOFF.md). Existing app operations remain connected; dashboard/home/root/OAuth destination and email sending/delivery work remains with Claude. Those backend-dependent features are not declared complete. Remaining frontend work is reviewer feedback and verification after Claude's integrations; no PR is merged automatically.

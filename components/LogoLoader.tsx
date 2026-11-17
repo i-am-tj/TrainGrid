@@ -2,7 +2,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 
 /**
  * TrainGrid's loader: the logo turning clockwise. Announced politely to screen
- * readers; with reduced motion it pulses gently instead of spinning.
+ * readers; with reduced motion it stays still while its live label announces progress.
  */
 
 const SIZES = {
@@ -23,7 +23,7 @@ export function LogoLoader({
   return (
     <span role="status" aria-live="polite" className="inline-flex flex-col items-center gap-2">
       <BrandLogo
-        className={`${SIZES[size]} rounded-[22%] animate-spin [animation-duration:1.1s] motion-reduce:animate-pulse dark:outline dark:outline-1 dark:outline-hairline`}
+        className={`${SIZES[size]} rounded-[22%] animate-spin [animation-duration:1.1s] motion-reduce:animate-none dark:outline dark:outline-1 dark:outline-hairline`}
       />
       <span className={showLabel ? "text-sm text-stone-600" : "sr-only"}>{label}</span>
     </span>

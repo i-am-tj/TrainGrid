@@ -24,19 +24,22 @@ export function ProviderButton({
         aria-hidden="true"
         className="inline-flex size-5 shrink-0 items-center justify-center"
       >
-        {provider === "github" ? <GitHubIcon /> : <GoogleIcon />}
+        {pending ? (
+          <span
+            aria-hidden="true"
+            className="size-3 rounded-full border-2 border-line border-t-accent motion-safe:animate-spin"
+          />
+        ) : provider === "github" ? (
+          <GitHubIcon />
+        ) : (
+          <GoogleIcon />
+        )}
       </span>
-      <span>
+      <span className="min-w-0 [overflow-wrap:anywhere]">
         {pending
           ? `Connecting to ${provider === "google" ? "Google" : "GitHub"}…`
           : label}
       </span>
-      {pending && (
-        <span
-          aria-hidden="true"
-          className="size-3 rounded-full border-2 border-line border-t-accent motion-safe:animate-spin"
-        />
-      )}
     </button>
   );
 }

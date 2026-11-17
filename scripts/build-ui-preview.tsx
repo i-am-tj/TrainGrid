@@ -1,4 +1,5 @@
 /** Static component QA harness. No Next route, auth bypass, database access or deployment. */
+import { SkipLink } from "../components/ui/SkipLink";
 import { InvitationFixture } from "../tests/ui/fixtures/invitations";
 import { renderInvitationEmail } from "../lib/email/invitation";
 import type { ReactNode } from "react";
@@ -24,8 +25,9 @@ async function main() {
   await writeFile(path.join(directory, "styles.css"), css.css);
   const markup = renderToStaticMarkup(
     <>
+      <SkipLink />
       <PublicHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <LandingPage />
       </main>
       <SiteFooter />
@@ -38,11 +40,14 @@ async function main() {
   const writeFixture = async (name: string, content: ReactNode) => {
     const fixtureMarkup = renderToStaticMarkup(
       <>
+        <SkipLink />
         <PublicHeader />
-        <p className="border-b border-line px-4 py-2 text-center text-xs text-stone-600">
-          Component preview · example content, not a live member account
-        </p>
-        <main>{content}</main>
+        <main id="main-content" tabIndex={-1}>
+          <p className="border-b border-line px-4 py-2 text-center text-xs text-stone-600">
+            Component preview · example content, not a live member account
+          </p>
+          {content}
+        </main>
         <SiteFooter />
       </>,
     );
