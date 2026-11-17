@@ -163,8 +163,8 @@ test("revoking an invitation removes its send controls; accepted members get non
     await page.goto("/admin/invitations");
     await invite(page, address, { email: false });
     const row = page.getByRole("listitem").filter({ hasText: address });
-    page.once("dialog", (dialog) => dialog.accept());
     await row.getByRole("button", { name: "Revoke", exact: true }).click();
+    await page.getByRole("dialog", { name: "Revoke invitation?" }).getByRole("button", { name: "Revoke", exact: true }).click();
     await expect(row.getByText("Revoked", { exact: true })).toBeVisible();
     await expect(row.getByRole("button")).toHaveCount(0);
   } finally {

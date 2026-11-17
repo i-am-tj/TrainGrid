@@ -93,3 +93,20 @@ Final checks pass: 50 component browser tests, 38 affected app browser tests, li
 | --- | --- | --- | --- | --- |
 | Creator card | [1440px](../docs/images/epic-3/loaders-creator/creator-1440-light.png) | [1440px](../docs/images/epic-3/loaders-creator/creator-1440-dark.png) | [320px](../docs/images/epic-3/loaders-creator/creator-320-light.png) | [320px](../docs/images/epic-3/loaders-creator/creator-320-dark.png) |
 | Signing out | [1440px](../docs/images/epic-3/loaders-creator/signout-1440-light.png) | [1440px](../docs/images/epic-3/loaders-creator/signout-1440-dark.png) | [360px](../docs/images/epic-3/loaders-creator/signout-360-light.png) | [360px](../docs/images/epic-3/loaders-creator/signout-360-dark.png) |
+
+## Follow-up — invitation/access revoke confirmation
+
+Based on reviewed main `75edd79` after PR #45: pending-invitation and accepted-member revoke controls open a native modal styled like routine deletion. Each modal names the recipient. Accepted access warns that access ends immediately while routines/sessions remain and can be restored by inviting the address again. Pending invitation copy remains distinct.
+
+Cancel receives initial focus; Escape/Cancel close and restore focus without submitting. While the existing action runs, confirm shows “Revoking…” and both cancellation and repeated confirmation are disabled. A returned action result closes the modal; existing full-width row success/error feedback is retained. Actual failures remain errors and the action can be reopened. Compact row buttons remain compact; modal buttons use the same standard size as routine deletion. Existing admin guards, protected records, server action, hidden id, persistence and email behavior are unchanged.
+
+Validation: 25 affected app regressions pass across invitation administration, mock email controls, forged-action authorization, both revoke variants, error recovery and routine deletion. The focused modal tests verify actual light/dark theme selection, 320/1440px fit and long-email wrapping, keyboard/background focus exclusion, cancellation, real pending/disabled/Escape behavior, and zero axe violations. Existing lockout/protected-admin checks pass. Forged-id test setup now waits for hydration before editing hidden inputs so React cannot restore the original id before submission.
+
+| Modal | Desktop light | Desktop dark | Phone light | Phone dark |
+| --- | --- | --- | --- | --- |
+| Revoke access | [1440px](../docs/images/epic-3/revoke-modal/access-1440-light.png) | [1440px](../docs/images/epic-3/revoke-modal/access-1440-dark.png) | [320px](../docs/images/epic-3/revoke-modal/access-320-light.png) | [320px](../docs/images/epic-3/revoke-modal/access-320-dark.png) |
+| Revoke invitation | [1440px](../docs/images/epic-3/revoke-modal/invitation-1440-light.png) | [1440px](../docs/images/epic-3/revoke-modal/invitation-1440-dark.png) | [320px](../docs/images/epic-3/revoke-modal/invitation-320-light.png) | [320px](../docs/images/epic-3/revoke-modal/invitation-320-dark.png) |
+
+Captures are from the local application using disposable test recipients. No production data or backend modules changed.
+
+Final static checks, secret scan and optimized `next build --webpack` pass for this follow-up. No new backend integration is required.
