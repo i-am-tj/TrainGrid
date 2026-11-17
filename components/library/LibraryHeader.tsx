@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, type MouseEvent } from "react";
-import { libraryHref, parseLibraryQuery, type LibraryScope } from "@/lib/library/query";
+import {
+  libraryHref,
+  parseLibraryQuery,
+  type LibraryScope,
+} from "@/lib/library/query";
 
 const SCOPE_TABS: Array<{ id: LibraryScope; label: string }> = [
   { id: "all", label: "All" },
@@ -13,7 +17,8 @@ const SCOPE_TABS: Array<{ id: LibraryScope; label: string }> = [
 
 const INTRO: Record<LibraryScope, string> = {
   all: "Shared TrainGrid routines and your own. Schedule one onto any week, or open it to see the workout.",
-  global: "Routines shared with every member. They are read-only: schedule one, or open it to see the workout.",
+  global:
+    "Routines shared with every member. They are read-only: schedule one, or open it to see the workout.",
   mine: "Routines you created. Only you can see and edit them.",
 };
 
@@ -42,15 +47,25 @@ export function LibraryHeader() {
   const active = pending ?? query.scope;
   const index = SCOPE_TABS.findIndex((t) => t.id === active);
 
-  const onTabClick = (scope: LibraryScope) => (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    setPending(scope);
-  };
+  const onTabClick =
+    (scope: LibraryScope) => (event: MouseEvent<HTMLAnchorElement>) => {
+      if (
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
+      setPending(scope);
+    };
 
   return (
     <header>
-      <h1 className="text-xl font-semibold">Library</h1>
-      <p className="mt-1 text-sm text-stone-600">{INTRO[query.scope]}</p>
+      <h1 className="text-3xl font-semibold tracking-tight">Library</h1>
+      <p className="mt-2 text-sm leading-7 text-stone-600">
+        {INTRO[query.scope]}
+      </p>
 
       <nav aria-label="Library view" className="mt-5 flex justify-center">
         <ul className="relative grid grid-cols-3 rounded-full border border-line bg-stone-200/50 p-1">
@@ -71,7 +86,9 @@ export function LibraryHeader() {
                   onClick={onTabClick(s.id)}
                   aria-current={current ? "page" : undefined}
                   className={`inline-flex min-h-10 w-24 items-center justify-center rounded-full px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 motion-reduce:transition-none ${
-                    active === s.id ? "text-stone-900" : "text-stone-500 hover:text-stone-800"
+                    active === s.id
+                      ? "text-stone-900"
+                      : "text-stone-500 hover:text-stone-800"
                   }`}
                 >
                   {s.label}

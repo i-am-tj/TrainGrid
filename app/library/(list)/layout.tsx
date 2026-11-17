@@ -9,7 +9,7 @@ import { LibraryHeader } from "@/components/library/LibraryHeader";
  */
 export default function LibraryListLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-3xl px-3 py-4 sm:px-4">
+    <div className="mx-auto max-w-3xl px-3 py-7 sm:px-4 sm:py-10">
       <Suspense fallback={<LibraryHeaderFallback />}>
         <LibraryHeader />
       </Suspense>

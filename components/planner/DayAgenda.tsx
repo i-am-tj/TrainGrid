@@ -32,7 +32,8 @@ export function WeekStrip({
             key={day}
             href={`/week/${weekId}?day=${day}`}
             scroll={false}
-            className={`flex min-h-10 flex-1 items-center justify-center rounded-md py-2 text-center text-xs ${
+            aria-current={selected ? "date" : undefined}
+            className={`flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center rounded-md py-2 text-center text-xs ${
               selected
                 ? "bg-stone-900 text-white"
                 : isToday
@@ -63,11 +64,11 @@ export function DayAgenda({
   const prev =
     day === 1
       ? { weekId: addWeeks(weekId, -1), day: 7 as IsoDay }
-      : { weekId, day: ((day - 1) as IsoDay) };
+      : { weekId, day: (day - 1) as IsoDay };
   const next =
     day === 7
       ? { weekId: addWeeks(weekId, 1), day: 1 as IsoDay }
-      : { weekId, day: ((day + 1) as IsoDay) };
+      : { weekId, day: (day + 1) as IsoDay };
 
   const untimed = sessions
     .filter((s) => s.day === day && s.time === null)
@@ -129,7 +130,7 @@ export function DayAgenda({
         ) : null}
 
         {untimed.length === 0 && timed.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-line bg-card px-3 py-8 text-center text-sm text-stone-600">
+          <p className="ui-panel border-dashed px-4 py-10 text-center text-sm leading-7 text-stone-600">
             Nothing planned.
           </p>
         ) : null}

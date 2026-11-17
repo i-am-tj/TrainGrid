@@ -22,10 +22,10 @@ export function SessionCard({
     <Link
       prefetch={false}
       href={`/session/${session.id}`}
-      className={`block rounded-sm border border-stone-200 border-l-4 ${TYPE_BAR[session.type]} ${TYPE_TINT[session.type]} px-1.5 py-1 text-left hover:brightness-[0.98]`}
+      className={`ui-control block rounded-md border border-stone-200 border-l-4 ${TYPE_BAR[session.type]} ${TYPE_TINT[session.type]} px-1.5 py-1 text-left hover:brightness-[0.98]`}
       aria-label={`${session.name}, ${session.time ?? "no time"}`}
     >
-      <div className="truncate text-xs font-semibold text-stone-900">
+      <div className="text-xs font-semibold leading-snug text-stone-900 [overflow-wrap:anywhere]">
         {session.name}
       </div>
       <div className="mt-0.5 flex flex-wrap gap-x-1 text-[10px] text-stone-600">

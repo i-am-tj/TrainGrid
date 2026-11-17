@@ -1,7 +1,8 @@
 "use client";
 
 import { duplicateWeekAction } from "@/lib/actions";
-import { btnPrimary, fieldClass } from "@/lib/ui";
+import { ActionSubmit } from "@/components/ui/ActionSubmit";
+import { btnSecondary, fieldClass } from "@/lib/ui";
 
 export function DuplicateWeekForm({
   sourceWeekId,
@@ -17,7 +18,7 @@ export function DuplicateWeekForm({
   return (
     <form
       action={duplicateWeekAction}
-      className="mt-3 rounded-lg border border-line bg-card p-3"
+      className="ui-panel mt-3 p-3 sm:px-4"
       onSubmit={(event) => {
         const select = event.currentTarget.elements.namedItem(
           "destWeekId",
@@ -54,9 +55,12 @@ export function DuplicateWeekForm({
             ))}
           </select>
         </label>
-        <button type="submit" className={btnPrimary} disabled={sourceCount === 0}>
-          Duplicate week
-        </button>
+        <ActionSubmit
+          label="Duplicate week"
+          busy="Copying week…"
+          className={btnSecondary}
+          disabled={sourceCount === 0}
+        />
         <p className="text-xs text-stone-500">
           Copies each session with its own copy of the workout.
         </p>

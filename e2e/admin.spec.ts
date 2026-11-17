@@ -119,7 +119,7 @@ test("an admin revokes an accepted member's access; the member is locked out at 
     // An admin's own row offers nothing to revoke.
     const adminRow = page.getByRole("listitem").filter({ hasText: adminEmail });
     await expect(adminRow.getByText("Accepted")).toBeVisible();
-    await expect(adminRow.getByText(/· Admin$/)).toBeVisible();
+    await expect(adminRow.getByText("Admin · Protected", { exact: true })).toBeVisible();
     await expect(adminRow.getByRole("button")).toHaveCount(0);
 
     const memberRow = page.getByRole("listitem").filter({ hasText: member.email });

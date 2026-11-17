@@ -1,6 +1,6 @@
 # Epic 3 UI → Claude integration handoff
 
-Updated 2026-11-17. UI-01 is merged in PR #37; UI-02 implements login and dashboard presentation. **Dashboard exports below now exist; email contracts remain proposed.** Dashboard routing/data, root publication, OAuth changes and email delivery are not integrated.
+Updated 2026-11-17. UI-01 is merged in PR #37 and UI-02 in PR #38. UI-03 implements invitations/email presentation and existing-screen refinements. **Dashboard and email-template exports below now exist; live delivery remains unimplemented.** Dashboard routing/data, root publication, OAuth changes and email delivery are not integrated.
 
 ## 1. Dashboard props and real-data requirements
 
@@ -66,7 +66,7 @@ Unchanged: `safeNextPath` fallback `/`, callback construction, callback processi
 
 ## 4. Invitation email template inputs
 
-UI-03 proposed pure contract, not yet implemented:
+Implemented in `lib/email/invitation.ts`: `renderInvitationEmail(input): InvitationEmail`. This pure function never sends or stores anything:
 
 ```ts
 type InvitationEmailInput = { recipientEmail: string; loginUrl: string };
@@ -75,7 +75,7 @@ type InvitationEmail = {
 };
 ```
 
-Use the administrator's existing trusted-origin construction for loginUrl. Template must escape recipient values, reject unsafe URL schemes, use email-compatible table/inline CSS, and include both text and HTML. Logo must work without scripts or relative email image paths; settle trusted absolute asset origin or an approved embedded branding treatment during UI-03. Do not include member records or email addresses in public preview assets. No tokenized invitation semantics are implied: existing access is matched to verified email.
+Use the administrator's existing trusted-origin construction for loginUrl. Template must escape recipient values, reject unsafe URL schemes, use email-compatible table/inline CSS, and include both text and HTML. The template derives its absolute first-party PNG logo URL from loginUrl.origin (`/brand/traingrid-logo-google-120.png`). No SVG, script, remote font or external stylesheet is needed. Do not include member records or email addresses in public preview assets. No tokenized invitation semantics are implied: existing access is matched to verified email.
 
 ## 5. Email sending integration contract
 
@@ -85,7 +85,7 @@ Create/resend must authenticate admin on server and respect current protected re
 
 ## 6. Delivery state expectations
 
-Proposed separate presentation union: `not_requested | preparing | accepted | failed`. Before integration, render only truthful not-requested copy and clearly labelled disabled preview controls. Membership remains Pending/Accepted/Revoked from existing model.
+Exported preview-only union `EmailDeliveryPreviewState` in `components/admin/EmailWorkflowPreview.tsx`: `not_requested | preparing | accepted | failed`. Before integration, render only truthful not-requested copy and clearly labelled disabled preview controls. Membership remains Pending/Accepted/Revoked from existing model.
 
 - preparing: show busy state and prevent duplicate submit.
 - accepted: provider accepted request; say exactly that. Do not claim recipient delivery.
@@ -101,9 +101,9 @@ The admin preview must not manufacture status transitions or call a fake send. R
 | Landing and public shell | Implemented, reusable, not routed | Coordinate root publication/metadata/shell/navigation |
 | Dashboard | All requested presentational states implemented; fixture QA only; no `/home` route/data loader | Member route, data preparation, timezone, default login destination |
 | Login | Redesigned production `/login`, all existing branches and real form pending UI | Preserve/integrate auth behavior; no provider redesign requested |
-| Invitations | Existing functional page retained; UI-03 planned | Keep admin policy and membership semantics |
-| Invitation email | Proposed contract only; UI-03 planned | Sending, retries, persisted delivery state and secrets |
-| Planner/library/editor/session | Existing operations retained; visual refinements UI-03 | No data/persistence changes required by UI scope |
+| Invitations | Redesigned guarded page, existing actions and protected records preserved | Keep admin policy and membership semantics |
+| Invitation email | HTML/text renderer, guarded lazy preview, local copy controls; future delivery controls disabled | Sending, retries, persisted delivery state and secrets |
+| Planner/library/editor/session | Viewport containment, shared panels, structured controls, pending/feedback refinements implemented | No data/persistence changes required by UI scope |
 
 ## 8. Integration tests Claude must add/update
 
@@ -116,7 +116,7 @@ The admin preview must not manufacture status transitions or call a fake send. R
 - Email escaping, unsafe URL refusal, subject/preheader/text equivalence, invited-address copy, actual branding URL and responsive email-client rendering.
 - Run existing RLS, integration, auth, admin and journey tests after wiring, plus UI-02/UI-03 component states and final UI-04 viewport/zoom matrix.
 
-Do not mark these integrations complete before real authorized data and service behavior are exercised. UI-01 review is satisfied (PR #37 merged). UI-02 is submitted for its own manual review; UI-03 remains future work.
+Do not mark these integrations complete before real authorized data and service behavior are exercised. UI-01 review is satisfied (PR #37 merged). UI-02 review is satisfied (PR #38 merged). UI-03 is prepared for its own manual review; UI-04 remains future work.
 
 
 ## UI-02 integration details
@@ -130,3 +130,33 @@ Do not mark these integrations complete before real authorized data and service 
 - `npm run test:ui` checks all seven dashboard states and eight login states at 320/360/768/1024/1440 widths and short height in both themes. New `e2e/login-ui.spec.ts` verifies live login layout, next values, keyboard provider order and an intercepted real Server Action's pending state. Existing auth tests still own real Supabase provider handoff, fixed errors, member/nonmember and sign-out coverage.
 
 Remaining backend integration tests in section 8 still apply. Static screenshot harness uses fallback fonts and has no hydration; live Next/E2E checks cover actual login controls. Fixture retry/session/routine links are examples, not production records. UI-02 does not change the public-root handoff or introduce authentication behavior.
+
+
+## UI-03 implemented contracts and remaining delivery work
+
+### Email renderer
+
+`renderInvitationEmail({ recipientEmail, loginUrl })` returns `{ subject, preheader, html, text }`. The recipient is trimmed and validated; invalid recipients throw. loginUrl must be an absolute HTTP(S) URL without embedded credentials; other schemes and relative URLs throw. The caller must supply the trusted application login URL, based on the configured deployment origin when actual sending is integrated. The renderer does not authorize recipients, create invitations or verify delivery. Pass the canonical invited address from the existing invitation record.
+
+The HTML escapes dynamic values, uses presentation tables/inline CSS, a 600px maximum-width fluid layout, a narrow-screen spacing override and an Outlook table fallback. The logo is the existing first-party PNG at the login URL's origin. The HTML has its own warm light email palette, isolated from the app theme. The CTA and text alternative carry the same URL and invited-email instruction. No HTML is inferred from user markup. Subject and preheader are deterministic. Preview rendering has been checked in Chromium at mobile/desktop widths; provider-specific inbox rendering and verified delivery are not claimed.
+
+### Guarded admin preview
+
+`InvitationEmailPreview({ loginUrl: string })` is mounted only inside the existing administrator-guarded `/admin/invitations` page. Expanding it lazy-mounts an example recipient field and a sandboxed iframe; changing the field only prepares a preview. Invalid drafts hide the iframe and show validation feedback. No new public/email route exists. `Copy invitation text` and `Copy sign-in link` use the local clipboard and report actual copy failure with a manual-selection fallback. The preview does not change membership or call an email service.
+
+`EmailWorkflowPreview({ state })` always renders “Design preview” and disabled send/resend controls. These are deliberately hypothetical examples, not real delivery records. Do not use this component as a live status view without introducing a separate connected adapter and removing preview-only wording under reviewed integration. A future live component needs prepared delivery state and authorized server actions/callbacks, with duplicate-request protection and persisted errors owned by Claude.
+
+- `not_requested`: no send request; existing Invite still means membership invitation creation only.
+- `preparing`: busy and noninteractive while preparing a real send.
+- `accepted`: provider accepted the request; it is **not** proof of recipient delivery.
+- `failed`: sending failed while membership invitation may remain usable; allow authorized retry and local copy.
+
+No fake send timers, provider calls, secrets, delivery fields or retries are implemented. Current actual success text remains “Invitation created.”, and the page still explicitly says “No email is sent.” Membership Pending/Accepted/Revoked continues to come only from the existing invitation model. Guards, protected-admin rules and revocation confirmation/action are unchanged.
+
+### Other UI changes and integration expectations
+
+`InvitationListView({ invitations: InvitationListItem[] })` is a presentation-only list. Server page preparation continues using invitationStatus/revokeKind/protected ids. Its action slot is the existing RevokeForm; no new authorization decision lives in the view. Mobile cards and desktop columns share one semantic list. Empty and protected-record states are explicit.
+
+The planner uses the actual header/control/footer sizes in normal flex flow with 100dvh. A definite `0px` flex basis is intentional through the planner containers: changing it to `0%` can restore intrinsic 24-hour height. The 18rem minimum calendar viewport protects a readable set of rows and lets short/zoomed documents grow; it is not a fixed calendar height. There is no body overflow lock. Twenty-four hours, untimed/timed stacking, links and morning-scroll code are preserved. Responsive day agenda and the library's URL filters/sliding scope pill retain their original behavior. `ActionSubmit` adds real form-pending visuals without moving actions, field payloads or native confirmations.
+
+Claude needs no new backend integration for the viewport or existing editor refinements. Dashboard/root responsibilities from UI-01/UI-02 remain open and unchanged. Add actual provider/invitation orchestration tests listed in section 8 when integrating delivery, including recipient validation, trusted logo/login origin, HTML/text parity, safe failure/retry messaging, and membership success combined with email failure. Check the final email in the selected provider's supported inbox clients before claiming delivery integration complete.

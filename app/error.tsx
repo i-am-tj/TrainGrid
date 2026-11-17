@@ -1,5 +1,7 @@
 "use client";
 
+import { btnPrimary } from "@/lib/ui";
+
 export default function ErrorPage({
   error,
   reset,
@@ -13,12 +15,12 @@ export default function ErrorPage({
       : "Something went wrong. Try again from the planner.";
 
   return (
-    <div className="mx-auto max-w-xl px-3 py-16 text-center">
-      <h1 className="text-xl font-semibold">Could not complete that action</h1>
-      <p className="mt-2 text-sm text-stone-600">{message}</p>
+    <div className="mx-auto my-10 max-w-xl rounded-2xl border border-line bg-card px-5 py-10 text-center">
+      <h1 className="text-2xl font-semibold tracking-tight">Could not complete that action</h1>
+      <p role="alert" className="mt-3 text-sm leading-7 text-red-800 [overflow-wrap:anywhere]">{message}</p>
       <button
         type="button"
-        className="mt-4 inline-flex min-h-10 items-center rounded-md bg-stone-900 px-3 py-2 text-sm text-white"
+        className={`${btnPrimary} mt-5`}
         onClick={() => reset()}
       >
         Try again

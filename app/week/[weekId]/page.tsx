@@ -12,7 +12,12 @@ import { toPlannerSession } from "@/lib/data/planner";
 import { memberData } from "@/lib/data/server";
 import { countSessionsByWeek, listSessionsForWeek } from "@/lib/data/sessions";
 import type { IsoDay } from "@/lib/domain";
-import { addWeeks, formatWeekLabel, nearbyWeekIds, todayParts } from "@/lib/week";
+import {
+  addWeeks,
+  formatWeekLabel,
+  nearbyWeekIds,
+  todayParts,
+} from "@/lib/week";
 
 export default async function WeekPage({
   params,
@@ -42,16 +47,35 @@ export default async function WeekPage({
   // Everything that can 404 or redirect has run; the week's data streams in
   // behind the section loader while the navigation is already on screen.
   return (
-    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4">
-      <WeekNav weekId={rawWeekId} todayWeekId={today.weekId} todayDay={today.day} />
-      <Suspense key={`${rawWeekId}-${day}`} fallback={<SectionLoader label="Loading your week…" minHeight="min-h-96" />}>
+    <div className="planner-page mx-auto max-w-7xl px-3 py-4 sm:px-4">
+      <WeekNav
+        weekId={rawWeekId}
+        todayWeekId={today.weekId}
+        todayDay={today.day}
+      />
+      <Suspense
+        key={`${rawWeekId}-${day}`}
+        fallback={
+          <SectionLoader label="Loading your week…" minHeight="min-h-96" />
+        }
+      >
         <WeekContent db={db} userId={userId} weekId={rawWeekId} day={day} />
       </Suspense>
     </div>
   );
 }
 
-async function WeekContent({ db, userId, weekId, day }: { db: Db; userId: string; weekId: string; day: IsoDay }) {
+async function WeekContent({
+  db,
+  userId,
+  weekId,
+  day,
+}: {
+  db: Db;
+  userId: string;
+  weekId: string;
+  day: IsoDay;
+}) {
   const nearby = nearbyWeekIds(weekId).filter((id) => id !== weekId);
   const [records, occupied] = await Promise.all([
     listSessionsForWeek(db, userId, weekId),
@@ -66,7 +90,7 @@ async function WeekContent({ db, userId, weekId, day }: { db: Db; userId: string
   }));
 
   return (
-    <>
+    <div className="planner-content">
       <DuplicateWeekForm
         sourceWeekId={weekId}
         sourceCount={weekSessions.length}
@@ -83,10 +107,10 @@ async function WeekContent({ db, userId, weekId, day }: { db: Db; userId: string
         </p>
       ) : null}
 
-      <div className="hidden md:block">
+      <div className="planner-desktop hidden md:block">
         <WeekGrid weekId={weekId} sessions={weekSessions} />
       </div>
       <DayAgenda weekId={weekId} day={day} sessions={weekSessions} />
-    </>
+    </div>
   );
 }

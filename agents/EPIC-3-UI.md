@@ -1,6 +1,6 @@
 # Epic 3 — TrainGrid product experience and frontend
 
-Status: UI-01 merged (PR #37); UI-02 ready for review from reviewed main `47e2eb7`. UI-01 review gate is satisfied.
+Status: UI-01 merged (PR #37), UI-02 merged (PR #38); UI-03 ready for review from reviewed main `fba6fc1`.
 Audit date: 2026-11-17. Reviewed-main base: `f3a0770` (PR #36).
 Branch: `codex/epic-3-ui-01`. This document distinguishes implementation from future work.
 
@@ -239,3 +239,56 @@ Claude dependencies: serve authenticated `/home`, prepare authorized real data (
 Remaining UI work: UI-03 invitations/email preview and planner/library/editor/session polish; UI-04 final responsive/zoom/contrast, motion/performance and integration regression. Review and manual merge only; UI-03 is not started.
 
 UI-02 review refinement: active member navigation uses the existing background highlight without the copper underline. Accessible aria-current and keyboard focus remain unchanged.
+
+
+## UI-03 — invitations, email preview and existing application refinement
+
+Base `fba6fc1` (merged PR #38), branch `codex/epic-3-ui-03`. The current warm theme and the background-only active navigation approved in review remain unchanged. No API, schema, authorization, callback, dashboard aggregation, email service, secrets or scheduled-session persistence changes belong to this PR.
+
+### Invitations and email
+
+The existing admin check/404 and missing-configuration branch still run before data or preview rendering. Heading, form, feedback and list now use shared hierarchy/surfaces. Recipient email wraps, creation dates stay UTC, and Pending/Accepted/Revoked and protected admin records still come from the same model helpers. Existing invitation creation/reset, validation feedback, pending button and native revoke confirmation are preserved. Membership and delivery are not conflated.
+
+The email renderer in `lib/email/invitation.ts` returns subject, preheader, responsive table/inline-style HTML and plain text. Dynamic values are escaped, recipient syntax validated and non-absolute/unsafe/credential-bearing URLs rejected. Branding reuses the existing first-party PNG with an absolute URL. It introduces no email dependency or requests. The template identifies the invited address, explains verified Google/GitHub email matching, uses the Open TrainGrid CTA and states invite-only Beta.
+
+The admin-only expandable preview mounts content only when opened. It has a distinct Preview recipient field, a sandboxed iframe, subject/preheader, plain-text alternative and truthful clipboard feedback/fallback. Editing it neither creates invitations nor sends email. A nested future-workflow preview demonstrates not-requested/preparing/provider-accepted/failure states with disabled send/resend controls; each is labelled Design preview. The existing action still returns “Invitation created.” and the page still says “No email is sent.”
+
+### Planner viewport
+
+The root body uses a minimum 100dvh; on desktop planner routes it has 100dvh height and a flex layout through main, page, streamed content, desktop wrapper and scrolling grid. Controls and footer are measured by normal layout, not subtracted as guessed pixel offsets. A definite zero-pixel flex basis prevents the intrinsic full-day content height from expanding the scroller. The grid has an 18rem readable minimum, so short windows and enlarged text cause document scrolling with the footer after content. No global overflow lock or overlay footer is used.
+
+Preserved: all 24 hour rows and seven untimed cells; multiple sessions per hour; compareSessions ordering; original initial scroll `UNTIMED + 6 * ROW`; exact scheduling/navigation URLs and server actions. The calendar region is now named/focusable for keyboard scrolling and add links reveal on keyboard focus. Long session names wrap without overlapping other cards. Tablet keeps the 720px internal minimum width; phones retain DayAgenda and a readable vertically arranged day strip.
+
+### Library, editor, session and feedback polish
+
+The library's All/TrainGrid/Mine layout, single sliding pill, Search/equipment/category arrangement, query parameters, button hierarchy and New routine toolbar position remain intact. Changes are typography, readable row padding/wrapping, rounded panels and restrained hover. Routine detail and workout item panels use matching hierarchy and spacing.
+
+Routine and session forms use shared panels and a small ActionSubmit component for real pending text/disabled state. All original form actions, hidden ids, parallel item fields, item ordering, equipment pressed states, optional fields, YouTube parsing, validation and native save/delete/cancel behavior are preserved. Duplicate Week is outlined beside the primary Add session navigation action; its destination counts/append warning/confirmation/payload are unchanged. Error and missing-page cards use consistent focus/spacing, and actual errors remain alerts rather than success states.
+
+### Verification and review evidence
+
+Meaningful new checks cover the pure email's content/security/HTML-text agreement; empty/pending/accepted/revoked/protected invitation presentation; copy success and invalid preview drafts; disabled hypothetical delivery actions; 24-hour link count; initial/internal scroll; footer bounds at ordinary and very short heights; same-hour card non-overlap; untimed placement; keyboard scrolling; a 720×450 CSS viewport equivalent to 2× browser zoom on a 1440×900 display; enlarged text; and structured routine/session fields with cancellation of destructive confirmations.
+
+The isolated component harness adds invitation/empty/email fixtures under `tests/ui/fixtures/`, never production routes. Live app screenshots cover invitations/email preview, populated planner, library, routine detail/editor, session add/detail/edit/customize at 360 and 1440 widths, with both themes represented. Email markup has standalone narrow/desktop captures. All examples/records used for QA are local test data. Inbox-specific rendering is a future verification step; no actual message sending was tested or implemented.
+
+Final validation passed: lint/typecheck; 184 unit tests (including 10 email content/security cases); 191 local database tests; 35 integration tests; 41 component browser tests; all 126 app E2E tests in the final full run without retries; secret scan; production build using `next build --webpack`. DB-writing suites ran sequentially. The admin regression now expects the explicit “Admin · Protected” label while retaining its no-revoke-control and immediate member-lockout assertions. UI-04 remains responsible for final cross-workstream responsive, accessibility/contrast, motion/performance and integration regression. Dashboard data/public-root/OAuth destination work remains with Claude; actual email delivery/retry persistence remains with Claude.
+
+
+### UI-03 review report
+
+Built: administrator invitations layout and feedback; protected/status/empty list presentation; reusable responsive HTML/plain-text invitation template; lazy guarded email preview, copy controls and disabled future-delivery examples; viewport-contained planner with footer; library/detail/editor/session/form/feedback refinement and real pending controls. Existing authorization/actions/field payloads/snapshot/week-copy logic are unchanged. No backend modules, APIs, schema, policies, email provider, secrets or production records were modified.
+
+Review screenshots (live local test app, except standalone email):
+
+| Screen | Desktop | Mobile |
+| --- | --- | --- |
+| Invitations and preview | [1440px](../docs/images/epic-3/ui-03/invitations-1440-light.png) | [360px](../docs/images/epic-3/ui-03/invitations-360-light.png) |
+| Populated planner | [1440px](../docs/images/epic-3/ui-03/planner-1440-light.png) | [360px](../docs/images/epic-3/ui-03/planner-360-light.png) |
+| Library | [1440px](../docs/images/epic-3/ui-03/library-1440-light.png) | [360px](../docs/images/epic-3/ui-03/library-360-light.png) |
+| Routine editor, dark | [1440px](../docs/images/epic-3/ui-03/routine-editor-1440-dark.png) | [360px](../docs/images/epic-3/ui-03/routine-editor-360-dark.png) |
+| Planned session | [1440px](../docs/images/epic-3/ui-03/session-1440-light.png) | [360px](../docs/images/epic-3/ui-03/session-360-light.png) |
+| Email markup | [1440px](../docs/images/epic-3/ui-03/email-1440.png) | [360px](../docs/images/epic-3/ui-03/email-360.png) |
+
+Additional routine, add/edit/customize-session and dark-state captures are included in the same directory (28 total). Development indicators are excluded from app images. QA records are disposable local examples. All invitations/email component fixtures are kept under tests and ignored preview output, never exposed as application routes.
+
+Deferred to Claude: actual sending/provider acceptance/failure/retry persistence; canonical origin and active-invitation validation for sending; selected-provider inbox-client verification; previously documented dashboard/root/post-login integration. No backend-dependent delivery feature is marked complete. Remaining frontend work is UI-04 final cross-workstream accessibility/contrast, responsive/zoom, motion/performance and integration regression. Manual review/merge only; UI-04 is not started.

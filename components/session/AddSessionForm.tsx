@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ActionSubmit } from "@/components/ui/ActionSubmit";
 import { useMemo, useState } from "react";
 import { WorkoutItemEditor } from "@/components/library/WorkoutItemEditor";
 import { createScheduledSession } from "@/lib/actions";
@@ -27,7 +28,9 @@ export function AddSessionForm({
   const [from, setFrom] = useState<"routine" | "blank">(
     initialRoutineId || routines.length ? "routine" : "blank",
   );
-  const [routineId, setRoutineId] = useState(initialRoutineId ?? routines[0]?.id ?? "");
+  const [routineId, setRoutineId] = useState(
+    initialRoutineId ?? routines[0]?.id ?? "",
+  );
   const selected = useMemo(
     () => routines.find((r) => r.id === routineId) ?? null,
     [routines, routineId],
@@ -40,10 +43,15 @@ export function AddSessionForm({
   const mine = routines.filter((r) => r.isOwn);
 
   return (
-    <form action={createScheduledSession} className="space-y-4">
+    <form
+      action={createScheduledSession}
+      className="ui-panel space-y-5 p-4 sm:p-6"
+    >
       <input type="hidden" name="weekId" value={weekId} />
       <input type="hidden" name="from" value={from} />
-      {from === "routine" ? <input type="hidden" name="routineId" value={routineId} /> : null}
+      {from === "routine" ? (
+        <input type="hidden" name="routineId" value={routineId} />
+      ) : null}
 
       <label className="block text-sm font-medium">
         Day
@@ -59,7 +67,11 @@ export function AddSessionForm({
       <div className="flex flex-wrap items-end gap-3">
         <label className="block text-sm font-medium">
           Time
-          <select name="time" className={fieldClass} defaultValue={initialTime ?? "07:00"}>
+          <select
+            name="time"
+            className={fieldClass}
+            defaultValue={initialTime ?? "07:00"}
+          >
             {TIME_OPTIONS.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -68,8 +80,16 @@ export function AddSessionForm({
           </select>
         </label>
         <label className="flex min-h-10 items-center gap-2 text-sm">
-          <input type="hidden" name="untimed" value={untimed ? "true" : "false"} />
-          <input type="checkbox" checked={untimed} onChange={(e) => setUntimed(e.target.checked)} />
+          <input
+            type="hidden"
+            name="untimed"
+            value={untimed ? "true" : "false"}
+          />
+          <input
+            type="checkbox"
+            checked={untimed}
+            onChange={(e) => setUntimed(e.target.checked)}
+          />
           No start time
         </label>
       </div>
@@ -182,7 +202,11 @@ export function AddSessionForm({
 
       <label className="block text-sm font-medium">
         Notes
-        <textarea name="notes" maxLength={4000} className={`${fieldClass} min-h-16`} />
+        <textarea
+          name="notes"
+          maxLength={4000}
+          className={`${fieldClass} min-h-16`}
+        />
       </label>
 
       {from === "blank" ? (
@@ -193,9 +217,11 @@ export function AddSessionForm({
       ) : null}
 
       <div className="flex gap-2">
-        <button type="submit" className={btnPrimary}>
-          Add
-        </button>
+        <ActionSubmit
+          label="Add"
+          busy="Adding session…"
+          className={btnPrimary}
+        />
         <Link href={`/week/${weekId}`} className={btnSecondary}>
           Cancel
         </Link>

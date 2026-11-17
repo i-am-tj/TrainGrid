@@ -19,7 +19,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
   const date = datesOfWeek(session.weekId)[session.day - 1]!;
 
   return (
-    <div className="mx-auto max-w-xl px-3 py-4 sm:px-4">
+    <div className="workout-body mx-auto max-w-2xl px-3 py-7 sm:px-4 sm:py-10">
       <Link
         href={`/week/${session.weekId}?day=${session.day}`}
         className="text-sm text-stone-600 hover:underline"
@@ -27,8 +27,8 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
         ← Back to week
       </Link>
 
-      <h1 className="mt-4 text-2xl font-semibold">{session.name}</h1>
-      <p className="mt-1 text-sm text-stone-600">
+      <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight">{session.name}</h1>
+      <p className="mt-2 text-sm leading-7 text-stone-600">
         {TYPE_SHORT[session.category]} · {formatLongDay(date)}
         {session.startTime ? ` · ${session.startTime}` : " · no specific time"}
         {session.durationMinutes != null ? ` · ${session.durationMinutes}m` : ""}

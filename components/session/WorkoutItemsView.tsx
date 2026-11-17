@@ -9,15 +9,19 @@ export function WorkoutItemsView({ items }: { items: PlannedItem[] }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="workout-body space-y-4">
       {items.map((item) => (
-        <section key={item.id}>
-          <h2 className="text-base font-semibold text-stone-900">{item.name}</h2>
+        <section key={item.id} className="ui-panel p-5 sm:p-6">
+          <h2 className="text-base font-semibold text-stone-900">
+            {item.name}
+          </h2>
           {item.instruction ? (
-            <p className="mt-1 whitespace-pre-line text-sm text-stone-800">{item.instruction}</p>
+            <p className="mt-1 whitespace-pre-line text-sm leading-7 text-stone-800">
+              {item.instruction}
+            </p>
           ) : null}
           {item.rest || item.target ? (
-            <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-700">
+            <dl className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-700">
               {item.rest ? (
                 <div className="flex gap-1">
                   <dt className="font-medium">Rest:</dt>
@@ -33,7 +37,9 @@ export function WorkoutItemsView({ items }: { items: PlannedItem[] }) {
             </dl>
           ) : null}
           {item.notes ? (
-            <p className="mt-2 whitespace-pre-line text-sm text-stone-600">{item.notes}</p>
+            <p className="mt-2 whitespace-pre-line text-sm leading-7 text-stone-600">
+              {item.notes}
+            </p>
           ) : null}
           {item.equipment.length > 0 ? (
             <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Equipment">
@@ -68,11 +74,14 @@ function VideoLink({ item }: { item: PlannedItem }) {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm font-medium text-stone-900 underline"
+        className="inline-flex min-h-10 items-center rounded-sm text-sm font-medium text-accent underline underline-offset-4"
       >
         <span aria-hidden="true">▶ </span>
         Watch demo
-        <span className="sr-only"> of {item.name} on YouTube (opens in a new tab)</span>
+        <span className="sr-only">
+          {" "}
+          of {item.name} on YouTube (opens in a new tab)
+        </span>
       </a>
     </p>
   );

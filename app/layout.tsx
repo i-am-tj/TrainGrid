@@ -65,9 +65,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-dvh flex flex-col">
         <AppHeader />
-        <main className="flex-1">{children}</main>
+        <main className="app-main flex-1">{children}</main>
         <SiteFooter />
         <Suspense fallback={null}>
           <NavigationLoader />
