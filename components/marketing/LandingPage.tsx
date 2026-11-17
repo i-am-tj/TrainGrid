@@ -210,52 +210,53 @@ export function LandingPage({
         className="landing-container pb-20"
         aria-labelledby="creator-title"
       >
-        <div className="creator-card ui-panel">
-          <div className="creator-mark">
-            <Image
-              src="/marketing/tanuj-chakraborty.jpg"
-              alt="Tanuj Chakraborty"
-              width={1170}
-              height={1170}
-              unoptimized
-              loading="lazy"
-              className="aspect-square w-56 rounded-2xl border border-hairline object-cover"
-            />
-            <span className="mt-5 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-600">
-              Made with intention
-            </span>
-          </div>
-          <div className="p-7 sm:p-10">
-            <p className="ui-eyebrow">Behind TrainGrid</p>
-            <h2
-              id="creator-title"
-              className="mt-4 text-3xl font-semibold tracking-tight"
-            >
-              Tanuj Chakraborty
-            </h2>
-            <p className="mt-2 text-sm text-accent">{creatorRole}</p>
-            <p className="mt-5 max-w-lg text-sm leading-7 text-stone-600">
-              TrainGrid was created to make the training week easier to plan: a
-              clear calendar, useful routines, and a straightforward answer to
-              “what am I doing today?”
-            </p>
-            <div className="mt-6 flex flex-wrap gap-5 text-sm">
-              <a
-                className="underline-reveal py-2"
-                href="https://iamtj.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Portfolio ↗
-              </a>
-              <a
-                className="underline-reveal py-2"
-                href="https://github.com/i-am-tj"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                GitHub ↗
-              </a>
+        <div className="creator-card ui-panel p-7 sm:p-10">
+          <h2
+            id="creator-title"
+            className="ui-eyebrow border-b border-line pb-5"
+          >
+            Behind TrainGrid
+          </h2>
+          <div className="creator-layout mt-8">
+            <div className="creator-mark">
+              <Image
+                src="/marketing/tanuj-chakraborty.jpg"
+                alt="Tanuj Chakraborty"
+                width={1170}
+                height={1170}
+                unoptimized
+                loading="lazy"
+                className="aspect-square w-56 max-w-full rounded-2xl border border-hairline object-cover"
+              />
+            </div>
+            <div className="creator-details">
+              <h3 className="text-3xl font-semibold tracking-tight">
+                Tanuj Chakraborty
+              </h3>
+              <p className="mt-2 text-sm text-accent">{creatorRole}</p>
+              <p className="mt-5 max-w-lg text-sm leading-7 text-stone-600">
+                TrainGrid was created to make the training week easier to plan:
+                a clear calendar, useful routines, and a straightforward answer
+                to “what am I doing today?”
+              </p>
+              <div className="mt-6 flex flex-wrap gap-5 text-sm">
+                <a
+                  className="underline-reveal py-2"
+                  href="https://iamtj.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Portfolio ↗
+                </a>
+                <a
+                  className="underline-reveal py-2"
+                  href="https://github.com/i-am-tj"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub ↗
+                </a>
+              </div>
             </div>
           </div>
         </div>

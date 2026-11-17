@@ -145,3 +145,66 @@ test("mobile public menu retains native no-JavaScript access", async ({
     ),
   ).toBe(true);
 });
+
+test("Behind TrainGrid uses one card with aligned portrait and details in both themes", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("http://ui-preview.test/");
+  const card = page.locator(".creator-card");
+  const portrait = card.getByRole("img", {
+    name: "Tanuj Chakraborty",
+    exact: true,
+  });
+  const details = card.getByRole("heading", {
+    name: "Tanuj Chakraborty",
+    exact: true,
+  });
+  await expect(
+    card.getByRole("heading", { name: "Behind TrainGrid", exact: true }),
+  ).toBeVisible();
+  await expect(
+    card.getByText("Made with intention", { exact: true }),
+  ).toHaveCount(0);
+  for (const theme of ["light", "dark"] as const) {
+    await page.evaluate(
+      (dark) => document.documentElement.classList.toggle("dark", dark),
+      theme === "dark",
+    );
+    for (const width of [320, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await portrait.scrollIntoViewIfNeeded();
+      await portrait.evaluate((image) => (image as HTMLImageElement).decode());
+      const imageBox = (await portrait.boundingBox())!;
+      const textBox = (await details.boundingBox())!;
+      const contentBox = (await details.locator("..").boundingBox())!;
+      if (width >= 768) {
+        expect(textBox.x - imageBox.x - imageBox.width).toBeGreaterThanOrEqual(
+          40,
+        );
+        expect(
+          Math.abs(
+            imageBox.y +
+              imageBox.height / 2 -
+              contentBox.y -
+              contentBox.height / 2,
+          ),
+        ).toBeLessThanOrEqual(1);
+      } else {
+        expect(textBox.y).toBeGreaterThanOrEqual(
+          imageBox.y + imageBox.height + 32,
+        );
+      }
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await mkdir("docs/images/epic-3/loaders-creator", { recursive: true });
+      await card.screenshot({
+        path: `docs/images/epic-3/loaders-creator/creator-${width}-${theme}.png`,
+        animations: "disabled",
+      });
+    }
+  }
+});

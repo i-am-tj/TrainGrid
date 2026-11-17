@@ -76,3 +76,20 @@ The empty-routine actions use a 24px horizontal gap and 12px vertical gap when w
 | Routine actions | [1440px](../docs/images/epic-3/enhancements/empty-routines-1440-light.png) | [1440px](../docs/images/epic-3/enhancements/empty-routines-1440-dark.png) | [320px](../docs/images/epic-3/enhancements/empty-routines-320-light.png) | [320px](../docs/images/epic-3/enhancements/empty-routines-320-dark.png) |
 
 Modal captures use the live local app; action captures show the isolated component empty state.
+
+## Follow-up — landing/home loaders, sign-out and creator card
+
+Based on reviewed main `dd82d4f` after PR #42: `/home` now uses the existing branded SectionLoader as its route fallback, and the public landing group has the same fallback. Existing cross-route logo progress remains in place. The public landing page remains static and has no artificial delay: loading indicators appear only while navigation/rendering is pending. No auth or data-fetching logic changes.
+
+The sign-out form retains its existing action and local-session semantics. Its real `useFormStatus` pending state shows the large logo and visible “Signing you out...” text in a body portal, so closing the mobile menu cannot hide the progress indicator. The submitting control is disabled, and progress disappears when the action finishes/navigation lands. Reduced-motion users see a static logo.
+
+The creator card now has a full-width “Behind TrainGrid” heading and divider, with the supplied portrait on the left and vertically centered name/role/details/links on the right. “Made with intention” and the split tinted photo panel were removed. Flexible wrapping stacks the photo above the details on phones and at enlarged text sizes without squeezing names into a narrow column. Founder role, original photo, verified links and theme are preserved.
+
+Validation covers both themes; 320/768/1440px creator alignment; 200% text reflow; semantic heading order/axe; delayed `/` and `/home` navigation; and real sign-out pending state at 360/1440px including reduced motion. Existing header Escape/outside-click and auth/home/member-isolation tests are retained. Route fallbacks add no artificial loading timers or auth redesign. Component captures use the isolated preview; sign-out captures use the real local app.
+
+Final checks pass: 50 component browser tests, 38 affected app browser tests, lint/typecheck, secret scan and optimized `next build --webpack`. The existing delayed-navigation test now installs its interception before page loading/prefetch and waits for header hydration, so the pending state is observed reliably.
+
+| Screen | Desktop light | Desktop dark | Phone light | Phone dark |
+| --- | --- | --- | --- | --- |
+| Creator card | [1440px](../docs/images/epic-3/loaders-creator/creator-1440-light.png) | [1440px](../docs/images/epic-3/loaders-creator/creator-1440-dark.png) | [320px](../docs/images/epic-3/loaders-creator/creator-320-light.png) | [320px](../docs/images/epic-3/loaders-creator/creator-320-dark.png) |
+| Signing out | [1440px](../docs/images/epic-3/loaders-creator/signout-1440-light.png) | [1440px](../docs/images/epic-3/loaders-creator/signout-1440-dark.png) | [360px](../docs/images/epic-3/loaders-creator/signout-360-light.png) | [360px](../docs/images/epic-3/loaders-creator/signout-360-dark.png) |
