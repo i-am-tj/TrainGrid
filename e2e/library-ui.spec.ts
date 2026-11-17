@@ -16,7 +16,11 @@ test.beforeEach(async ({ context, baseURL }) => {
 const viewNav = (page: Page) => page.getByRole("navigation", { name: "Library view" });
 const tab = (page: Page, name: string) => viewNav(page).getByRole("link", { name, exact: true });
 const pill = (page: Page) => page.getByTestId("library-view-pill");
-const box = async (locator: Locator) => (await locator.boundingBox())!;
+const box = async (locator: Locator) => {
+  // Results stream after the persistent header and filters.
+  await expect(locator).toBeVisible();
+  return (await locator.boundingBox())!;
+};
 
 /** Relative luminance 0 (black) … 1 (white) of a computed CSS colour. */
 const luminance = (locator: Locator, property: "backgroundColor" | "color") =>

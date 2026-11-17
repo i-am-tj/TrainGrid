@@ -3,7 +3,7 @@ import { GitHubIcon, LinkedInIcon, MediumIcon, XIcon } from "./SocialIcons";
 /**
  * Site footer, modelled on iamtj.dev: social links on the left, the "TJ"
  * monogram (linking to iamtj.dev) in the middle, the credit on the right.
- * Typography and sizing follow the app header (Geist, 14px text, 28px
+ * Typography and sizing follow the app header (Geist, 14px text, 40px
  * controls with the header's hover pill, same container and height), except
  * the monogram, which keeps iamtj.dev's Instrument Serif italic ring.
  * Stacks and centres on narrow screens. Static content only.
@@ -39,7 +39,7 @@ export function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={name}
-                  className="inline-flex size-7 items-center justify-center rounded-md text-stone-600 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+                  className="inline-flex size-10 items-center justify-center rounded-md text-stone-600 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
                 >
                   <Icon />
                 </a>
