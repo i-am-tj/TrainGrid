@@ -231,7 +231,7 @@ export function MemberDashboard({ state }: { state: DashboardState }) {
                   <Link href={data.createRoutineHref} className={btnSecondary}>
                     Create your first routine
                   </Link>
-                  <Link href={data.sharedLibraryHref} className={textLink}>
+                  <Link href={data.sharedLibraryHref} className={`${textLink} inline-flex min-h-10 items-center text-sm`}>
                     Browse TrainGrid routines
                   </Link>
                 </>

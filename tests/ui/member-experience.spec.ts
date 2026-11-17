@@ -205,3 +205,19 @@ test("dashboard links support keyboard focus with reduced motion", async ({
     await day.evaluate((el) => getComputedStyle(el).transitionDuration),
   ).toBe("0s");
 });
+
+test("empty routine actions align in a centered row and wrap cleanly on phones", async ({ page }) => {
+  await page.goto(`${preview}/dashboard-no-routines.html`);
+  const create = page.getByRole("link", { name: "Create your first routine", exact: true });
+  const browse = page.getByRole("link", { name: "Browse TrainGrid routines", exact: true });
+  for (const width of [320, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const first = (await create.boundingBox())!;
+    const second = (await browse.boundingBox())!;
+    if (width === 1440) expect(Math.abs(first.y + first.height / 2 - second.y - second.height / 2)).toBeLessThanOrEqual(1);
+    else expect(second.y).toBeGreaterThanOrEqual(first.y + first.height);
+    await mkdir("docs/images/epic-3/enhancements", { recursive: true });
+    await page.screenshot({ path: `docs/images/epic-3/enhancements/empty-routines-${width}.png`, fullPage: true });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+});

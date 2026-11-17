@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { ActionSubmit } from "@/components/ui/ActionSubmit";
-import { deleteRoutineAction, upsertRoutineAction } from "@/lib/actions";
+import { upsertRoutineAction } from "@/lib/actions";
 import type { Routine } from "@/lib/data/model";
 import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
-import { btnDanger, btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
+import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
+import { DeleteRoutineButton } from "./DeleteRoutineButton";
 import { WorkoutItemEditor } from "./WorkoutItemEditor";
 
 /** Creates or edits one of the member's own routines. */
@@ -72,27 +73,7 @@ export function RoutineEditor({ routine }: { routine: Routine | null }) {
         </div>
       </form>
 
-      {routine ? (
-        <form
-          action={deleteRoutineAction}
-          onSubmit={(e) => {
-            if (
-              !confirm(
-                "Delete this routine? Sessions already on your calendar keep their own copy of the workout.",
-              )
-            ) {
-              e.preventDefault();
-            }
-          }}
-        >
-          <input type="hidden" name="id" value={routine.id} />
-          <ActionSubmit
-            label="Delete routine"
-            busy="Deleting…"
-            className={btnDanger}
-          />
-        </form>
-      ) : null}
+      {routine ? <DeleteRoutineButton routineId={routine.id} /> : null}
     </div>
   );
 }

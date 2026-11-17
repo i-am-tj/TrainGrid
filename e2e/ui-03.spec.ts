@@ -263,8 +263,8 @@ test("routine and session screens retain structured controls and fit both themes
   await page.goto(`${routinePath}/edit`);
   await expect(page.getByLabel("Rest", { exact: true }).first()).toHaveValue("2–3 minutes");
   await expect(page.getByRole("button", { name: "Barbell", exact: true }).first()).toHaveAttribute("aria-pressed", "true");
-  page.once("dialog", (dialog) => dialog.dismiss());
   await page.getByRole("button", { name: "Delete routine", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${routinePath}/edit$`));
   await page.goto(`${sessionPath}/edit`);
   page.once("dialog", (dialog) => dialog.dismiss());

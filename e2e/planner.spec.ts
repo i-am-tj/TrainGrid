@@ -79,6 +79,7 @@ test("D9: a member creates, views, edits and deletes their own routine", async (
 
   await page.getByRole("link", { name: "Edit routine" }).click();
   await page.getByRole("button", { name: "Delete routine" }).click();
+  await page.getByRole("dialog", { name: "Delete this routine?" }).getByRole("button", { name: "Delete routine", exact: true }).click();
   await expect(page).toHaveURL(/\/library$/);
   await expect(page.getByText("My Lower")).toHaveCount(0);
 });
