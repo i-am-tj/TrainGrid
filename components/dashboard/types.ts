@@ -39,6 +39,8 @@ export type DashboardRoutine = {
 };
 export type DashboardData = {
   displayName: string | null;
+  /** First session after accepting the invitation: "Welcome" rather than "Welcome back". */
+  firstVisit?: boolean;
   dateLabel: string;
   todaySessions: readonly DashboardSession[];
   week: DashboardWeek;

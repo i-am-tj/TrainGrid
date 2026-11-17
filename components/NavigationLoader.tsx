@@ -1,8 +1,9 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogoLoader } from "@/components/LogoLoader";
+import { LogoLoader, slowNotice, STUCK_AFTER_MS, useLoadPhase } from "@/components/LogoLoader";
+import { loaderLabelFor } from "@/lib/loader-labels";
 
 /**
  * Page loader for client-side navigations to another page. Shows the spinning
@@ -16,10 +17,13 @@ import { LogoLoader } from "@/components/LogoLoader";
  * stream, after which notFound() and redirect() can no longer set the HTTP
  * status (E2-D16); most TrainGrid pages need those. So this lives once in the
  * root layout instead. It waits 150 ms before appearing, so fast navigations
- * do not flash, and gives up after 15 s in case a navigation never lands.
+ * do not flash. It names where the member is going ("Loading your
+ * calendar…"). After 5 s it says the page is taking longer than usual and
+ * starts the navigation once more (a GET; nothing is resubmitted), and it
+ * gives up after 20 s in case a navigation never lands.
  */
 const SHOW_AFTER_MS = 150;
-const GIVE_UP_AFTER_MS = 15_000;
+const GIVE_UP_AFTER_MS = STUCK_AFTER_MS;
 
 function isInternalNavigation(url: URL): boolean {
   if (url.origin !== window.location.origin) return false;
@@ -28,17 +32,22 @@ function isInternalNavigation(url: URL): boolean {
 }
 
 export function NavigationLoader() {
+  const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams().toString();
-  const [pending, setPending] = useState(false);
+  const [target, setTarget] = useState<URL | null>(null);
+  const pending = target !== null;
   const [visible, setVisible] = useState(false);
+  const phase = useLoadPhase(() => {
+    if (target) router.push(target.pathname + target.search + target.hash);
+  }, target?.href ?? null);
 
   // A new URL means the navigation landed.
   const location = `${pathname}?${search}`;
   const [seen, setSeen] = useState(location);
   if (seen !== location) {
     setSeen(location);
-    setPending(false);
+    setTarget(null);
     setVisible(false);
   }
 
@@ -47,14 +56,15 @@ export function NavigationLoader() {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const anchor = (event.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
       if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
-      if (isInternalNavigation(new URL(anchor.href, window.location.href))) setPending(true);
+      const url = new URL(anchor.href, window.location.href);
+      if (isInternalNavigation(url)) setTarget(url);
     };
     const onSubmit = (event: SubmitEvent) => {
       const form = event.target as HTMLFormElement;
       if (form.method.toLowerCase() !== "get") return; // server actions show their own pending state
       const url = new URL(form.action || window.location.href, window.location.href);
       url.search = new URLSearchParams(new FormData(form) as unknown as Record<string, string>).toString();
-      if (isInternalNavigation(url)) setPending(true);
+      if (isInternalNavigation(url)) setTarget(url);
     };
     document.addEventListener("click", onClick, true);
     document.addEventListener("submit", onSubmit, true);
@@ -68,7 +78,7 @@ export function NavigationLoader() {
     if (!pending) return;
     const show = window.setTimeout(() => setVisible(true), SHOW_AFTER_MS);
     const giveUp = window.setTimeout(() => {
-      setPending(false);
+      setTarget(null);
       setVisible(false);
     }, GIVE_UP_AFTER_MS);
     return () => {
@@ -77,13 +87,17 @@ export function NavigationLoader() {
     };
   }, [pending]);
 
-  if (!visible) return null;
+  if (!visible || !target) return null;
+  // Past the give-up point the loader is gone, so "stuck" never shows here.
+  const { detail } = slowNotice(phase === "stuck" ? "slow" : phase);
   return (
     <div
       data-testid="page-loader"
       className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-[1px]"
     >
-      <LogoLoader size="lg" label="Loading page…" />
+      <div className="rounded-xl bg-background/80 px-6 py-5">
+        <LogoLoader size="md" label={loaderLabelFor(target.pathname)} showLabel detail={detail} />
+      </div>
     </div>
   );
 }

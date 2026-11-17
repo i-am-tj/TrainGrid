@@ -56,7 +56,7 @@ export default async function WeekPage({
       <Suspense
         key={`${rawWeekId}-${day}`}
         fallback={
-          <SectionLoader label="Loading your week…" minHeight="min-h-96" />
+          <SectionLoader label="Loading your calendar…" minHeight="min-h-96" />
         }
       >
         <WeekContent db={db} userId={userId} weekId={rawWeekId} day={day} />

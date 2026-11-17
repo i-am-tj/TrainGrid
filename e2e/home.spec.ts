@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { todayIn } from "../lib/time-zone";
 import {
+  backdateLocalProfile,
   createLocalRoutineFor,
   createLocalSessionFor,
   hasLocalSecretKey,
@@ -107,7 +108,8 @@ test.describe("member home", () => {
     }
 
     await page.goto("/home");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Welcome back, E2E Member.");
+    // A new member's first session: "Welcome", not "Welcome back".
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Welcome, E2E Member.");
     const todaySection = page.getByRole("region", { name: "Today’s planned sessions" });
     await expect(todaySection.getByRole("link", { name: "Mine today", exact: true })).toBeVisible();
     await expect(page.getByText("Someone else's", { exact: false })).toHaveCount(0);
@@ -188,7 +190,62 @@ test.describe("member home", () => {
     await context.addCookies([{ name: "tg_tz", value: "Not%2FA_Zone", url: baseURL! }]);
     const response = await page.goto("/home");
     expect(response?.status()).toBe(200);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Welcome back");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Welcome");
+  });
+
+  test("the first visit after joining says Welcome; a returning member is welcomed back", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    const { userId } = await signInAsNewLocalMember(context, baseURL!);
+    await page.goto("/home");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Welcome, E2E Member.");
+
+    // The profile now predates this session, as it does on any later sign-in.
+    await backdateLocalProfile(userId);
+    await page.reload();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Welcome back, E2E Member.");
+  });
+
+  test("home renders its frame at once and streams each section", async ({ page, context, baseURL }) => {
+    await signInAsNewLocalMember(context, baseURL!);
+    await page.goto("/home");
+    for (const name of ["Today’s planned sessions", "This week", "My routines"]) {
+      await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+    }
+    await expect(page.getByTestId("section-loader")).toHaveCount(0);
+    await expect(page.getByText("A little space in your day.")).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Weekly planned sessions" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Make a routine your own." })).toBeVisible();
+  });
+
+  test("home links sweep an underline in without changing colour; shortcut arrows take the icon colour", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await signInAsNewLocalMember(context, baseURL!);
+    await page.goto("/home");
+    for (const name of ["View full planner", "Browse My Library", "Browse TrainGrid routines"]) {
+      const link = page.getByRole("link", { name, exact: false }).first();
+      const text = link.locator(".underline-reveal");
+      const before = await link.evaluate((el) => getComputedStyle(el).color);
+      await expect(text).toHaveCSS("background-size", "0% 1px");
+      await link.hover();
+      await expect(text).toHaveCSS("background-size", "100% 1px");
+      expect(await link.evaluate((el) => getComputedStyle(el).color)).toBe(before);
+      await expect(link).toHaveCSS("text-decoration-line", "none");
+    }
+
+    const shortcut = page.getByRole("link", { name: /^Open planner/ });
+    const icon = shortcut.locator("svg");
+    const arrow = shortcut.locator(".dashboard-shortcut-arrow");
+    const iconColor = await icon.evaluate((el) => getComputedStyle(el).color);
+    expect(await arrow.evaluate((el) => getComputedStyle(el).color)).not.toBe(iconColor);
+    await shortcut.hover();
+    await expect(arrow).toHaveCSS("color", iconColor);
   });
 
   test("the login page's planner link and the brand lead to real member pages", async ({

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Suspense } from "react";
 import { NavigationLoader } from "@/components/NavigationLoader";
+import { SlowSectionWatcher } from "@/components/SlowSectionWatcher";
 import { SkipLink } from "@/components/ui/SkipLink";
 import { SiteFooter } from "@/components/footer/SiteFooter";
 import { siteMetadataBase } from "@/lib/site";
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteFooter />
         <Suspense fallback={null}>
           <NavigationLoader />
+          <SlowSectionWatcher />
         </Suspense>
       </body>
     </html>
