@@ -59,3 +59,20 @@ The UI-03 directory also contains refreshed invitation, routine/editor and sessi
 ## Completion boundary
 
 UI-01–04 presentation and specified regression coverage are implemented for review. Public root publication, authenticated `/home`/member data, post-login redirect coordination and actual email sending/delivery/retry remain unimplemented Claude responsibilities. Inbox-client rendering awaits the selected provider. See EPIC-3-UI-HANDOFF.md sections 1–8 and its final boundary table. No production data operations, schema, new endpoints, authorization or OAuth redesign occurred. Manual review and merge only.
+
+## Follow-up — routine confirmation and empty-state alignment
+
+After integration PR #41 merged, based on reviewed main `a28f834`: routine deletion now opens a themed native HTML modal rather than `window.confirm`. Cancel receives initial focus; Escape/Cancel dismiss and return focus to the trigger; background content is inert. The existing delete server action, hidden routine id, authorization and preservation of scheduled workout snapshots are unchanged. Submission shows Deleting… and prevents repeated submission or dismissal while pending. Other existing confirmation flows are outside this change.
+
+The dashboard's empty-routine actions now share a centered cross-axis alignment, matching text size and minimum control height, and wrap into centered rows on narrow screens.
+
+Verification: lint/typecheck/secret scan pass; 49 component browser tests pass (including desktop center alignment and phone wrapping); 32 affected app regressions pass plus the focused modal test in light/dark at 320/1440px. The latter verifies initial focus, Tab/Shift+Tab between actions, background focus exclusion, Escape/Cancel focus restoration, viewport fit, no native JavaScript prompt, and zero axe violations. Actual deletion, ownership protection and scheduled-copy preservation are covered by the updated existing regressions. Native dialogs allow browser-chrome focus; checks cover intra-dialog Tab order and background inertness.
+
+The empty-routine actions use a 24px horizontal gap and 12px vertical gap when wrapped. Regression checks verify these distances and alignment in both themes.
+
+| Fix | Desktop light | Desktop dark | Mobile light | Mobile dark |
+| --- | --- | --- | --- | --- |
+| Delete modal | [1440px](../docs/images/epic-3/enhancements/delete-routine-1440-light.png) | [1440px](../docs/images/epic-3/enhancements/delete-routine-1440-dark.png) | [320px](../docs/images/epic-3/enhancements/delete-routine-320-light.png) | [320px](../docs/images/epic-3/enhancements/delete-routine-320-dark.png) |
+| Routine actions | [1440px](../docs/images/epic-3/enhancements/empty-routines-1440-light.png) | [1440px](../docs/images/epic-3/enhancements/empty-routines-1440-dark.png) | [320px](../docs/images/epic-3/enhancements/empty-routines-320-light.png) | [320px](../docs/images/epic-3/enhancements/empty-routines-320-dark.png) |
+
+Modal captures use the live local app; action captures show the isolated component empty state.

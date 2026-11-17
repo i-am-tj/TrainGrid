@@ -167,6 +167,7 @@ test.describe("member A against member B's data", () => {
     await page.goto(`${mine}/edit`);
     await forge(page, "id", bRoutine);
     await page.getByRole("button", { name: "Delete routine" }).click();
+  await page.getByRole("dialog", { name: "Delete this routine?" }).getByRole("button", { name: "Delete routine", exact: true }).click();
     await expect(page.getByRole("heading", { name: ERROR_HEADING })).toBeVisible();
     expect(await bRoutineRow()).toBeDefined();
   });

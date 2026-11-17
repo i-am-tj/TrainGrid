@@ -117,6 +117,7 @@ test("D2, D3: editing or deleting a routine never changes a scheduled session", 
 
   await page.goto(`${routineUrl}/edit`);
   await page.getByRole("button", { name: "Delete routine" }).click();
+  await page.getByRole("dialog", { name: "Delete this routine?" }).getByRole("button", { name: "Delete routine", exact: true }).click();
   await page.waitForURL(/\/library$/);
 
   await page.goto(sessionUrl);

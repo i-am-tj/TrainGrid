@@ -227,14 +227,14 @@ export function MemberDashboard({ state }: { state: DashboardState }) {
               title="Make a routine your own."
               icon={<PlanningIcon name="routine" />}
               action={
-                <>
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
                   <Link href={data.createRoutineHref} className={btnSecondary}>
                     Create your first routine
                   </Link>
-                  <Link href={data.sharedLibraryHref} className={textLink}>
+                  <Link href={data.sharedLibraryHref} className={`${textLink} inline-flex min-h-10 items-center text-sm`}>
                     Browse TrainGrid routines
                   </Link>
-                </>
+                </div>
               }
             >
               Create a personal routine or copy one from the shared library.

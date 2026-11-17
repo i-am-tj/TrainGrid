@@ -50,7 +50,7 @@ export function EmptyState({
         {children}
       </div>
       {action && (
-        <div className="mt-5 flex flex-wrap justify-center gap-2">{action}</div>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">{action}</div>
       )}
     </div>
   );
