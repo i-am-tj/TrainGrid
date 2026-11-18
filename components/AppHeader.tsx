@@ -3,6 +3,7 @@ import { NavLink } from "@/components/ui/NavLink";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MobileMenu } from "@/components/MobileMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountMenu } from "@/components/auth/AccountMenu";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { FeedbackProvider, FeedbackTrigger } from "@/components/feedback/Feedback";
 import { isAdminViewer, parseAdminUserIds } from "@/lib/admin/access";
@@ -22,7 +23,6 @@ export async function AppHeader() {
       { key: "home", render: (c) => <NavLink href="/home" className={c}>Home</NavLink> },
       { key: "planner", render: (c) => <NavLink href="/week/current" className={c}>Planner</NavLink> },
       { key: "library", render: (c) => <NavLink href="/library" className={c}>Library</NavLink> },
-      { key: "export", render: (c) => <a href="/api/export" className={c}>Export</a> },
     );
   }
   if (isAdmin) {
@@ -39,7 +39,7 @@ export async function AppHeader() {
   }
 
   const header = (
-    <header className="relative border-b border-line bg-card">
+    <header className="relative z-30 border-b border-line bg-card">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-3 sm:px-4">
         <div className="flex items-center gap-2">
           {/* Members go to their home; everyone else to the public landing page. */}
@@ -63,6 +63,7 @@ export async function AppHeader() {
               ))}
             </nav>
           ) : null}
+          {isMember ? <AccountMenu /> : null}
           {/* On every page, signed in or not. */}
           <ThemeToggle />
           {items.length > 0 ? (
@@ -70,6 +71,7 @@ export async function AppHeader() {
               {items.map((item) => (
                 <li key={item.key}>{item.render(mobileItem)}</li>
               ))}
+              {isMember ? <li><AccountMenu inline /></li> : null}
             </MobileMenu>
           ) : null}
         </div>

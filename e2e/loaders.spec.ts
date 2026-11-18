@@ -10,10 +10,15 @@ import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState } from "./loca
  * so the loading state is observable on a fast local machine.
  */
 
-test.beforeEach(async ({ context, baseURL }) => {
+test.beforeEach(async ({ page, context, baseURL }) => {
   test.skip((await supabaseState(baseURL!)) !== "ok", "Local Supabase stack is not running");
   test.skip(!hasLocalSecretKey(), "SUPABASE_SECRET_KEY is not set for the local stack");
   await signInAsNewLocalMember(context, baseURL!);
+  // These cases exercise an uncached navigation, not speculative prefetch.
+  await page.route("**/*", async (route) => {
+    if (route.request().headers()["next-router-prefetch"] === "1") await route.abort();
+    else await route.continue();
+  });
 });
 
 /**
@@ -41,6 +46,10 @@ async function slowNavigations(page: Page, pattern: RegExp, ms = 1500) {
   await page.route(
     (url) => pattern.test(url.pathname + url.search),
     async (route) => {
+      if (route.request().headers()["next-router-prefetch"] === "1") {
+        await route.abort();
+        return;
+      }
       if (route.request().headers()["rsc"] === "1") await new Promise((resolve) => setTimeout(resolve, ms));
       await route.continue();
     },
@@ -123,7 +132,7 @@ test("the logo turns clockwise", async ({ page }) => {
     }
     return "";
   });
-  expect(keyframes).toMatch(/rotate\(360deg\)/);
+  expect(keyframes).toMatch(/rotate\((?:360deg|1turn)\)/);
   await page.waitForURL(/\/library\/[0-9a-f-]{36}$/);
 });
 
@@ -156,7 +165,6 @@ test("the planner streams the week behind a section loader without breaking 404s
   // The page shell (week navigation) and data both render; an invalid week is still a real 404.
   await page.goto("/week/current");
   await expect(page.getByRole("heading", { name: /^Week of/ })).toBeVisible();
-  await expect(page.getByText("Duplicate week onto")).toBeVisible();
   const response = await page.goto("/week/2026-W99");
   expect(response?.status()).toBe(404);
 });
@@ -201,6 +209,10 @@ async function slowFirstRequest(page: Page, pattern: RegExp, ms: number, laterMs
   await page.route(
     (url) => pattern.test(url.pathname + url.search),
     async (route) => {
+      if (route.request().headers()["next-router-prefetch"] === "1") {
+        await route.abort();
+        return;
+      }
       if (route.request().headers()["rsc"] === "1") {
         seen.count += 1;
         await new Promise((resolve) => setTimeout(resolve, seen.count === 1 ? ms : laterMs));
@@ -254,6 +266,10 @@ async function lockRoutinesTable(ms: number): Promise<{ released: Promise<void> 
 
 test("a slow section says so after five seconds and asks the server again", async ({ page }) => {
   test.slow();
+  // Compile/hydrate the shell before starting the timed database hold.
+  await page.goto("/home");
+  await waitForHydration(page);
+  await expect(page.getByTestId("section-loader")).toHaveCount(0);
   const lock = await lockRoutinesTable(9000);
   test.skip(!lock, "Needs docker access to the local database container");
   const requests: string[] = [];

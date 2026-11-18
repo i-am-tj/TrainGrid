@@ -3,7 +3,6 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SectionLoader } from "@/components/LogoLoader";
 import { DayAgenda } from "@/components/planner/DayAgenda";
-import { DuplicateWeekForm } from "@/components/planner/DuplicateWeekForm";
 import { WeekGrid } from "@/components/planner/WeekGrid";
 import { WeekNav } from "@/components/planner/WeekNav";
 import { isRealWeekId } from "@/lib/calendar-date";
@@ -11,13 +10,8 @@ import type { Db } from "@/lib/data/model";
 import { toPlannerSession } from "@/lib/data/planner";
 import { memberData } from "@/lib/data/server";
 import { getRequestToday } from "@/lib/today";
-import { countSessionsByWeek, listSessionsForWeek } from "@/lib/data/sessions";
+import { listSessionsForWeek } from "@/lib/data/sessions";
 import type { IsoDay } from "@/lib/domain";
-import {
-  addWeeks,
-  formatWeekLabel,
-  nearbyWeekIds,
-} from "@/lib/week";
 
 export default async function WeekPage({
   params,
@@ -76,28 +70,11 @@ async function WeekContent({
   weekId: string;
   day: IsoDay;
 }) {
-  const nearby = nearbyWeekIds(weekId).filter((id) => id !== weekId);
-  const [records, occupied] = await Promise.all([
-    listSessionsForWeek(db, userId, weekId),
-    countSessionsByWeek(db, userId, nearby),
-  ]);
+  const records = await listSessionsForWeek(db, userId, weekId);
   const weekSessions = records.map(toPlannerSession);
-
-  const duplicateOptions = nearby.map((id) => ({
-    id,
-    label: formatWeekLabel(id),
-    existing: occupied[id] ?? 0,
-  }));
 
   return (
     <div className="planner-content">
-      <DuplicateWeekForm
-        sourceWeekId={weekId}
-        sourceCount={weekSessions.length}
-        defaultDestWeekId={addWeeks(weekId, 1)}
-        options={duplicateOptions}
-      />
-
       {weekSessions.length === 0 ? (
         <p className="mt-3 hidden text-sm text-stone-600 md:block">
           No sessions this week.{" "}

@@ -103,7 +103,7 @@ without changing this model.
 app/                         routes (see Routing)
 proxy.ts                     session refresh + route protection
 components/
-  planner/                   WeekGrid, DayAgenda, WeekNav, SessionCard, DuplicateWeekForm
+  planner/                   WeekGrid, DayAgenda, WeekNav, SessionCard
   session/                   AddSessionForm, EditSessionForm, CustomizeForm, WorkoutItemsView
   library/                   LibraryHeader (view control), RoutineList, RoutineDetail,
                              CopyRoutineButton, SourceLabel, RoutineEditor, WorkoutItemEditor

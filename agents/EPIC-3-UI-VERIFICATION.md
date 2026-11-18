@@ -110,3 +110,25 @@ Validation: 25 affected app regressions pass across invitation administration, m
 Captures are from the local application using disposable test recipients. No production data or backend modules changed.
 
 Final static checks, secret scan and optimized `next build --webpack` pass for this follow-up. No new backend integration is required.
+
+
+## 2026-11-18 — secondary actions and mobile Home
+
+Based on reviewed main `d39b048` after PR #51. The P1/P2 follow-up makes these focused UI changes:
+
+- **Download:** Export leaves primary navigation. A native Account disclosure holds “Download my data” on desktop; a nested Account disclosure uses the existing mobile menu. Escape closes the inner disclosure first, outside clicks close it, and navigation closes it. The same `/api/export` URL, attachment response, authorization and payload are retained.
+- **Mobile Home:** tighter page/greeting spacing, a shorter release notice and smaller intro padding bring today forward. Getting-started follows today on narrow layouts and remains above the two-column desktop grid. Its progress, dismissal cookie and server reads stay intact. Dark accent badges use the existing dark ink role for contrast.
+- **Public access:** the hero links to an invitation explanation. Invited visitors are told to use their invited address with Google/GitHub; uninvited visitors can ask their sharer to arrange an invitation or contact the creator through his verified portfolio. No request form, waitlist or public registration is introduced.
+
+Regression checks cover the actual signed-in download and member-only data, keyboard/Escape/outside clicks, 320/360/768/1440px layout, both themes, mobile session visibility before onboarding and actionable public access copy. Account and planner screenshots use local test members, never production records. Root ESLint/TypeScript/Git ignores exclude nested `.claude/worktrees` checkouts so generated files from other local repositories do not enter root checks. Loader timing tests explicitly exclude speculative prefetch and warm the shell before their timed local DB lock; product retry behavior is unchanged.
+
+| Screen | Desktop light | Desktop dark | Phone light | Phone dark |
+| --- | --- | --- | --- | --- |
+| Account download | [1440px](../docs/images/epic-3/secondary-actions/account-1440-light.png) | [1440px](../docs/images/epic-3/secondary-actions/account-1440-dark.png) | [360px](../docs/images/epic-3/secondary-actions/account-360-light.png) | [360px](../docs/images/epic-3/secondary-actions/account-360-dark.png) |
+| Planner | [1440px](../docs/images/epic-3/secondary-actions/planner-1440-light.png) | [1440px](../docs/images/epic-3/secondary-actions/planner-1440-dark.png) | [360px](../docs/images/epic-3/secondary-actions/planner-360-light.png) | [360px](../docs/images/epic-3/secondary-actions/planner-360-dark.png) |
+| Home | [1440px](../docs/images/epic-3/secondary-actions/home-1440-light.png) | [1440px](../docs/images/epic-3/secondary-actions/home-1440-dark.png) | [360px](../docs/images/epic-3/secondary-actions/home-360-light.png) | [360px](../docs/images/epic-3/secondary-actions/home-360-dark.png) |
+| Invitation guidance | [1440px](../docs/images/epic-3/secondary-actions/access-1440-light.png) | [1440px](../docs/images/epic-3/secondary-actions/access-1440-dark.png) | [360px](../docs/images/epic-3/secondary-actions/access-360-light.png) | [360px](../docs/images/epic-3/secondary-actions/access-360-dark.png) |
+
+Final verification: **256 unit tests and 50 component checks pass**. The full browser run passed 172 cases; the single timing-sensitive day-loader assertion passed on a focused rerun, verifying all 173 cases. The full browser run uses `E2E_SERVER=build npm run test:e2e` against the optimized local `next build --webpack` output. Lint, typecheck and secret scan pass. CSS checks accept equivalent optimized units (`1turn`/`360deg`, zero pixels/percent), and the mobile feedback check targets its own disclosure. App header layering keeps Account above calendar controls; the real planner download is covered.
+
+No new backend integration is required. No merge, manual deployment or production-data operation is part of this work.

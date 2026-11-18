@@ -36,9 +36,9 @@ const FEATURES = [
     "Every scheduled session keeps an independent snapshot. Edit a routine without rewriting your week.",
   ],
   [
-    "copy",
-    "Keep a good week going",
-    "Copy an existing training week onto another. Every session gets its own workout copy.",
+    "equipment",
+    "Find the right fit",
+    "Search by exercise, category and equipment to find a routine that fits your setup.",
   ],
 ] as const;
 
@@ -78,7 +78,8 @@ export function LandingPage({
             </a>
           </div>
           <p className="mt-5 text-xs leading-5 text-stone-600">
-            Built for planning. Bring your own motivation.
+            Access is by invitation. Use the email address on your invitation.
+            {" "}<a href="#access" className="underline-reveal text-accent">No invitation yet?</a>
           </p>
         </div>
         <div className="hero-product">
@@ -262,15 +263,18 @@ export function LandingPage({
         </div>
       </section>
 
-      <section className="border-t border-line bg-card">
+      <section id="access" aria-labelledby="access-title" className="scroll-mt-8 border-t border-line bg-card">
         <div className="landing-container flex flex-col items-start justify-between gap-8 py-14 sm:flex-row sm:items-center">
           <div>
             <p className="ui-eyebrow">Your next week starts here</p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h2 id="access-title" className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               Make a plan. Show up.
             </h2>
             <p className="mt-3 text-sm leading-6 text-stone-600">
-              TrainGrid is in invite-only early access. Sign in with your invited email.
+              TrainGrid is invite-only. If you’ve been invited, log in with Google or GitHub using that email address.
+            </p>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
+              Not invited yet? Ask the person who shared TrainGrid with you to arrange an invitation, or <a href="https://iamtj.dev" target="_blank" rel="noopener noreferrer" className="underline-reveal text-accent">contact Tanuj through his portfolio</a>. Access is approved individually; there is no public sign-up.
             </p>
           </div>
           <Link

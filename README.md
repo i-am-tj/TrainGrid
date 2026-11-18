@@ -47,7 +47,7 @@ Every release: [What’s new](https://github.com/i-am-tj/TrainGrid/blob/main/CHA
         <source media="(prefers-color-scheme: dark)" srcset="docs/images/v1/planner-desktop-dark.png" />
         <img src="docs/images/v1/planner-desktop-light.png" alt="The weekly planner grid" />
       </picture>
-      <p><strong>The week, together.</strong> Timed and untimed sessions, several per day, on a Monday–Sunday grid. Duplicate a week onto another in one step.</p>
+      <p><strong>The week, together.</strong> Timed and untimed sessions, several per day, on a Monday–Sunday grid.</p>
     </td>
     <td width="50%" valign="top">
       <picture>

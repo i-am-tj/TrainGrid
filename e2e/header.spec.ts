@@ -45,7 +45,7 @@ test.describe("header menu", () => {
     await signInAsNewLocalMember(context, baseURL!);
   });
 
-  const LINKS = ["Home", "Planner", "Library", "Export"];
+  const LINKS = ["Home", "Planner", "Library"];
 
   /** The menu's close handlers exist only once React has hydrated the header. */
   const hydrated = async (page: Page) =>

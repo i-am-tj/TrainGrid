@@ -240,7 +240,8 @@ body {
 .landing { overflow-x: clip; overflow-wrap: anywhere; }
 
 /* UI-02: planning presentation uses the existing theme and category colors. */
-.dashboard-container { width: min(100% - 1.5rem, 76rem); margin-inline: auto; padding-block: clamp(1.5rem, 4vw, 3rem); }
+.dashboard-container { width: min(100% - 1.5rem, 76rem); margin-inline: auto; padding-block: 1rem; }
+@media (min-width: 640px) { .dashboard-container { padding-block: clamp(1.5rem, 4vw, 3rem); } }
 .dashboard-shortcut, .dashboard-day { transition: background-color var(--motion-fast) var(--ease-ui), border-color var(--motion-fast) var(--ease-ui); }
 .dashboard-shortcut:hover { background: var(--background); }
 .dashboard-shortcut-arrow { transition: color var(--motion-fast) var(--ease-ui); }

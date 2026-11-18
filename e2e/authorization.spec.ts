@@ -201,20 +201,11 @@ test.describe("member A against member B's data", () => {
     expect(bOwns.map((row) => row.name)).toEqual(["B private routine"]);
   });
 
-  test("I1, I8: A's week and Duplicate Week never include B's sessions", async ({ page }) => {
-    page.on("dialog", (dialog) => dialog.accept());
-    await page.goto("/week/2026-W47");
-    await expect(page.getByText("B private session")).toHaveCount(0);
-    await expect(page.getByText("No sessions this week.")).toBeVisible();
-
-    // Duplicate is only offered for A's own (empty) week; forge it anyway.
-    await forge(page, "sourceWeekId", "2026-W47");
-    await page.locator('select[name="destWeekId"]').selectOption("2026-W48");
-    await page.locator("form").filter({ has: page.locator('select[name="destWeekId"]') }).evaluate(
-      (form) => (form as HTMLFormElement).requestSubmit(),
-    );
-    await page.waitForURL(/\/week\/2026-W48/);
-    await expect(page.getByText("B private session")).toHaveCount(0);
+  test("I1: each planner week contains only the member's sessions", async ({ page }) => {
+    for (const week of ["2026-W47", "2026-W48"]) {
+      await page.goto(`/week/${week}`);
+      await expect(page.getByText("B private session")).toHaveCount(0);
+    }
     expect(await readRows("scheduled_sessions", { user_id: aId })).toHaveLength(0);
     expect(await readRows("scheduled_sessions", { user_id: bId })).toHaveLength(1);
   });

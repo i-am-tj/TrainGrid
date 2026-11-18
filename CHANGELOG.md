@@ -106,7 +106,6 @@ library (Epic 2). Live at https://train-grid.vercel.app for invited members.
 
 - A Monday–Sunday week grid on desktop and a one-day agenda on phones, with week navigation.
 - Timed and untimed sessions, several per day; add, edit, reschedule and delete.
-- **Duplicate week** onto another week, with fresh copies of every session.
 - Scheduling **copies** a routine into the session, so later routine changes never rewrite a
   planned or past session. Customise one session without touching the routine.
 - **Export** your own routines and sessions as JSON.

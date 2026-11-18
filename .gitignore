@@ -58,3 +58,6 @@ next-env.d.ts
 # Next.js regenerates these agent stubs during `next dev`
 /AGENTS.md
 /CLAUDE.md
+
+# Nested local agent checkouts are separate repositories.
+/.claude/worktrees/
