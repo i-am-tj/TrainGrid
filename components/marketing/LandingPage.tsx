@@ -36,9 +36,9 @@ const FEATURES = [
     "Every scheduled session keeps an independent snapshot. Edit a routine without rewriting your week.",
   ],
   [
-    "copy",
-    "Keep a good week going",
-    "Copy an existing training week onto another. Every session gets its own workout copy.",
+    "equipment",
+    "Find the right fit",
+    "Search by exercise, category and equipment to find a routine that fits your setup.",
   ],
 ] as const;
 

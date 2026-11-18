@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 /** Secondary account actions; native disclosure keeps links keyboard-accessible. */
 export function AccountMenu({ inline = false }: { inline?: boolean }) {
   const ref = useRef<HTMLDetailsElement>(null);
   const pathname = usePathname();
-  useEffect(() => {
-    if (ref.current) ref.current.open = false;
+  const previousPath = useRef(pathname);
+  useLayoutEffect(() => {
+    if (previousPath.current !== pathname && ref.current) ref.current.open = false;
+    previousPath.current = pathname;
   }, [pathname]);
   useEffect(() => {
     const outside = (event: PointerEvent) => {
@@ -48,9 +50,6 @@ export function AccountMenu({ inline = false }: { inline?: boolean }) {
         <a
           href="/api/export"
           className="flex min-h-10 items-center rounded-md px-3 py-2 text-sm text-stone-700 hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
-          onClick={() => {
-            if (ref.current) ref.current.open = false;
-          }}
         >
           Download my data
         </a>

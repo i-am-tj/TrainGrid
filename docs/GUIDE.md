@@ -49,7 +49,6 @@ done. You can also hide it with **×**.
   sessions per day are fine.
 - Open a session to **edit**, **reschedule** or **delete** it, or to **customise** its workout for
   that day only.
-- **Duplicate week** copies every session of this week onto another week, as fresh copies.
 
 ## 4. Routines and the library
 

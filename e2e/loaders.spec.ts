@@ -165,9 +165,6 @@ test("the planner streams the week behind a section loader without breaking 404s
   // The page shell (week navigation) and data both render; an invalid week is still a real 404.
   await page.goto("/week/current");
   await expect(page.getByRole("heading", { name: /^Week of/ })).toBeVisible();
-  await page.getByRole("button", { name: "Week actions", exact: true }).click();
-  await expect(page.getByText("Duplicate week onto")).toBeVisible();
-  await page.getByRole("dialog", { name: "Duplicate week", exact: true }).getByRole("button", { name: "Cancel", exact: true }).click();
   const response = await page.goto("/week/2026-W99");
   expect(response?.status()).toBe(404);
 });

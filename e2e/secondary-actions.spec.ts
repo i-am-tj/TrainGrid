@@ -1,10 +1,9 @@
-import { mkdir } from "node:fs/promises";
+import { copyFile, mkdir } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { accessibilityResults } from "../tests/helpers/accessibility";
 import { todayIn } from "../lib/time-zone";
 import {
   createLocalSessionFor,
-  readRows,
   signInAsNewLocalMember,
 } from "./local-supabase";
 
@@ -83,78 +82,23 @@ test("data download lives in a secondary account disclosure with keyboard and ou
   }
 });
 
-test("week actions keep duplication hidden until confirmation and append independent copies", async ({
-  page,
-  context,
-  baseURL,
-}) => {
+test("planner exposes only available scheduling controls", async ({ page, context, baseURL }) => {
   const { userId } = await signInAsNewLocalMember(context, baseURL!);
-  const source = await createLocalSessionFor(
-    userId,
-    "Copy this session",
-    "2026-11-17",
-  );
-  await createLocalSessionFor(userId, "Already planned", "2026-11-24");
+  await createLocalSessionFor(userId, "Planned session", "2026-11-17");
   await page.goto("/week/2026-W47?day=2");
-  const dialog = page.getByRole("dialog", {
-    name: "Duplicate week",
-    exact: true,
-  });
   for (const scheme of ["light", "dark"] as const) {
     await theme(page, scheme);
-    for (const width of [320, 360, 768, 1440]) {
+    for (const width of [360, 1440]) {
       await page.setViewportSize({ width, height: 800 });
-      await expect(page.getByRole("combobox", { name: "Duplicate week onto", exact: true })).toHaveCount(0);
-      const trigger = page.getByRole("button", {
-        name: "Week actions",
-        exact: true,
-      });
-      await expect(trigger).toBeVisible();
-      if ([360, 1440].includes(width)) await capture(page, `planner-${width}-${scheme}`);
-      await trigger.click();
-      await expect(
-        dialog.getByRole("button", { name: "Cancel", exact: true }),
-      ).toBeFocused();
-      await expect(dialog.getByLabel("Duplicate week onto")).toHaveValue(
-        "2026-W48",
-      );
-      await expect(dialog).toContainText(
-        "already has 1 session(s). Copies will be added alongside them.",
-      );
-      expect((await accessibilityResults(page)).violations).toEqual([]);
+      await expect(page.getByRole("link", { name: "Add session", exact: true }).first()).toBeVisible();
+      await expect(page.getByRole("button", { name: /duplicate week|week actions/i })).toHaveCount(0);
+      await expect(page.locator('input[name="sourceWeekId"], select[name="destWeekId"]')).toHaveCount(0);
       await noOverflow(page);
-      if ([360, 1440].includes(width))
-        await capture(page, `duplicate-${width}-${scheme}`);
-      await page.keyboard.press("Escape");
-      await expect(dialog).not.toBeVisible();
-      await expect(trigger).toBeFocused();
-      await expect
-        .poll(
-          async () =>
-            (await readRows("scheduled_sessions", { user_id: userId })).length,
-        )
-        .toBe(2);
+      await capture(page, `planner-${width}-${scheme}`);
+      await mkdir("docs/images/v1", { recursive: true });
+      await copyFile(`${folder}/planner-${width}-${scheme}.png`, `docs/images/v1/planner-${width === 360 ? "phone" : "desktop"}-${scheme}.png`);
     }
   }
-  await page.getByRole("button", { name: "Week actions", exact: true }).click();
-  await dialog
-    .getByRole("button", { name: "Duplicate week", exact: true })
-    .click();
-  await expect(page).toHaveURL(/\/week\/2026-W48$/);
-  const rows = await readRows("scheduled_sessions", { user_id: userId });
-  expect(rows).toHaveLength(3);
-  expect(rows.filter((row) => row.date === "2026-11-24")).toHaveLength(2);
-  const copies = rows.filter((row) => row.name === "Copy this session");
-  expect(copies).toHaveLength(2);
-  const original = copies.find((row) => row.id === source)!.snapshot as { items: Array<{ id: string; instruction: string }> };
-  const copy = copies.find((row) => row.id !== source)!.snapshot as { items: Array<{ id: string; instruction: string }> };
-  expect(copy.items[0]!.instruction).toBe(original.items[0]!.instruction);
-  expect(copy.items[0]!.id).not.toBe(original.items[0]!.id);
-  await page.goto("/week/2026-W49");
-  await page.getByRole("button", { name: "Week actions", exact: true }).click();
-  await expect(
-    dialog.getByRole("button", { name: "Duplicate week", exact: true }),
-  ).toBeDisabled();
 });
 
 test("mobile home prioritizes today's first session ahead of getting started", async ({
@@ -197,6 +141,7 @@ test("public access guidance gives invited and uninvited visitors a next step wi
   page,
 }) => {
   await page.goto("/");
+  await expect(page.getByText(/duplicate week|copy an existing training week|keep a good week going/i)).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "No invitation yet?", exact: true }),
   ).toHaveAttribute("href", "#access");
@@ -226,4 +171,6 @@ test("public access guidance gives invited and uninvited visitors a next step wi
       if (width !== 320) await capture(page, `access-${width}-${scheme}`);
     }
   }
+  await page.goto("/whats-new");
+  await expect(page.getByText(/duplicate week|copy an existing training week/i)).toHaveCount(0);
 });

@@ -78,27 +78,6 @@ test("rescheduling to a week that does not exist is refused", async ({ page }) =
   await expect(page.getByRole("link", { name: "Easy Run, 07:00" })).toBeVisible();
 });
 
-test("Journey 4 — duplicate week copies independent sessions", async ({ page }) => {
-  page.on("dialog", (dialog) => dialog.accept());
-  await scheduleRoutine(page, "Easy Run", "2", "07:00");
-
-  const heading = await page.getByRole("heading", { level: 1 }).innerText();
-  await page.getByRole("button", { name: "Week actions", exact: true }).click();
-  await page.getByRole("button", { name: "Duplicate week", exact: true }).click();
-  await expect(page.getByRole("link", { name: "Easy Run, 07:00" })).toBeVisible();
-  expect(await page.getByRole("heading", { level: 1 }).innerText()).not.toBe(heading);
-
-  await page.getByRole("link", { name: "Easy Run, 07:00" }).click();
-  await page.getByRole("link", { name: "Edit" }).click();
-  await page.getByLabel("Notes").fill("Copied week only");
-  await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByText("Copied week only")).toBeVisible();
-
-  await page.goto("/week/current");
-  await page.getByRole("link", { name: "Easy Run, 07:00" }).click();
-  await expect(page.getByText("Copied week only")).toHaveCount(0);
-});
-
 test("D2, D3: editing or deleting a routine never changes a scheduled session", async ({ page }) => {
   page.on("dialog", (dialog) => dialog.accept());
   const routineUrl = await createRoutine(page, "My Tempo", "running", [["Tempo", "20 min"]]);
@@ -159,6 +138,8 @@ test("D10, D12: export holds only my data; there is no import", async ({ page })
   await expect(page.getByLabel("Import")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /import/i })).toHaveCount(0);
 
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Week of");
+  await expect(page.getByTestId("section-loader")).toHaveCount(0);
   const downloadPromise = page.waitForEvent("download");
   await page.locator("header summary:visible").filter({ hasText: "Account" }).click();
   await page.getByRole("link", { name: "Download my data", exact: true }).click();
