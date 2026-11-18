@@ -15,6 +15,7 @@ describe("loaderLabelFor", () => {
 
   it("matches the section loaders of home, library, invitations and the landing page", () => {
     expect(loaderLabelFor("/home")).toBe("Loading your home…");
+    expect(loaderLabelFor("/profile")).toBe("Loading your profile…");
     expect(loaderLabelFor("/library")).toBe("Loading routines…");
     expect(loaderLabelFor("/admin/invitations")).toBe("Loading invitations…");
     expect(loaderLabelFor("/")).toBe("Loading TrainGrid…");

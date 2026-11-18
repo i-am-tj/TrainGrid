@@ -141,8 +141,8 @@ test("D10, D12: export holds only my data; there is no import", async ({ page })
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Week of");
   await expect(page.getByTestId("section-loader")).toHaveCount(0);
   const downloadPromise = page.waitForEvent("download");
-  await page.locator("header summary:visible").filter({ hasText: "Account" }).click();
-  await page.getByRole("link", { name: "Download my data", exact: true }).click();
+  await page.getByRole("banner").getByRole("link", { name: "Profile", exact: true }).click();
+  await page.getByRole("link", { name: /Download my data/ }).click();
   const download = await downloadPromise;
   const path = test.info().outputPath("export.json");
   await download.saveAs(path);

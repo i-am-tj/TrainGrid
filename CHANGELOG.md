@@ -7,6 +7,29 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Profile
+
+- **Your profile**: tap your initials in the header (or **Profile** in the phone menu) to see your
+  plan in numbers, download your data, choose light, dark or your device’s appearance, check the
+  time zone TrainGrid uses for “today”, and sign out.
+- **About TrainGrid** now lives on your profile: What’s new, the privacy notice and the terms.
+
+### Planner and home
+
+- **Today is right from the first page**: just after midnight, or straight after travelling,
+  TrainGrid no longer shows yesterday on the first page you open. The planner’s highlighted day
+  always matches home.
+- The planner keeps today marked on phones even when it is the day you are looking at.
+- On phones, home puts today’s sessions first and keeps the header compact.
+- Duplicate week is gone from the planner, keeping it to what you can do on every screen.
+
+### For maintainers
+
+- `agents/` trimmed to the roadmap and the decisions in force; finished epic records moved to
+  `agents/archive/`, Epic 2-era requirements and UX spec to `docs/archive/`.
+- `e2e/secondary-actions.spec.ts` saves screenshots only with `UI_SHOTS=1`, so test runs no longer
+  rewrite `docs/images`.
+
 ## [1.0.0] — 2026-11-18
 
 TrainGrid 1.0: the first release for early-access members. A home that knows your day, a warmer

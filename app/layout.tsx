@@ -7,6 +7,7 @@ import { SkipLink } from "@/components/ui/SkipLink";
 import { SiteFooter } from "@/components/footer/SiteFooter";
 import { siteMetadataBase } from "@/lib/site";
 import { TIME_ZONE_COOKIE } from "@/lib/time-zone";
+import { getRequestToday } from "@/lib/today";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -65,7 +66,15 @@ export const dynamic = "force-dynamic";
  *      (ThemeToggle), else the system setting;
  *   2. records the browser's IANA time zone in a cookie, so the server decides
  *      "today" for /home and the planner in the member's own time zone
- *      (lib/time-zone.ts). The value is validated on the server before use.
+ *      (lib/time-zone.ts). The value is validated on the server before use;
+ *   3. corrects the first request. Before the cookie exists (or after
+ *      travelling, while it names the old zone) the server can only guess the
+ *      zone, and around midnight the guess lands on the wrong day. The server
+ *      stamps the day it used on <html data-today>; when the browser's own day
+ *      differs, the page is hidden and loaded again, now with the cookie. A
+ *      planner page that /week/current redirected to is asked for again as
+ *      /week/current, so the redirect is decided again too. At most once per
+ *      day and zone, so blocked cookies can never cause a reload loop.
  */
 const THEME_INIT = `(function () {
   try {
@@ -74,6 +83,24 @@ const THEME_INIT = `(function () {
     if (tz && document.cookie.split("; ").indexOf(name + encodeURIComponent(tz)) === -1) {
       document.cookie = name + encodeURIComponent(tz) + "; path=/; max-age=31536000; samesite=lax" +
         (location.protocol === "https:" ? "; secure" : "");
+    }
+    var root = document.documentElement;
+    var served = root.getAttribute("data-today");
+    var p = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+    var part = function (t) { for (var i = 0; i < p.length; i++) if (p[i].type === t) return p[i].value; return ""; };
+    var local = part("year") + "-" + part("month") + "-" + part("day");
+    var stored = document.cookie.split("; ").indexOf(name + encodeURIComponent(tz)) !== -1;
+    var once = "tg_tz_corrected:" + tz + ":" + local;
+    if (served && served !== local && stored && sessionStorage.getItem(once) === null) {
+      sessionStorage.setItem(once, "1");
+      root.style.visibility = "hidden";
+      var target = location.pathname + location.search + location.hash;
+      var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+      var week = /^[/]week[/]([0-9]{4}-W[0-9]{2})([/]add)?$/.exec(location.pathname);
+      if (week && nav && nav.redirectCount > 0 && week[1] === root.getAttribute("data-today-week")) {
+        target = "/week/current" + (week[2] || "");
+      }
+      location.replace(target);
     }
   } catch (e) {}
   try {
@@ -86,10 +113,14 @@ const THEME_INIT = `(function () {
   } catch (e) {}
 })();`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // The day this response is rendered for; the script above checks it.
+  const today = await getRequestToday();
   return (
     <html
       lang="en"
+      data-today={today.date}
+      data-today-week={today.weekId}
       className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased`}
       // The theme script changes the class and color-scheme before React hydrates.
       suppressHydrationWarning

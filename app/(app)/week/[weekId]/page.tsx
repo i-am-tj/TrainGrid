@@ -53,7 +53,13 @@ export default async function WeekPage({
           <SectionLoader label="Loading your calendar…" minHeight="min-h-96" />
         }
       >
-        <WeekContent db={db} userId={userId} weekId={rawWeekId} day={day} />
+        <WeekContent
+          db={db}
+          userId={userId}
+          weekId={rawWeekId}
+          day={day}
+          todayDay={rawWeekId === today.weekId ? today.day : null}
+        />
       </Suspense>
     </div>
   );
@@ -64,11 +70,13 @@ async function WeekContent({
   userId,
   weekId,
   day,
+  todayDay,
 }: {
   db: Db;
   userId: string;
   weekId: string;
   day: IsoDay;
+  todayDay: IsoDay | null;
 }) {
   const records = await listSessionsForWeek(db, userId, weekId);
   const weekSessions = records.map(toPlannerSession);
@@ -85,9 +93,9 @@ async function WeekContent({
       ) : null}
 
       <div className="planner-desktop hidden md:block">
-        <WeekGrid weekId={weekId} sessions={weekSessions} />
+        <WeekGrid weekId={weekId} sessions={weekSessions} todayDay={todayDay} />
       </div>
-      <DayAgenda weekId={weekId} day={day} sessions={weekSessions} />
+      <DayAgenda weekId={weekId} day={day} sessions={weekSessions} todayDay={todayDay} />
     </div>
   );
 }

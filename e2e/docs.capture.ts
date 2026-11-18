@@ -193,12 +193,18 @@ for (const scheme of ["light", "dark"] as const) {
     await shot(page, `whats-new-desktop-${scheme}`, false);
     await page.goto("/privacy");
     await shot(page, `privacy-desktop-${scheme}`, false);
+    await page.goto("/profile");
+    await expect(page.getByTestId("profile-stats")).toBeVisible();
+    await shot(page, `profile-desktop-${scheme}`, false);
 
     await page.setViewportSize(PHONE);
     await page.goto("/home");
     await shot(page, `home-phone-${scheme}`, false);
     await page.goto(`/week/${today.weekId}?day=${today.day}`);
     await shot(page, `planner-phone-${scheme}`, false);
+    await page.goto("/profile");
+    await expect(page.getByTestId("profile-stats")).toBeVisible();
+    await shot(page, `profile-phone-${scheme}`, false);
   });
 
   test(`a new member's first visit (${scheme})`, async ({ page, context, baseURL }) => {

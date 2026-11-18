@@ -101,7 +101,7 @@ GitHub ──push──▶ Vercel (Next.js 16)
 Implemented in `supabase/migrations/20261112000000_core_schema.sql` (step 2) with policies in
 `20261112010000_rls_policies.sql` (step 3), except `invitations`, which arrives in step 7.
 
-Rules fixed by the approved decisions (see [DECISIONS.md](DECISIONS.md)):
+Rules fixed by the approved decisions (see [DECISIONS.md](DECISIONS-2026.md)):
 
 - Every scheduled session is a snapshot. `source_routine_id` is provenance only and becomes null
   when the routine is deleted (`on delete set null`).

@@ -1,6 +1,6 @@
 # TrainGrid — Technical design
 
-Current as of Epic 2, November 2026. The decision record behind this design is
+Current as of TrainGrid 1.0 (November 2026). The decision record behind this design is
 [ADR 001](adr/001-multi-user-supabase-architecture.md); the step-by-step reasoning is in
 `agents/DECISIONS.md`.
 
@@ -70,6 +70,9 @@ profiles.id ── revoked_at
               └── snapshot (jsonb copy of the workout)
 
 invitations (email, invited_by, accepted_at, accepted_by, revoked_at)
+      └── invitation_email_deliveries (one row per send attempt; service role only)
+
+member_feedback (user_id, kind, message, page_path; insert-only for members)
 ```
 
 | Table | Key columns | Rules |
@@ -79,6 +82,8 @@ invitations (email, invited_by, accepted_at, accepted_by, revoked_at)
 | `routines` | `scope` (`GLOBAL`/`PERSONAL`), `owner_user_id`, `slug`, `name`, `category`, `description` | Check constraint: GLOBAL ⇔ no owner. Only GLOBAL routines have slugs. |
 | `workout_items` | `routine_id`, `name`, `instruction`, `rest`, `target`, `notes`, `equipment[]`, `video_url`, `sort_order` | Planned fields only — no performed-workout data. Access follows the routine. |
 | `scheduled_sessions` | `user_id`, `date`, `start_time`, `name`, `category`, `duration_minutes`, `notes`, `source_routine_id`, `snapshot` | `source_routine_id` is provenance only and is cleared if the routine is deleted. |
+| `invitation_email_deliveries` | `invitation_id`, `status` (`preparing`/`accepted`/`failed`), `failure_code`, `provider_message_id` | Closed to API roles; written by admin actions with the secret key. |
+| `member_feedback` | `user_id` (defaults to the caller), `kind`, `message`, `page_path` | Members may insert their own rows only (column grant + RLS), at most 10 per 24 h; nobody reads it through the API. |
 
 Ownership columns are not updatable by members, so a row can never be reassigned. Exact shapes and
 formats: [DATA_FORMAT.md](DATA_FORMAT.md).
@@ -92,7 +97,6 @@ A scheduled session always holds its own copy of the workout:
 - Editing or deleting the routine never changes the session.
 - Customising a session rewrites only that session’s snapshot; items keep their ids where they
   already belong to the snapshot.
-- Duplicate Week copies sessions with fresh session and item ids.
 
 Item ids are stable UUIDs so a future exercise catalogue and performed-workout logs can refer to them
 without changing this model.
@@ -138,7 +142,6 @@ supabase/
 | `updateScheduledSession` | Change date, time, name, type, duration, notes |
 | `customizeScheduledSession` | Replace one session’s workout items |
 | `deleteScheduledSessionAction` | Delete one session |
-| `duplicateWeekAction` | Copy a week onto another week |
 | `upsertRoutineAction`, `deleteRoutineAction` | Create, edit, delete the member’s own routine |
 | `copyRoutineAction` | Copy a GLOBAL routine into the member’s library; opens the copy with `?copied=1` |
 | `signInWithProvider`, `signOut` | OAuth start (PKCE, account chooser) and sign-out |
@@ -167,8 +170,11 @@ slide; its `loading.tsx` applies to `/library` only, so detail pages keep real 4
 | `/login` | Public | Sign in; invite-only and error messages |
 | `/auth/callback` | Public | OAuth return: code exchange, then invitation check |
 | `/api/health` | Public | `ok` / `unconfigured` / `unreachable` only |
-| `/` | Member | Redirects to the current week |
-| `/week/[weekId]` | Member | Planner (`?day=` selects the mobile day) |
+| `/` | Public | Landing page, identical for every visitor |
+| `/privacy`, `/terms`, `/whats-new` | Public | Information pages; members keep their header |
+| `/home` | Member | Today, the week's counts, getting started, routines (each section streams) |
+| `/profile` | Member | Identity, plan numbers, data download, appearance, time zone, About TrainGrid, sign out |
+| `/week/[weekId]` | Member | Planner (`?day=` selects the mobile day); `/week/current` redirects to the member's today |
 | `/week/[weekId]/add` | Member | Add session (`?routine=<id>`, legacy `?template=<slug>`) |
 | `/session/[id]`, `/edit`, `/customize` | Member (owner) | Session detail and forms; 404 for anyone else |
 | `/library`, `/library/new` | Member | Routine list (`?scope=global\|mine`, `q`, `type`, `equipment`); new personal routine |

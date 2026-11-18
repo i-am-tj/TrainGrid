@@ -164,7 +164,7 @@ The screenshot harness renders real components and compiled Tailwind CSS without
 
 Built: audit/specification, route/component inventory, Claude handoff, additive theme-compatible tokens and controls, PageHeading/EmptyState/InlineMessage, member active links, larger footer social touch targets, reusable public header/landing and original product graphics. Screens covered: public landing composition and existing member navigation/footer. No root publication, login/dashboard redesign or other PR's screens are claimed complete.
 
-Screenshots (actual static component captures): [desktop light](../docs/images/epic-3/landing-1440-light.png), [desktop dark](../docs/images/epic-3/landing-1440-dark.png), [mobile light](../docs/images/epic-3/landing-360-light.png), [mobile dark](../docs/images/epic-3/landing-360-dark.png). See harness limits above. OG artwork: [PNG](../public/marketing/og-preview.png) and editable SVG alongside it. Graphics use no stock assets, hotlinks, WebGL or added runtime dependencies; the OG PNG is approximately 60KB and is not loaded by the page.
+Screenshots (actual static component captures): [desktop light](../../docs/images/epic-3/landing-1440-light.png), [desktop dark](../../docs/images/epic-3/landing-1440-dark.png), [mobile light](../../docs/images/epic-3/landing-360-light.png), [mobile dark](../../docs/images/epic-3/landing-360-dark.png). See harness limits above. OG artwork: [PNG](../../public/marketing/og-preview.png) and editable SVG alongside it. Graphics use no stock assets, hotlinks, WebGL or added runtime dependencies; the OG PNG is approximately 60KB and is not loaded by the page.
 
 Validation: lint, typecheck, 174 unit tests, 35 integration tests, 191 database tests, 14 component browser checks, secret scan and `next build --webpack` passed. All 119 app E2E tests passed in the final full run. Default Turbopack build failed in this environment while binding a PostCSS worker port; webpack production build succeeded with existing fonts and route configuration. No build configuration was changed to hide that limitation.
 
@@ -226,11 +226,11 @@ Review screenshots:
 
 | Screen | Desktop | Mobile |
 | --- | --- | --- |
-| Live login, light | [1440px](../docs/images/epic-3/ui-02/login-live-1440-light.png) | [360px](../docs/images/epic-3/ui-02/login-live-360-light.png) |
-| Live login, dark | [1440px](../docs/images/epic-3/ui-02/login-live-1440-dark.png) | [360px](../docs/images/epic-3/ui-02/login-live-360-dark.png) |
-| Dashboard example, light | [1440px](../docs/images/epic-3/ui-02/dashboard-ready-1440-light.png) | [360px](../docs/images/epic-3/ui-02/dashboard-ready-360-light.png) |
-| Dashboard example, dark | [1440px](../docs/images/epic-3/ui-02/dashboard-ready-1440-dark.png) | [360px](../docs/images/epic-3/ui-02/dashboard-ready-360-dark.png) |
-| Empty dashboard example, light | [1440px](../docs/images/epic-3/ui-02/dashboard-empty-week-1440-light.png) | [360px](../docs/images/epic-3/ui-02/dashboard-empty-week-360-light.png) |
+| Live login, light | [1440px](../../docs/images/epic-3/ui-02/login-live-1440-light.png) | [360px](../../docs/images/epic-3/ui-02/login-live-360-light.png) |
+| Live login, dark | [1440px](../../docs/images/epic-3/ui-02/login-live-1440-dark.png) | [360px](../../docs/images/epic-3/ui-02/login-live-360-dark.png) |
+| Dashboard example, light | [1440px](../../docs/images/epic-3/ui-02/dashboard-ready-1440-light.png) | [360px](../../docs/images/epic-3/ui-02/dashboard-ready-360-light.png) |
+| Dashboard example, dark | [1440px](../../docs/images/epic-3/ui-02/dashboard-ready-1440-dark.png) | [360px](../../docs/images/epic-3/ui-02/dashboard-ready-360-dark.png) |
+| Empty dashboard example, light | [1440px](../../docs/images/epic-3/ui-02/dashboard-empty-week-1440-light.png) | [360px](../../docs/images/epic-3/ui-02/dashboard-empty-week-360-light.png) |
 
 `login-live-*` captures the hydrated Next app with real fonts and the development indicator excluded from the image. Other captures are labelled fixture compositions with fallback fonts. Both themes of empty/dashboard/login static examples are included in the same asset directory.
 
@@ -282,12 +282,12 @@ Review screenshots (live local test app, except standalone email):
 
 | Screen | Desktop | Mobile |
 | --- | --- | --- |
-| Invitations and preview | [1440px](../docs/images/epic-3/ui-03/invitations-1440-light.png) | [360px](../docs/images/epic-3/ui-03/invitations-360-light.png) |
-| Populated planner | [1440px](../docs/images/epic-3/ui-03/planner-1440-light.png) | [360px](../docs/images/epic-3/ui-03/planner-360-light.png) |
-| Library | [1440px](../docs/images/epic-3/ui-03/library-1440-light.png) | [360px](../docs/images/epic-3/ui-03/library-360-light.png) |
-| Routine editor, dark | [1440px](../docs/images/epic-3/ui-03/routine-editor-1440-dark.png) | [360px](../docs/images/epic-3/ui-03/routine-editor-360-dark.png) |
-| Planned session | [1440px](../docs/images/epic-3/ui-03/session-1440-light.png) | [360px](../docs/images/epic-3/ui-03/session-360-light.png) |
-| Email markup | [1440px](../docs/images/epic-3/ui-03/email-1440.png) | [360px](../docs/images/epic-3/ui-03/email-360.png) |
+| Invitations and preview | [1440px](../../docs/images/epic-3/ui-03/invitations-1440-light.png) | [360px](../../docs/images/epic-3/ui-03/invitations-360-light.png) |
+| Populated planner | [1440px](../../docs/images/epic-3/ui-03/planner-1440-light.png) | [360px](../../docs/images/epic-3/ui-03/planner-360-light.png) |
+| Library | [1440px](../../docs/images/epic-3/ui-03/library-1440-light.png) | [360px](../../docs/images/epic-3/ui-03/library-360-light.png) |
+| Routine editor, dark | [1440px](../../docs/images/epic-3/ui-03/routine-editor-1440-dark.png) | [360px](../../docs/images/epic-3/ui-03/routine-editor-360-dark.png) |
+| Planned session | [1440px](../../docs/images/epic-3/ui-03/session-1440-light.png) | [360px](../../docs/images/epic-3/ui-03/session-360-light.png) |
+| Email markup | [1440px](../../docs/images/epic-3/ui-03/email-1440.png) | [360px](../../docs/images/epic-3/ui-03/email-360.png) |
 
 Additional routine, add/edit/customize-session and dark-state captures are included in the same directory (28 total). Development indicators are excluded from app images. QA records are disposable local examples. All invitations/email component fixtures are kept under tests and ignored preview output, never exposed as application routes.
 

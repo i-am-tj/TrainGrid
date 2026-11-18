@@ -30,20 +30,20 @@
 
 | Doc | What’s in it |
 | --- | --- |
-| [REQUIREMENTS.md](./REQUIREMENTS.md) | Product requirements |
-| [UX_SPEC.md](./UX_SPEC.md) | UX and interaction model |
 | [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) | Architecture, security model, data model, routing |
 | [DATA_FORMAT.md](./DATA_FORMAT.md) | Database tables, snapshot and export formats, seed templates |
 | [TEST_PLAN.md](./TEST_PLAN.md) | Test strategy and coverage |
 | [BRANDING.md](./BRANDING.md) | Logo files and where they are used |
 | [adr/](./adr/) | Architecture decision records |
-| [../agents/DECISIONS.md](../agents/DECISIONS.md) | Every product and engineering decision, with the reason |
+| [../agents/ROADMAP.md](../agents/ROADMAP.md) | Releases, current features and what may come next |
+| [../agents/DECISIONS.md](../agents/DECISIONS.md) | The product and engineering decisions in force |
 
 ## Screenshots
 
 `images/v1/` holds the current screenshots, in light and dark, desktop and phone. They are made
 from the app itself, never by hand: `npm run screenshots` seeds a believable member on the local
 stack and captures every screen from a production build (`e2e/docs.capture.ts`). Older,
-epic-by-epic captures live in `images/epic-3/` with their reports.
+epic-by-epic captures live in `images/epic-3/` with their archived reports
+(`agents/archive/`).
 
 Historical records: [archive/](./archive/).

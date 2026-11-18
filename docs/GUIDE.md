@@ -77,17 +77,17 @@ you long-press the icon.
 few words, and send. It includes your name and the page you were on, nothing else. Every note is
 read.
 
-## 7. Your data
+## 7. Your profile and your data
 
-- Your plan is private: other members can never see it.
-- **Export** in the header downloads all your routines and sessions as a JSON file, any time.
-- To have your account and data deleted, ask through **Feedback**.
+Open your **Profile** from your initials at the top right (on a phone: menu → **Profile**).
 
-Read the full [privacy notice](https://train-grid.vercel.app/privacy) and
-[terms](https://train-grid.vercel.app/terms). See what changed in each release on
-[What’s new](https://train-grid.vercel.app/whats-new).
+- See your plan in numbers: sessions planned, sessions coming up, and your own routines.
+- **Download my data** saves all your routines and sessions as a JSON file, any time.
+- **Appearance**: light, dark, or follow your device. The sun and moon button in the header
+  switches too.
+- **Time zone**: “today” follows your device’s clock, even straight after travelling.
+- **About TrainGrid**: What’s new, the privacy notice and the terms.
+- **Sign out** of this device.
 
-## Light and dark
-
-The sun and moon button in the header switches between light and dark. Until you choose,
-TrainGrid follows your device.
+Your plan is private: other members can never see it. To have your account and data deleted, ask
+through **Feedback**.

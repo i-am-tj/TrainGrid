@@ -10,7 +10,6 @@ import { memberData } from "@/lib/data/server";
 import {
   createAdhocSession,
   deleteSession,
-  duplicateWeek,
   replaceSessionItems,
   scheduleRoutine,
   updateSessionDetails,
@@ -171,17 +170,6 @@ export async function deleteScheduledSessionAction(formData: FormData) {
   const weekId = text(formData, "weekId");
   const day = text(formData, "day");
   redirect(isRealWeekId(weekId) ? `/week/${weekId}?day=${encodeURIComponent(day)}` : "/");
-}
-
-export async function duplicateWeekAction(formData: FormData) {
-  const { db, userId } = await memberData();
-  const destWeekId = text(formData, "destWeekId");
-  await duplicateWeek(db, userId, {
-    sourceWeekId: text(formData, "sourceWeekId"),
-    destWeekId,
-  });
-  revalidateAll();
-  redirect(`/week/${destWeekId}`);
 }
 
 // ---------------------------------------------------------------------------

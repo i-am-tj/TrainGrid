@@ -48,11 +48,11 @@ Final optimized-app captures use real Next fonts and disposable local data. Stat
 
 | Screen | Desktop | Mobile |
 | --- | --- | --- |
-| Planner, light | [1440px](../docs/images/epic-3/ui-04/planner-1440-light.png) | [360px](../docs/images/epic-3/ui-04/planner-360-light.png) |
-| Planner, dark | [1440px](../docs/images/epic-3/ui-04/planner-1440-dark.png) | [360px](../docs/images/epic-3/ui-04/planner-360-dark.png) |
-| Library, light | [1440px](../docs/images/epic-3/ui-04/library-1440-light.png) | [360px](../docs/images/epic-3/ui-04/library-360-light.png) |
-| Landing example, light | [1440px](../docs/images/epic-3/landing-1440-light.png) | [360px](../docs/images/epic-3/landing-360-light.png) |
-| Dashboard example, dark | [1440px](../docs/images/epic-3/ui-02/dashboard-ready-1440-dark.png) | [360px](../docs/images/epic-3/ui-02/dashboard-ready-360-dark.png) |
+| Planner, light | [1440px](../../docs/images/epic-3/ui-04/planner-1440-light.png) | [360px](../../docs/images/epic-3/ui-04/planner-360-light.png) |
+| Planner, dark | [1440px](../../docs/images/epic-3/ui-04/planner-1440-dark.png) | [360px](../../docs/images/epic-3/ui-04/planner-360-dark.png) |
+| Library, light | [1440px](../../docs/images/epic-3/ui-04/library-1440-light.png) | [360px](../../docs/images/epic-3/ui-04/library-360-light.png) |
+| Landing example, light | [1440px](../../docs/images/epic-3/landing-1440-light.png) | [360px](../../docs/images/epic-3/landing-360-light.png) |
+| Dashboard example, dark | [1440px](../../docs/images/epic-3/ui-02/dashboard-ready-1440-dark.png) | [360px](../../docs/images/epic-3/ui-02/dashboard-ready-360-dark.png) |
 
 The UI-03 directory also contains refreshed invitation, routine/editor and session screenshots from the final app regression run.
 
@@ -72,8 +72,8 @@ The empty-routine actions use a 24px horizontal gap and 12px vertical gap when w
 
 | Fix | Desktop light | Desktop dark | Mobile light | Mobile dark |
 | --- | --- | --- | --- | --- |
-| Delete modal | [1440px](../docs/images/epic-3/enhancements/delete-routine-1440-light.png) | [1440px](../docs/images/epic-3/enhancements/delete-routine-1440-dark.png) | [320px](../docs/images/epic-3/enhancements/delete-routine-320-light.png) | [320px](../docs/images/epic-3/enhancements/delete-routine-320-dark.png) |
-| Routine actions | [1440px](../docs/images/epic-3/enhancements/empty-routines-1440-light.png) | [1440px](../docs/images/epic-3/enhancements/empty-routines-1440-dark.png) | [320px](../docs/images/epic-3/enhancements/empty-routines-320-light.png) | [320px](../docs/images/epic-3/enhancements/empty-routines-320-dark.png) |
+| Delete modal | [1440px](../../docs/images/epic-3/enhancements/delete-routine-1440-light.png) | [1440px](../../docs/images/epic-3/enhancements/delete-routine-1440-dark.png) | [320px](../../docs/images/epic-3/enhancements/delete-routine-320-light.png) | [320px](../../docs/images/epic-3/enhancements/delete-routine-320-dark.png) |
+| Routine actions | [1440px](../../docs/images/epic-3/enhancements/empty-routines-1440-light.png) | [1440px](../../docs/images/epic-3/enhancements/empty-routines-1440-dark.png) | [320px](../../docs/images/epic-3/enhancements/empty-routines-320-light.png) | [320px](../../docs/images/epic-3/enhancements/empty-routines-320-dark.png) |
 
 Modal captures use the live local app; action captures show the isolated component empty state.
 
@@ -91,8 +91,8 @@ Final checks pass: 50 component browser tests, 38 affected app browser tests, li
 
 | Screen | Desktop light | Desktop dark | Phone light | Phone dark |
 | --- | --- | --- | --- | --- |
-| Creator card | [1440px](../docs/images/epic-3/loaders-creator/creator-1440-light.png) | [1440px](../docs/images/epic-3/loaders-creator/creator-1440-dark.png) | [320px](../docs/images/epic-3/loaders-creator/creator-320-light.png) | [320px](../docs/images/epic-3/loaders-creator/creator-320-dark.png) |
-| Signing out | [1440px](../docs/images/epic-3/loaders-creator/signout-1440-light.png) | [1440px](../docs/images/epic-3/loaders-creator/signout-1440-dark.png) | [360px](../docs/images/epic-3/loaders-creator/signout-360-light.png) | [360px](../docs/images/epic-3/loaders-creator/signout-360-dark.png) |
+| Creator card | [1440px](../../docs/images/epic-3/loaders-creator/creator-1440-light.png) | [1440px](../../docs/images/epic-3/loaders-creator/creator-1440-dark.png) | [320px](../../docs/images/epic-3/loaders-creator/creator-320-light.png) | [320px](../../docs/images/epic-3/loaders-creator/creator-320-dark.png) |
+| Signing out | [1440px](../../docs/images/epic-3/loaders-creator/signout-1440-light.png) | [1440px](../../docs/images/epic-3/loaders-creator/signout-1440-dark.png) | [360px](../../docs/images/epic-3/loaders-creator/signout-360-light.png) | [360px](../../docs/images/epic-3/loaders-creator/signout-360-dark.png) |
 
 ## Follow-up — invitation/access revoke confirmation
 
@@ -104,8 +104,8 @@ Validation: 25 affected app regressions pass across invitation administration, m
 
 | Modal | Desktop light | Desktop dark | Phone light | Phone dark |
 | --- | --- | --- | --- | --- |
-| Revoke access | [1440px](../docs/images/epic-3/revoke-modal/access-1440-light.png) | [1440px](../docs/images/epic-3/revoke-modal/access-1440-dark.png) | [320px](../docs/images/epic-3/revoke-modal/access-320-light.png) | [320px](../docs/images/epic-3/revoke-modal/access-320-dark.png) |
-| Revoke invitation | [1440px](../docs/images/epic-3/revoke-modal/invitation-1440-light.png) | [1440px](../docs/images/epic-3/revoke-modal/invitation-1440-dark.png) | [320px](../docs/images/epic-3/revoke-modal/invitation-320-light.png) | [320px](../docs/images/epic-3/revoke-modal/invitation-320-dark.png) |
+| Revoke access | [1440px](../../docs/images/epic-3/revoke-modal/access-1440-light.png) | [1440px](../../docs/images/epic-3/revoke-modal/access-1440-dark.png) | [320px](../../docs/images/epic-3/revoke-modal/access-320-light.png) | [320px](../../docs/images/epic-3/revoke-modal/access-320-dark.png) |
+| Revoke invitation | [1440px](../../docs/images/epic-3/revoke-modal/invitation-1440-light.png) | [1440px](../../docs/images/epic-3/revoke-modal/invitation-1440-dark.png) | [320px](../../docs/images/epic-3/revoke-modal/invitation-320-light.png) | [320px](../../docs/images/epic-3/revoke-modal/invitation-320-dark.png) |
 
 Captures are from the local application using disposable test recipients. No production data or backend modules changed.
 
@@ -124,10 +124,10 @@ Regression checks cover the actual signed-in download and member-only data, keyb
 
 | Screen | Desktop light | Desktop dark | Phone light | Phone dark |
 | --- | --- | --- | --- | --- |
-| Account download | [1440px](../docs/images/epic-3/secondary-actions/account-1440-light.png) | [1440px](../docs/images/epic-3/secondary-actions/account-1440-dark.png) | [360px](../docs/images/epic-3/secondary-actions/account-360-light.png) | [360px](../docs/images/epic-3/secondary-actions/account-360-dark.png) |
-| Planner | [1440px](../docs/images/epic-3/secondary-actions/planner-1440-light.png) | [1440px](../docs/images/epic-3/secondary-actions/planner-1440-dark.png) | [360px](../docs/images/epic-3/secondary-actions/planner-360-light.png) | [360px](../docs/images/epic-3/secondary-actions/planner-360-dark.png) |
-| Home | [1440px](../docs/images/epic-3/secondary-actions/home-1440-light.png) | [1440px](../docs/images/epic-3/secondary-actions/home-1440-dark.png) | [360px](../docs/images/epic-3/secondary-actions/home-360-light.png) | [360px](../docs/images/epic-3/secondary-actions/home-360-dark.png) |
-| Invitation guidance | [1440px](../docs/images/epic-3/secondary-actions/access-1440-light.png) | [1440px](../docs/images/epic-3/secondary-actions/access-1440-dark.png) | [360px](../docs/images/epic-3/secondary-actions/access-360-light.png) | [360px](../docs/images/epic-3/secondary-actions/access-360-dark.png) |
+| Account download | [1440px](../../docs/images/epic-3/secondary-actions/account-1440-light.png) | [1440px](../../docs/images/epic-3/secondary-actions/account-1440-dark.png) | [360px](../../docs/images/epic-3/secondary-actions/account-360-light.png) | [360px](../../docs/images/epic-3/secondary-actions/account-360-dark.png) |
+| Planner | [1440px](../../docs/images/epic-3/secondary-actions/planner-1440-light.png) | [1440px](../../docs/images/epic-3/secondary-actions/planner-1440-dark.png) | [360px](../../docs/images/epic-3/secondary-actions/planner-360-light.png) | [360px](../../docs/images/epic-3/secondary-actions/planner-360-dark.png) |
+| Home | [1440px](../../docs/images/epic-3/secondary-actions/home-1440-light.png) | [1440px](../../docs/images/epic-3/secondary-actions/home-1440-dark.png) | [360px](../../docs/images/epic-3/secondary-actions/home-360-light.png) | [360px](../../docs/images/epic-3/secondary-actions/home-360-dark.png) |
+| Invitation guidance | [1440px](../../docs/images/epic-3/secondary-actions/access-1440-light.png) | [1440px](../../docs/images/epic-3/secondary-actions/access-1440-dark.png) | [360px](../../docs/images/epic-3/secondary-actions/access-360-light.png) | [360px](../../docs/images/epic-3/secondary-actions/access-360-dark.png) |
 
 Final verification: **256 unit tests and 50 component checks pass**. The full browser run passed 172 cases; the single timing-sensitive day-loader assertion passed on a focused rerun, verifying all 173 cases. The full browser run uses `E2E_SERVER=build npm run test:e2e` against the optimized local `next build --webpack` output. Lint, typecheck and secret scan pass. CSS checks accept equivalent optimized units (`1turn`/`360deg`, zero pixels/percent), and the mobile feedback check targets its own disclosure. App header layering keeps Account above calendar controls; the real planner download is covered.
 

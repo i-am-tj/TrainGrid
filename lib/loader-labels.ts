@@ -9,6 +9,7 @@ export function loaderLabelFor(pathname: string): string {
   }
   if (pathname === "/home") return "Loading your home…";
   if (pathname === "/library") return "Loading routines…";
+  if (pathname === "/profile") return "Loading your profile…";
   if (pathname === "/admin/invitations") return "Loading invitations…";
   if (pathname === "/") return "Loading TrainGrid…";
   return "Loading page…";
