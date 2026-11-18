@@ -8,7 +8,7 @@
 A calm, invite-only training planner: your week at a glance, a shared library of routines, and a straight answer to “what am I doing today?”</p>
 
 <p align="center">
-  <a href="https://github.com/i-am-tj/TrainGrid/releases"><img alt="Release" src="https://img.shields.io/github/v/release/i-am-tj/TrainGrid?label=release&color=9a4e24" /></a>
+  <a href="https://github.com/i-am-tj/TrainGrid/releases"><img alt="Release" src="https://img.shields.io/github/v/release/i-am-tj/TrainGrid?include_prereleases&sort=semver&label=release&color=9a4e24" /></a>
   <a href="https://github.com/i-am-tj/TrainGrid/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/i-am-tj/TrainGrid/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="Early access" src="https://img.shields.io/badge/access-invite--only%20early%20access-1c1917" />
 </p>
