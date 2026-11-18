@@ -13,7 +13,7 @@ describe("invitation email presentation", () => {
       expect(body).toContain("member@example.test");
       expect(body).toContain("Google or GitHub");
       expect(body).toContain("verified email");
-      expect(body).toContain("invite-only Beta");
+      expect(body).toContain("invite-only early access");
       expect(body).toContain("https://traingrid.example.test/login");
     }
     expect(email.html).toContain(

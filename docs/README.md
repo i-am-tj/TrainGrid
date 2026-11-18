@@ -1,30 +1,49 @@
 # TrainGrid docs
 
-Project documentation lives here so the repository root stays focused on the app.
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/v1/home-desktop-dark.png" />
+    <img src="images/v1/home-desktop-light.png" alt="TrainGrid home" width="640" />
+  </picture>
+</p>
 
-| Doc | Purpose |
+## Start here
+
+| Doc | For | What’s in it |
+| --- | --- | --- |
+| [GUIDE.md](./GUIDE.md) | Members | Signing in, home, planning the week, routines, installing on a phone, feedback, your data. Send this to new members. |
+| [ADMIN.md](./ADMIN.md) | Admins | Inviting, email status, revoking, deleting a member, reading feedback, monitoring. |
+| [../CHANGELOG.md](../CHANGELOG.md) | Everyone | Every release; also in the app at `/whats-new`. |
+
+## Running TrainGrid
+
+| Doc | What’s in it |
+| --- | --- |
+| [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) | Local Supabase stack, the production project, every environment variable |
+| [EMAIL_SETUP.md](./EMAIL_SETUP.md) | Resend and DNS (Namecheap) for invitation and feedback email |
+| [SECURITY.md](./SECURITY.md) | Credentials, dev/prod separation, error reports and alerts, feedback storage, release checks |
+| [RELEASING.md](./RELEASING.md) | Versions and how a release is made |
+| [CI.md](./CI.md) | What runs on every pull request, and how to reproduce it locally |
+| [CONTENT.md](./CONTENT.md) | Maintaining the shared TrainGrid routines |
+
+## How it is built
+
+| Doc | What’s in it |
 | --- | --- |
 | [REQUIREMENTS.md](./REQUIREMENTS.md) | Product requirements |
 | [UX_SPEC.md](./UX_SPEC.md) | UX and interaction model |
 | [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) | Architecture, security model, data model, routing |
 | [DATA_FORMAT.md](./DATA_FORMAT.md) | Database tables, snapshot and export formats, seed templates |
-| [MVP_CHECKLIST.md](./MVP_CHECKLIST.md) | Historical: the original file-backed MVP checklist (Aug 2026) |
 | [TEST_PLAN.md](./TEST_PLAN.md) | Test strategy and coverage |
-| [TEST_RESULTS.md](./TEST_RESULTS.md) | Latest results |
-| [SECURITY.md](./SECURITY.md) | Credentials, dev/prod separation, release checks, incident steps |
-| [CI.md](./CI.md) | What the GitHub Actions workflow runs on pull requests, and how to reproduce it |
-| [RELEASING.md](./RELEASING.md) | Versions and how a release is made at the end of each epic |
-| [CONTENT.md](./CONTENT.md) | Maintaining the shared TrainGrid routines: templates, stable item ids, applying the seed |
-| [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) | Local Supabase stack, production project, environment variables |
+| [BRANDING.md](./BRANDING.md) | Logo files and where they are used |
 | [adr/](./adr/) | Architecture decision records |
-| [images/](./images/) | Screenshots used in the root README (mobile + desktop, Nov 2026) |
+| [../agents/DECISIONS.md](../agents/DECISIONS.md) | Every product and engineering decision, with the reason |
 
-## How TrainGrid runs
+## Screenshots
 
-- TrainGrid is an **invite-only** app at `train-grid.vercel.app`. Members sign in with Google or
-  GitHub; an admin invites them by email.
-- Data lives in **Supabase** (PostgreSQL with Row Level Security). Each member sees only their own
-  calendar and routines; the shared routine library is read-only.
-- Local development uses a local Supabase stack in Docker and never touches production data.
-- The working records for Epic 1 (roadmap, backlog, decisions, security test matrix, story reports)
-  are in [`agents/`](../agents/README.md).
+`images/v1/` holds the current screenshots, in light and dark, desktop and phone. They are made
+from the app itself, never by hand: `npm run screenshots` seeds a believable member on the local
+stack and captures every screen from a production build (`e2e/docs.capture.ts`). Older,
+epic-by-epic captures live in `images/epic-3/` with their reports.
+
+Historical records: [archive/](./archive/).

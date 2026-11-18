@@ -65,3 +65,13 @@ export function trustedLoginUrl(env: Env = process.env): string | null {
   const origin = configuredSiteOrigin(env);
   return origin ? `${origin}/login` : null;
 }
+
+/**
+ * The owner's contact address for the privacy notice and terms
+ * (TRAINGRID_CONTACT_EMAIL), or null when it is not set or not an address.
+ */
+export function contactEmail(env: Env = process.env): string | null {
+  const value = env.TRAINGRID_CONTACT_EMAIL?.trim();
+  if (!value || value.length > 254) return null;
+  return /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(value) ? value : null;
+}

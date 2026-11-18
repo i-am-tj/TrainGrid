@@ -34,6 +34,19 @@ export const metadata: Metadata = {
   metadataBase: siteMetadataBase(),
   title: "TrainGrid",
   description: "A lightweight 7-day training planner and workout reference.",
+  applicationName: "TrainGrid",
+  // Installed on a phone's home screen: open like an app, titled TrainGrid.
+  appleWebApp: { capable: true, title: "TrainGrid", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
+  // A link to any page (not only /) previews with the TrainGrid card.
+  openGraph: {
+    siteName: "TrainGrid",
+    type: "website",
+    title: "TrainGrid",
+    description: "Plan the week. Own the work. An invite-only training planner.",
+    images: [{ url: "/marketing/og-preview.png", width: 1200, height: 630, alt: "TrainGrid weekly training planner" }],
+  },
+  twitter: { card: "summary_large_image", images: ["/marketing/og-preview.png"] },
 };
 
 export const viewport: Viewport = {

@@ -6,7 +6,19 @@
  * exactly, so nothing below it becomes public.
  */
 
-const PUBLIC_PATHS = new Set(["/", "/login", "/auth/callback", "/api/health"]);
+const PUBLIC_PATHS = new Set([
+  "/",
+  "/login",
+  "/auth/callback",
+  "/api/health",
+  // Information pages: the privacy notice and terms must be readable before
+  // signing in; What's new is the public changelog.
+  "/privacy",
+  "/terms",
+  "/whats-new",
+  // Install metadata, fetched by the browser without a session.
+  "/manifest.webmanifest",
+]);
 
 export function isPublicPath(pathname: string): boolean {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;

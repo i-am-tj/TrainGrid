@@ -81,16 +81,23 @@ export function DashboardShell({
   today,
   week,
   routines,
+  intro,
+  notice,
 }: {
   frame: DashboardFrameData;
   today: ReactNode;
   week: ReactNode;
   routines: ReactNode;
+  /** Shown between the greeting and the sections (getting started). */
+  intro?: ReactNode;
+  /** A small note above the greeting (what's new). */
+  notice?: ReactNode;
 }) {
   return (
     <div className="dashboard-container">
       <header className="flex flex-col items-start justify-between gap-6 border-b border-line pb-8 sm:flex-row sm:items-end">
         <div className="min-w-0">
+          {notice}
           <p className="ui-eyebrow">Your training, thoughtfully together</p>
           <p className="mt-4 text-sm text-stone-600">{frame.dateLabel}</p>
           <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight [overflow-wrap:anywhere] sm:text-4xl">
@@ -107,6 +114,7 @@ export function DashboardShell({
           Open weekly planner <span aria-hidden="true">↗</span>
         </Link>
       </header>
+      {intro}
       <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
         <section aria-labelledby="today-title" className="min-w-0">
           <SectionTitle

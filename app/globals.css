@@ -119,8 +119,8 @@ body {
     transition: background-size 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   .underline-reveal:hover,
-  .underline-reveal-parent:hover > .underline-reveal,
-  .underline-reveal-parent:focus-visible > .underline-reveal {
+  .underline-reveal-parent:hover .underline-reveal,
+  .underline-reveal-parent:focus-visible .underline-reveal {
     background-size: 100% 1px;
   }
   .credit-underline > .underline-reveal:first-child {
@@ -307,3 +307,56 @@ body {
   transform: translateY(-180%);
 }
 .skip-link:focus { transform: none; }
+
+/*
+ * Modal dialogs (components/ui/Modal.tsx): fade and rise in over a soft,
+ * blurred backdrop, and back out on close. @starting-style gives the entry
+ * state; display/overlay transition discretely so the exit animates too.
+ */
+.ui-modal {
+  opacity: 0;
+  transform: translateY(10px) scale(0.985);
+  transition:
+    opacity var(--motion-standard) var(--ease-ui),
+    transform var(--motion-standard) var(--ease-ui),
+    overlay var(--motion-standard) allow-discrete,
+    display var(--motion-standard) allow-discrete;
+}
+.ui-modal[open] { opacity: 1; transform: none; }
+@starting-style {
+  .ui-modal[open] { opacity: 0; transform: translateY(10px) scale(0.985); }
+}
+.ui-modal::backdrop {
+  background-color: rgb(12 10 9 / 0);
+  backdrop-filter: blur(0);
+  transition:
+    background-color var(--motion-standard) var(--ease-ui),
+    backdrop-filter var(--motion-standard) var(--ease-ui),
+    overlay var(--motion-standard) allow-discrete,
+    display var(--motion-standard) allow-discrete;
+}
+.ui-modal[open]::backdrop { background-color: rgb(12 10 9 / 0.45); backdrop-filter: blur(3px); }
+@starting-style {
+  .ui-modal[open]::backdrop { background-color: rgb(12 10 9 / 0); backdrop-filter: blur(0); }
+}
+
+/* A check mark that draws itself (feedback sent, getting-started steps). */
+.ui-check-draw path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: ui-check-draw 420ms var(--ease-ui) 120ms forwards;
+}
+@keyframes ui-check-draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-modal, .ui-modal::backdrop { transition: none; }
+  .ui-check-draw path { animation: none; stroke-dashoffset: 0; }
+}
+
+/* Prose inside the privacy notice and terms (components/info/LegalPage.tsx). */
+.legal-prose ul { list-style: disc; padding-left: 1.25rem; }
+.legal-prose li + li { margin-top: 0.5rem; }
+.legal-prose li::marker { color: var(--accent); }
+.legal-prose strong { color: var(--foreground); font-weight: 600; }
+.legal-prose a { color: var(--accent); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset: 4px; border-radius: 2px; }
+.legal-prose a:hover { text-decoration-color: var(--accent); }

@@ -52,9 +52,10 @@ export function MobileMenu({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // A link that does not change the URL (Export downloads a file) still closes the menu.
+  // A link that does not change the URL (Export downloads a file) still
+  // closes the menu, as does a control that opens a dialog (Feedback).
   const onPanelClick = (event: MouseEvent<HTMLElement>) => {
-    if ((event.target as HTMLElement).closest("a")) close();
+    if ((event.target as HTMLElement).closest("a, [data-closes-menu]")) close();
   };
 
   return (

@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { MobileMenu } from "@/components/MobileMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { FeedbackProvider, FeedbackTrigger } from "@/components/feedback/Feedback";
 import { isAdminViewer, parseAdminUserIds } from "@/lib/admin/access";
 import { getViewer } from "@/lib/auth/session";
 
@@ -30,11 +31,14 @@ export async function AppHeader() {
       render: (c) => <NavLink href="/admin/invitations" className={c}>Invitations</NavLink>,
     });
   }
+  if (isMember) {
+    items.push({ key: "feedback", render: (c) => <FeedbackTrigger className={c} /> });
+  }
   if (viewer.status !== "anonymous") {
     items.push({ key: "sign-out", render: (c) => <SignOutButton className={`${c} disabled:opacity-60`} /> });
   }
 
-  return (
+  const header = (
     <header className="relative border-b border-line bg-card">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-3 sm:px-4">
         <div className="flex items-center gap-2">
@@ -46,9 +50,9 @@ export async function AppHeader() {
             <BrandLogo className="h-6 w-6 rounded-[22%] dark:outline dark:outline-1 dark:outline-hairline" />
             TrainGrid
           </Link>
-          {/* Plain text, outside the link: not interactive, read as "Beta". */}
+          {/* Plain text, outside the link: not interactive, read as "Early access". */}
           <span className="rounded-md border border-stone-300 px-1.5 text-[11px] font-medium leading-4 text-stone-600">
-            Beta
+            Early access
           </span>
         </div>
         <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
@@ -72,6 +76,8 @@ export async function AppHeader() {
       </div>
     </header>
   );
+  // Members get the Feedback dialog; its triggers sit in the header's menus.
+  return isMember ? <FeedbackProvider>{header}</FeedbackProvider> : header;
 }
 
 const desktopItem = "rounded-md px-2 py-1 text-stone-700 hover:bg-stone-100";

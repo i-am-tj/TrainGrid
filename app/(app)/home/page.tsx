@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
+import Link from "next/link";
+import { GettingStarted } from "@/components/dashboard/GettingStarted";
+import { displayVersion, isRecentRelease } from "@/lib/changelog";
+import { loadReleases } from "@/lib/changelog-file";
 import {
   DashboardSectionError,
   DashboardShell,
@@ -15,6 +20,13 @@ import {
   type DashboardFrame,
 } from "@/lib/dashboard/prepare";
 import { listOwnRoutinesForDashboard } from "@/lib/data/dashboard";
+import { getOnboardingProgress } from "@/lib/data/onboarding";
+import {
+  ONBOARDING_DISMISSED_COOKIE,
+  onboardingSteps,
+  showOnboarding,
+  type OnboardingProgress,
+} from "@/lib/onboarding/model";
 import type { ScheduledSessionRecord } from "@/lib/data/model";
 import { memberData } from "@/lib/data/server";
 import { listSessionsForWeek } from "@/lib/data/sessions";
@@ -64,9 +76,39 @@ export default async function MemberHomePage() {
   const week = settle(listSessionsForWeek(db, userId, today.weekId));
   const routines = settle(listOwnRoutinesForDashboard(db, userId));
 
+  // Getting started: three head-only counts, skipped entirely once the member
+  // has hidden it. It streams like the sections (a slow routines read must not
+  // hold up the frame) and renders nothing while it waits.
+  const dismissed = (await cookies()).get(ONBOARDING_DISMISSED_COOKIE)?.value === "1";
+  const progress = dismissed ? null : getOnboardingProgress(db, userId).catch(() => null);
+  const [latest] = await loadReleases();
+
   return (
     <DashboardShell
       frame={frame}
+      notice={
+        latest && isRecentRelease(latest, today.date) ? (
+          <Link
+            href="/whats-new"
+            className="underline-reveal-parent group mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-card py-1 pl-1 pr-3 text-xs text-stone-700 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+          >
+            <span className="rounded-full bg-accent px-2 py-0.5 font-semibold text-white dark:text-stone-900">New</span>
+            <span>
+              TrainGrid {displayVersion(latest.version)} is here · <span className="underline-reveal">See what’s new</span>
+            </span>
+            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none">
+              →
+            </span>
+          </Link>
+        ) : null
+      }
+      intro={
+        progress ? (
+          <Suspense fallback={null}>
+            <GettingStartedSlot progress={progress} addSessionHref={frame.addSessionHref} />
+          </Suspense>
+        ) : null
+      }
       today={
         <Suspense fallback={<SectionLoader label="Loading today’s sessions…" minHeight="min-h-56" />}>
           <TodaySlot today={today} frame={frame} week={week} />
@@ -84,6 +126,18 @@ export default async function MemberHomePage() {
       }
     />
   );
+}
+
+async function GettingStartedSlot({
+  progress,
+  addSessionHref,
+}: {
+  progress: Promise<OnboardingProgress | null>;
+  addSessionHref: string;
+}) {
+  const value = await progress;
+  if (!showOnboarding(value, false)) return null;
+  return <GettingStarted steps={onboardingSteps(value!, { addSessionHref })} />;
 }
 
 type WeekRead = Promise<Settled<ScheduledSessionRecord[]>>;

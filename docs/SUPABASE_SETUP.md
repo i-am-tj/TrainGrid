@@ -27,6 +27,9 @@ A laptop or a preview build never holds production values.
 | `TRAINGRID_SITE_URL` | Server only | Public origin, e.g. `https://train-grid.vercel.app`; sign-in link in emails, metadata, canonical. |
 | `TRAINGRID_DEFAULT_TIME_ZONE` | Server only | Optional IANA zone for "today" before the browser reports its own. |
 | `RESEND_API_KEY`, `TRAINGRID_EMAIL_FROM`, `TRAINGRID_EMAIL_REPLY_TO` | Server only | Invitation email; see [EMAIL_SETUP.md](EMAIL_SETUP.md). Optional: without them no email is sent. |
+| `TRAINGRID_FEEDBACK_TO` | Server only | Optional. Address that receives a copy of member feedback (needs the email settings). |
+| `TRAINGRID_CONTACT_EMAIL` | Server only | Optional. Contact address on `/privacy` and `/terms`. |
+| `TRAINGRID_ALERT_WEBHOOK_URL` | Server only, secret | Optional. Slack/Discord webhook for server error alerts; see [SECURITY.md](SECURITY.md#error-reports-and-alerts). |
 
 The two public values are sent to the browser on purpose. Data is protected by Supabase Auth and
 Row Level Security, not by hiding the publishable key. The app refuses to start its Supabase

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const landingMetadata: Metadata = {
   title: "TrainGrid — Plan the week. Own the work.",
   description:
-    "Plan your training week with a flexible calendar, shared workout library and personal routines. TrainGrid is in invite-only Beta.",
+    "Plan your training week with a flexible calendar, shared workout library and personal routines. TrainGrid is in invite-only early access.",
   openGraph: {
     title: "TrainGrid — Plan the week. Own the work.",
     description: "Your training week, thoughtfully together.",

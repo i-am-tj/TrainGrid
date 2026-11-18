@@ -1,6 +1,14 @@
 # Roadmap
 
-Last updated: 2026-11-13
+Last updated: 2026-11-17
+
+## Releases
+
+| Version | Date | What it was |
+| --- | --- | --- |
+| `v0.2.0-beta` | 2026-11-13 | First release: Epics 1 and 2 (invite-only foundation, global library). |
+| `v0.2.1-beta` | 2026-11-14 | Loaders and faster navigation. |
+| `v1.0.0` | 2026-11-18 | First release for early-access members: public landing page, member home with sectional loading, invitation emails, CI on every PR, getting started, feedback, privacy/terms/what's new, installable app, error alerts. Versioning moves to plain SemVer ([docs/RELEASING.md](../docs/RELEASING.md)). |
 
 ## Epics
 
