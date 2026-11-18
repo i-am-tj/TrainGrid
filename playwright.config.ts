@@ -50,6 +50,8 @@ export default defineConfig({
         RESEND_API_URL: "http://127.0.0.1:3011",
         RESEND_API_KEY: "re_local_e2e_mock",
         TRAINGRID_EMAIL_FROM: "TrainGrid <invites@example.test>",
+        // Owner's copy of member feedback, sent through the same mock.
+        TRAINGRID_FEEDBACK_TO: "owner-feedback@example.test",
       },
     },
   ],
