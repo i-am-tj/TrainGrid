@@ -26,6 +26,7 @@ createServer(async (req, res) => {
     sent.push({
       to,
       from: body.from,
+      replyTo: body.reply_to ?? null,
       subject: body.subject,
       html: body.html,
       text: body.text,

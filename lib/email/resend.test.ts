@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { isValidFromAddress, normalizeFromAddress, readEmailConfig, RESEND_API_URL, type EmailConfig } from "./config";
+import { isValidFromAddress, normalizeFromAddress, readEmailConfig, senderOnSameDomain, RESEND_API_URL, type EmailConfig } from "./config";
 import { classifyStatus, createResendTransport } from "./resend";
 
 const config: EmailConfig = {
@@ -64,7 +64,38 @@ describe("readEmailConfig", () => {
   });
 });
 
+describe("senderOnSameDomain", () => {
+  it("names a sender for one kind of email on the configured domain", () => {
+    expect(senderOnSameDomain("TrainGrid Invites <invites@traingrid.example.com>", "TrainGrid Feedback", "feedback")).toBe(
+      "TrainGrid Feedback <feedback@traingrid.example.com>",
+    );
+    expect(senderOnSameDomain("invites@traingrid.example.com", "TrainGrid Feedback", "feedback")).toBe(
+      "TrainGrid Feedback <feedback@traingrid.example.com>",
+    );
+    expect(senderOnSameDomain("TrainGrid Invites<invites@traingrid.example.com>", "TrainGrid Feedback", "feedback")).toBe(
+      "TrainGrid Feedback <feedback@traingrid.example.com>",
+    );
+  });
+
+  it("gives up on a sender it cannot parse", () => {
+    expect(senderOnSameDomain("not an address", "TrainGrid Feedback", "feedback")).toBeNull();
+  });
+});
+
 describe("createResendTransport", () => {
+  it("uses a per-message sender and reply-to when given", async () => {
+    const fetchImpl = vi.fn(async () => Response.json({ id: "msg_456" }));
+    await createResendTransport(config, fetchImpl as unknown as typeof fetch)({
+      ...email,
+      from: "TrainGrid Feedback <feedback@mail.example.com>",
+      replyTo: "member@example.com",
+    });
+    const [, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+    expect(body.from).toBe("TrainGrid Feedback <feedback@mail.example.com>");
+    expect(body.reply_to).toBe("member@example.com");
+  });
+
   it("posts one email with the idempotency key and returns the provider id", async () => {
     const fetchImpl = vi.fn(async () => Response.json({ id: "msg_123" }));
     const result = await createResendTransport(config, fetchImpl as unknown as typeof fetch)(email);

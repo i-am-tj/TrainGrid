@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { requireMember } from "@/lib/auth/session";
 import { memberData } from "@/lib/data/server";
-import { readEmailConfig } from "@/lib/email/config";
+import { readEmailConfig, senderOnSameDomain } from "@/lib/email/config";
 import { createResendTransport } from "@/lib/email/resend";
 import { feedbackEmail, parseFeedback, type FeedbackInput, type FeedbackState } from "./model";
 
@@ -51,8 +51,11 @@ async function emailOwner(input: FeedbackInput, memberName: string | null, membe
   if (!to || !config || !z.email().safeParse(to).success) return;
 
   const replyTo = memberEmail && z.email().safeParse(memberEmail).success ? memberEmail : undefined;
+  // Arrives as "TrainGrid Feedback", not as the invitation sender.
+  const from = senderOnSameDomain(config.from, "TrainGrid Feedback", "feedback") ?? undefined;
   const result = await createResendTransport(config)({
     to,
+    from,
     ...feedbackEmail({ input, memberName, memberEmail }),
     idempotencyKey: `traingrid-feedback/${crypto.randomUUID()}`,
     replyTo,

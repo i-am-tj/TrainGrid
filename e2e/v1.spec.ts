@@ -119,6 +119,19 @@ test.describe("members", () => {
       expect.objectContaining({ kind: "problem", message: "The week view could show totals.", page_path: "/home" }),
     ]);
 
+    // The owner's copy comes from "TrainGrid Feedback" on the sending domain,
+    // and a reply goes to the member.
+    const sent = (await (await fetch("http://127.0.0.1:3011/__sent")).json()) as Array<{
+      to: string;
+      from: string;
+      replyTo: string | null;
+      text: string;
+    }>;
+    const copy = sent.filter((email) => email.to === "owner-feedback@example.test" && email.text.includes("The week view could show totals."));
+    expect(copy).toHaveLength(1);
+    expect(copy[0]!.from).toBe("TrainGrid Feedback <feedback@example.test>");
+    expect(copy[0]!.replyTo).toMatch(/^e2e-[0-9a-f-]+@example\.test$/);
+
     await dialog.getByRole("button", { name: "Done" }).click();
     await expect(dialog).toBeHidden();
     // Opening it again starts afresh.

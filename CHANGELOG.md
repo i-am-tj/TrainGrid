@@ -54,6 +54,8 @@ first visit, a direct line for feedback, and TrainGrid on your phone’s home sc
   list. The status says “accepted by provider”, never “delivered”, and a failed send leaves the
   invitation valid. Compact row actions, with messages across the full row.
 - Every confirmation is a themed dialog; nothing uses the browser’s own pop-ups.
+- Member feedback can be emailed to you (`TRAINGRID_FEEDBACK_TO`); it arrives from **TrainGrid
+  Feedback**, and replying answers the member directly.
 
 ### Look and feel
 

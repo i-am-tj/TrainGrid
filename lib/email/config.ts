@@ -47,6 +47,21 @@ export function isValidFromAddress(value: string): boolean {
   return normalizeFromAddress(value) !== null;
 }
 
+/**
+ * A sender for one kind of email on the configured sending domain, e.g.
+ * "TrainGrid Feedback <feedback@traingrid.example.com>" from
+ * "TrainGrid Invites <invites@traingrid.example.com>". Any address on a
+ * domain verified in Resend may send, so only the domain is reused.
+ * Returns null when the configured sender cannot be parsed.
+ */
+export function senderOnSameDomain(configuredFrom: string, name: string, localPart: string): string | null {
+  const normalized = normalizeFromAddress(configuredFrom);
+  if (!normalized) return null;
+  const addr = /<([^<>\s]+)>$/.exec(normalized)?.[1] ?? normalized;
+  const domain = addr.slice(addr.lastIndexOf("@") + 1);
+  return normalizeFromAddress(`${name} <${localPart}@${domain}>`);
+}
+
 function apiUrlFrom(raw: string | undefined): string | null {
   const value = raw?.trim();
   if (!value) return RESEND_API_URL;

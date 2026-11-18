@@ -20,6 +20,8 @@ export type OutgoingEmail = {
   idempotencyKey: string;
   /** Overrides the configured reply-to for this message (e.g. the member who wrote feedback). */
   replyTo?: string;
+  /** Overrides the configured sender for this message (must be on the verified domain). */
+  from?: string;
 };
 
 export type SendFailureCode =
@@ -60,7 +62,7 @@ export function createResendTransport(
           "Idempotency-Key": email.idempotencyKey,
         },
         body: JSON.stringify({
-          from: config.from,
+          from: email.from ?? config.from,
           to: [email.to],
           subject: email.subject,
           html: email.html,
