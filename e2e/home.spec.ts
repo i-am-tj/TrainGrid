@@ -232,7 +232,7 @@ test.describe("member home", () => {
       const link = page.getByRole("link", { name, exact: false }).first();
       const text = link.locator(".underline-reveal");
       const before = await link.evaluate((el) => getComputedStyle(el).color);
-      await expect(text).toHaveCSS("background-size", "0% 1px");
+      await expect(text).toHaveCSS("background-size", /^0(?:%|px) 1px$/);
       await link.hover();
       await expect(text).toHaveCSS("background-size", "100% 1px");
       expect(await link.evaluate((el) => getComputedStyle(el).color)).toBe(before);

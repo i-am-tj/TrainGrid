@@ -83,7 +83,8 @@ test("Journey 4 — duplicate week copies independent sessions", async ({ page }
   await scheduleRoutine(page, "Easy Run", "2", "07:00");
 
   const heading = await page.getByRole("heading", { level: 1 }).innerText();
-  await page.getByRole("button", { name: "Duplicate week" }).click();
+  await page.getByRole("button", { name: "Week actions", exact: true }).click();
+  await page.getByRole("button", { name: "Duplicate week", exact: true }).click();
   await expect(page.getByRole("link", { name: "Easy Run, 07:00" })).toBeVisible();
   expect(await page.getByRole("heading", { level: 1 }).innerText()).not.toBe(heading);
 
@@ -159,7 +160,8 @@ test("D10, D12: export holds only my data; there is no import", async ({ page })
   await expect(page.getByRole("button", { name: /import/i })).toHaveCount(0);
 
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Export" }).click();
+  await page.locator("header summary:visible").filter({ hasText: "Account" }).click();
+  await page.getByRole("link", { name: "Download my data", exact: true }).click();
   const download = await downloadPromise;
   const path = test.info().outputPath("export.json");
   await download.saveAs(path);

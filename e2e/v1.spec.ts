@@ -150,7 +150,7 @@ test.describe("members", () => {
     await page.getByRole("button", { name: "Feedback" }).click();
     const dialog = page.getByRole("dialog", { name: "Share feedback" });
     await expect(dialog).toBeVisible();
-    await expect(page.locator("header details")).not.toHaveAttribute("open", "");
+    await expect(page.locator('header details:has(> summary[aria-label$=" menu"])')).not.toHaveAttribute("open", "");
     // A click on the backdrop closes it.
     await page.mouse.click(5, 5);
     await expect(dialog).toBeHidden();

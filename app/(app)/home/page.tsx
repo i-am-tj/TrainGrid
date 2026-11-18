@@ -90,11 +90,13 @@ export default async function MemberHomePage() {
         latest && isRecentRelease(latest, today.date) ? (
           <Link
             href="/whats-new"
-            className="underline-reveal-parent group mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-card py-1 pl-1 pr-3 text-xs text-stone-700 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+            className="underline-reveal-parent group mb-2 inline-flex max-w-full items-center gap-2 rounded-lg sm:mb-5 sm:rounded-full border border-line bg-card py-1 pl-1 pr-3 text-xs text-stone-700 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
           >
-            <span className="rounded-full bg-accent px-2 py-0.5 font-semibold text-white dark:text-stone-900">New</span>
+            <span className="rounded-full bg-accent px-2 py-0.5 font-semibold text-white">New</span>
             <span>
-              TrainGrid {displayVersion(latest.version)} is here · <span className="underline-reveal">See what’s new</span>
+              <span className="hidden sm:inline">TrainGrid {displayVersion(latest.version)} is here · </span>
+              <span className="sm:hidden">{displayVersion(latest.version)} · </span>
+              <span className="underline-reveal">See what’s new</span>
             </span>
             <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none">
               →

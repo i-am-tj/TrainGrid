@@ -88,22 +88,22 @@ export function DashboardShell({
   today: ReactNode;
   week: ReactNode;
   routines: ReactNode;
-  /** Shown between the greeting and the sections (getting started). */
+  /** Getting started follows today on narrow screens and leads the desktop grid. */
   intro?: ReactNode;
   /** A small note above the greeting (what's new). */
   notice?: ReactNode;
 }) {
   return (
     <div className="dashboard-container">
-      <header className="flex flex-col items-start justify-between gap-6 border-b border-line pb-8 sm:flex-row sm:items-end">
+      <header className="flex flex-col items-start justify-between gap-3 border-b border-line pb-4 sm:gap-6 sm:pb-8 sm:flex-row sm:items-end">
         <div className="min-w-0">
           {notice}
-          <p className="ui-eyebrow">Your training, thoughtfully together</p>
-          <p className="mt-4 text-sm text-stone-600">{frame.dateLabel}</p>
-          <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight [overflow-wrap:anywhere] sm:text-4xl">
+          <p className="ui-eyebrow hidden sm:block">Your training, thoughtfully together</p>
+          <p className="text-sm text-stone-600 sm:mt-4">{frame.dateLabel}</p>
+          <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-tight [overflow-wrap:anywhere] sm:mt-2 sm:text-4xl">
             {greeting(frame)}
           </h1>
-          <p className="mt-3 text-sm leading-7 text-stone-600">
+          <p className="mt-1 text-sm leading-6 text-stone-600 sm:mt-3 sm:leading-7">
             A clear look at today, with the rest of the week in view.
           </p>
         </div>
@@ -114,8 +114,7 @@ export function DashboardShell({
           Open weekly planner <span aria-hidden="true">↗</span>
         </Link>
       </header>
-      {intro}
-      <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
+      <div className="mt-4 grid min-w-0 gap-4 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
         <section aria-labelledby="today-title" className="min-w-0">
           <SectionTitle
             id="today-title"
@@ -128,6 +127,7 @@ export function DashboardShell({
           />
           {today}
         </section>
+        {intro ? <div className="min-w-0 lg:order-first lg:col-span-2 [&:empty]:hidden">{intro}</div> : null}
         <aside className="min-w-0 space-y-7" aria-label="Week and shortcuts">
           <section className="ui-panel p-4 sm:p-5" aria-labelledby="week-title">
             <SectionTitle id="week-title" title="This week" />

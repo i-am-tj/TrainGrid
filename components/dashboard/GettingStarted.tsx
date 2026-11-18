@@ -14,7 +14,7 @@ export function GettingStarted({ steps }: { steps: OnboardingStep[] }) {
   return (
     <section
       aria-labelledby="getting-started-title"
-      className="ui-panel relative mt-8 overflow-hidden p-5 sm:p-6"
+      className="ui-panel relative overflow-hidden p-3 sm:p-6"
       data-testid="getting-started"
     >
       {/* A soft wash of the accent in one corner. */}
@@ -74,7 +74,7 @@ export function GettingStarted({ steps }: { steps: OnboardingStep[] }) {
           >
             <div className="flex items-center gap-3">
               {step.done ? (
-                <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-accent text-white dark:text-stone-900">
+                <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-accent text-white">
                   <svg aria-hidden="true" viewBox="0 0 24 24" className="ui-check-draw size-4" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12.5l4.5 4.5L19 7.5" />
                   </svg>

@@ -207,6 +207,7 @@ test.describe("member A against member B's data", () => {
     await expect(page.getByText("B private session")).toHaveCount(0);
     await expect(page.getByText("No sessions this week.")).toBeVisible();
 
+    await page.getByRole("button", { name: "Week actions", exact: true }).click();
     // Duplicate is only offered for A's own (empty) week; forge it anyway.
     await forge(page, "sourceWeekId", "2026-W47");
     await page.locator('select[name="destWeekId"]').selectOption("2026-W48");
