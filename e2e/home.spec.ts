@@ -72,15 +72,25 @@ test.describe("public landing page", () => {
       );
 
       const main = page.getByRole("main");
+      async function expectAtSection(id: string) {
+        await expect.poll(() => main.locator(id).evaluate(el => Math.abs(el.getBoundingClientRect().top)))
+          .toBeLessThan(1);
+      }
       if (reducedMotion === "reduce") {
         await expect(page.locator("html")).not.toHaveClass(/\blenis\b/);
       } else {
         await expect(page.locator("html")).toHaveClass(/\blenis\b/);
         if (name === "desktop") {
-          const intermediate = page.waitForFunction(() => scrollY > 0 && scrollY < 640);
-          await page.mouse.wheel(0, 640);
+          const intermediate = page.waitForFunction(() => scrollY > 0 && scrollY < 200);
+          await page.mouse.wheel(0, 40);
           await intermediate;
-          await expect.poll(() => page.evaluate(() => scrollY)).toBe(640);
+          // Simulate the decaying wheel events from the same trackpad gesture.
+          for (const delta of [20, 12, 5, 1]) await page.mouse.wheel(0, delta);
+          await expectAtSection("#features");
+          await page.mouse.wheel(0, 40);
+          await expectAtSection("#preview");
+          await page.mouse.wheel(0, -40);
+          await expectAtSection("#features");
         } else {
           const session = await page.context().newCDPSession(page);
           await session.send("Input.dispatchTouchEvent", {
@@ -95,7 +105,7 @@ test.describe("public landing page", () => {
           const beforeRelease = await page.evaluate(() => scrollY);
           expect(beforeRelease).toBeGreaterThan(0);
           await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-          await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(beforeRelease);
+          await expectAtSection("#features");
           await session.detach();
         }
       }
