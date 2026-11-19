@@ -9,7 +9,7 @@ member-facing notes are in [CHANGELOG.md](../CHANGELOG.md) and at `/whats-new`.
 
 | Version | Date | Highlights |
 | --- | --- | --- |
-| Unreleased | — | Profile page (What's new, privacy and terms move there for members), planner and home use the member's day even on the first request, simpler planner and home on phones. |
+| Unreleased | — | Request an invite from the sign-in page, reviewed on Invitations. Profile page (What's new, privacy and terms move there for members), planner and home use the member's day even on the first request, simpler planner and home on phones. |
 | `v1.0.0` | 2026-11-18 | First release for early-access members: landing page, member home, invitation emails, getting started, feedback, privacy/terms/What's new, installable app, error alerts, CI on every PR. |
 | `v0.2.1-beta` | 2026-11-14 | Loaders and faster navigation. |
 | `v0.2.0-beta` | 2026-11-13 | Invite-only multi-user foundation and the shared routine library (Epics 1 and 2). |
@@ -18,7 +18,7 @@ member-facing notes are in [CHANGELOG.md](../CHANGELOG.md) and at `/whats-new`.
 
 | Area | Done |
 | --- | --- |
-| Access | Google and GitHub sign-in, invite-only; admins invite by email, see delivery status, revoke and restore access. Row Level Security on every table. |
+| Access | Google and GitHub sign-in, invite-only; visitors can request an invite; admins review requests, invite by email, see delivery status, revoke and restore access. Row Level Security on every table. |
 | Home | Today's sessions, the week's planned counts, quick actions and the member's routines, each streaming on its own; first-visit welcome; getting started; release note. |
 | Planner | Monday–Sunday grid on desktop, day view on phones; timed and untimed sessions; today follows the member's time zone. |
 | Sessions | Add from scratch or from a routine (a snapshot copy), edit, customise the workout, delete. |

@@ -79,7 +79,7 @@ export function LandingPage({
           </div>
           <p className="mt-5 text-xs leading-5 text-stone-600">
             Access is by invitation. Use the email address on your invitation.
-            {" "}<a href="#access" className="underline-reveal text-accent">No invitation yet?</a>
+            {" "}<Link href="/login?request=invite" className="underline-reveal text-accent">No invitation yet? Request one</Link>
           </p>
         </div>
         <div className="hero-product">
@@ -270,12 +270,18 @@ export function LandingPage({
           <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
             TrainGrid is invite-only. If you’ve been invited, log in with Google or GitHub using that email address.
           </p>
-          <Link href="/login" className={`${ctaPrimary} group mt-6`}>
-            Log in to TrainGrid
-            <span aria-hidden="true" className={ctaArrow}>→</span>
-          </Link>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/login" className={`${ctaPrimary} group`}>
+              Log in to TrainGrid
+              <span aria-hidden="true" className={ctaArrow}>→</span>
+            </Link>
+            <Link href="/login?request=invite" className={ctaSecondary}>
+              Request an invite
+            </Link>
+          </div>
           <p className="mt-6 max-w-xl border-t border-line pt-5 text-sm leading-6 text-stone-600">
-            Not invited yet? Ask the person who shared TrainGrid with you to arrange an invitation, or <a href="https://iamtj.dev" target="_blank" rel="noopener noreferrer" className="underline-reveal text-accent">contact Tanuj through his portfolio</a>. Access is approved individually; there is no public sign-up.
+            Not invited yet? Request an invite with your email address. Tanuj reviews every request
+            personally, and access is approved one person at a time; there is no public sign-up.
           </p>
         </div>
       </section>

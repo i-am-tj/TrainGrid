@@ -14,7 +14,7 @@ check before a release. The security model itself (invite-only access, Row Level
 | `TRAINGRID_ADMIN_USER_IDS` | Server-only config | Vercel (Production) | Git |
 | `RESEND_API_KEY` | Secret; sends email as your domain | Vercel (Production, type **Sensitive**) | Git, browser bundles, chat, logs |
 | `TRAINGRID_SITE_URL`, `TRAINGRID_EMAIL_FROM` | Server-only config | Vercel (Production) | — |
-| `TRAINGRID_FEEDBACK_TO`, `TRAINGRID_CONTACT_EMAIL` | Server-only config | Vercel (Production) | — |
+| `TRAINGRID_FEEDBACK_TO`, `TRAINGRID_INVITE_REQUESTS_TO`, `TRAINGRID_CONTACT_EMAIL` | Server-only config | Vercel (Production) | — |
 | `TRAINGRID_ALERT_WEBHOOK_URL` | Secret; anyone with it can post to your channel | Vercel (Production, type **Sensitive**) | Git, browser bundles, chat, logs |
 | Supabase database password | Secret | Password manager | Anywhere else |
 | Google OAuth client secret | Secret | Supabase dashboard (Google provider) | Git, Vercel |
@@ -162,3 +162,27 @@ Feedback is stored in `public.member_feedback`. Members may only **insert** thei
 policy checks it plus active membership). Nobody can read it through the API; the owner reads it
 in the Supabase dashboard, and optionally by email (`TRAINGRID_FEEDBACK_TO`). A trigger refuses
 more than 10 messages per member per 24 hours. Messages are escaped in the HTML email.
+
+## Invite requests
+
+`Request an invite` on the sign-in page is the only public write. It is a server action; the
+browser never talks to the database for it.
+
+- `public.invite_requests` has RLS on, no policies and no privileges for `anon` or
+  `authenticated`. The only way in is `request_invite()`, a security-definer function executable
+  by the **service role only**: the action calls it with the secret key, so the rule that `anon`
+  can execute no function (`supabase/tests/database/07_function_exposure.test.sql`) still holds
+  and the limits cannot be bypassed by calling the API directly.
+- The function validates every field and enforces: one pending request per address, three per
+  network per hour, 50 in 24 hours overall (then it pauses), all under an advisory lock.
+- The network is identified by an HMAC-SHA-256 of the client IP (first `x-forwarded-for`
+  address, set by Vercel), keyed with the secret key and the UTC date, so it changes daily and
+  the address itself is never stored.
+- The visitor gets the same answer whether the request is new, already pending, or the address is
+  already invited, so the form cannot be used to discover members. A hidden honeypot field makes
+  form-filling bots receive a quiet "sent" without storing anything.
+- Only new requests email the owner (`TRAINGRID_INVITE_REQUESTS_TO`, else
+  `TRAINGRID_FEEDBACK_TO`); the visitor's text is escaped in the HTML email, and nothing is ever
+  emailed to the visitor, so the form cannot be used to send mail to third parties.
+- Requests are deleted 180 days after they are made. Creating an invitation for the address marks
+  its request invited (trigger).

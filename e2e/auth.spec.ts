@@ -30,11 +30,12 @@ test("login page offers only the configured OAuth providers", async ({ page, bas
   await expect(page.getByText("Invite-only access")).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with GitHub" })).toBeVisible();
-  await expect(page.locator("form button")).toHaveCount(2);
+  await expect(page.locator('form:has(input[name="provider"]) button')).toHaveCount(2);
 
   // No password login, no sign-up, no placeholder providers.
   await expect(page.locator('input[type="password"]')).toHaveCount(0);
-  await expect(page.locator('input[type="email"]')).toHaveCount(0);
+  // (The only email field is in the closed "Request an invite" dialog, which signs nobody in.)
+  await expect(page.locator('input[type="email"]:visible')).toHaveCount(0);
   await expect(page.getByRole("button", { name: /sign up|create account/i })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /apple|chatgpt/i })).toHaveCount(0);
 });

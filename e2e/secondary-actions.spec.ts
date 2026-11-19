@@ -129,19 +129,16 @@ test("public access guidance gives invited and uninvited visitors a next step wi
   await page.goto("/");
   await expect(page.getByText(/duplicate week|copy an existing training week|keep a good week going/i)).toHaveCount(0);
   await expect(
-    page.getByRole("link", { name: "No invitation yet?", exact: true }),
-  ).toHaveAttribute("href", "#access");
+    page.getByRole("link", { name: "No invitation yet? Request one", exact: true }),
+  ).toHaveAttribute("href", "/login?request=invite");
   const access = page.locator("#access");
   await expect(access).toContainText(
     "log in with Google or GitHub using that email address",
   );
   await expect(access).toContainText("there is no public sign-up");
   await expect(
-    access.getByRole("link", {
-      name: "contact Tanuj through his portfolio",
-      exact: true,
-    }),
-  ).toHaveAttribute("href", "https://iamtj.dev");
+    access.getByRole("link", { name: "Request an invite", exact: true }),
+  ).toHaveAttribute("href", "/login?request=invite");
   await expect(
     page.getByRole("link", { name: /register|sign up/i }),
   ).toHaveCount(0);

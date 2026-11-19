@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   alternates: canonicalUrl("/privacy") ? { canonical: canonicalUrl("/privacy")! } : undefined,
 };
 
-const UPDATED = "18 November 2026";
+const UPDATED = "19 November 2026";
 
 /**
  * The privacy notice. Written from what the code and database actually do;
@@ -91,6 +91,25 @@ export default function PrivacyPage() {
           ),
         },
         {
+          id: "invite-requests",
+          title: "If you request an invite",
+          body: (
+            <>
+              <p>
+                Asking for an invitation from the sign-in page stores the email address you give, and
+                the name and note if you add them, so the owner can review your request. A copy is
+                emailed to the owner, and a reply comes from them personally. To limit abuse, the
+                request also records a one-way, daily-changing code derived from your network address,
+                never the address itself.
+              </p>
+              <p>
+                Nothing is sent to you unless you are invited. Requests are deleted 180 days after
+                they are made, or sooner if you ask.
+              </p>
+            </>
+          ),
+        },
+        {
           id: "how-we-use-it",
           title: "How it is used",
           body: (
@@ -120,8 +139,8 @@ export default function PrivacyPage() {
                   address and browser type) to operate and protect the service.
                 </li>
                 <li>
-                  <strong>Resend</strong> delivers invitation emails and, if you send feedback, a copy
-                  of it to the owner.
+                  <strong>Resend</strong> delivers invitation emails and, if you send feedback or request
+                  an invite, a copy of it to the owner.
                 </li>
                 <li>
                   <strong>Google</strong> or <strong>GitHub</strong>, whichever you choose, confirm who

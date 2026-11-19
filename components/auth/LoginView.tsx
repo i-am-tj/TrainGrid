@@ -13,6 +13,8 @@ export type LoginViewProps = {
   error: string | null;
   /** Forms are supplied by the server page; no auth actions live in this view. */
   providerForms: ReactNode;
+  /** "Request an invite" (a dialog), supplied by the server page; absent when sign-in is unavailable. */
+  requestInvite?: ReactNode;
 };
 
 export function LoginView({
@@ -20,6 +22,7 @@ export function LoginView({
   viewer,
   error,
   providerForms,
+  requestInvite,
 }: LoginViewProps) {
   return (
     <div className="mx-auto max-w-5xl px-3 py-8 sm:px-6 sm:py-14 lg:py-20">
@@ -74,6 +77,11 @@ export function LoginView({
                   Use Sign out at the top of the page to try a different
                   account.
                 </p>
+                {requestInvite ? (
+                  <div className="mt-3 text-sm leading-6 text-stone-600">
+                    Not invited yet? {requestInvite}
+                  </div>
+                ) : null}
               </div>
             ) : viewer.status === "member" ? (
               <div>
@@ -88,7 +96,14 @@ export function LoginView({
                 </Link>
               </div>
             ) : (
-              <div className="space-y-3">{providerForms}</div>
+              <>
+                <div className="space-y-3">{providerForms}</div>
+                {requestInvite ? (
+                  <div className="mt-5 text-center text-sm leading-6 text-stone-600" data-testid="request-invite-line">
+                    No invitation yet? {requestInvite}
+                  </div>
+                ) : null}
+              </>
             )}
           </div>
           <div className="mt-8 border-t border-line pt-5">
