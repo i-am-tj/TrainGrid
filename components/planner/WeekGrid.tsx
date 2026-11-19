@@ -10,9 +10,9 @@ import {
   formatShortDate,
   hourFromTime,
   HOURS,
-  sameLocalDay,
 } from "@/lib/week";
 import { compareSessions } from "@/lib/domain";
+import { dateOfWeekDay } from "@/lib/calendar-date";
 import { SessionCard } from "./SessionCard";
 
 const ROW = 56;
@@ -21,13 +21,19 @@ const UNTIMED = 52;
 export function WeekGrid({
   weekId,
   sessions,
+  todayDay,
 }: {
   weekId: string;
   sessions: PlannerSession[];
+  /**
+   * The member's today in this week (decided on the server in their time
+   * zone, lib/today.ts), or null. Never the render-time clock: the server
+   * renders in UTC, so `new Date()` here would disagree with the browser.
+   */
+  todayDay: IsoDay | null;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const dates = datesOfWeek(weekId);
-  const now = new Date();
 
   useEffect(() => {
     const el = scroller.current;
@@ -50,12 +56,14 @@ export function WeekGrid({
         <div className="sticky top-0 z-20 border-b border-line bg-card" />
         {dates.map((date, i) => {
           const heading = formatDayHeading(date);
-          const isToday = sameLocalDay(date, now);
+          const isToday = i + 1 === todayDay;
           return (
             <div
               key={i}
-              className={`sticky top-0 z-20 border-b border-l border-line bg-card px-1 py-2 text-center ${
-                isToday ? "bg-amber-50" : ""
+              data-today={isToday || undefined}
+              data-date={isToday ? dateOfWeekDay(weekId, todayDay) : undefined}
+              className={`sticky top-0 z-20 border-b border-l border-line px-1 py-2 text-center ${
+                isToday ? "bg-amber-50" : "bg-card"
               }`}
             >
               <div className="text-[11px] font-semibold tracking-wide text-stone-600">
@@ -74,7 +82,7 @@ export function WeekGrid({
           const untimed = sessions
             .filter((s) => s.day === day && s.time === null)
             .sort(compareSessions);
-          const isToday = sameLocalDay(date, now);
+          const isToday = day === todayDay;
           return (
             <div
               key={`u-${i}`}
@@ -106,7 +114,7 @@ export function WeekGrid({
             weekId={weekId}
             dates={dates}
             sessions={sessions}
-            now={now}
+            todayDay={todayDay}
           />
         ))}
       </div>
@@ -119,13 +127,13 @@ function HourRow({
   weekId,
   dates,
   sessions,
-  now,
+  todayDay,
 }: {
   hour: number;
   weekId: string;
   dates: Date[];
   sessions: PlannerSession[];
-  now: Date;
+  todayDay: IsoDay | null;
 }) {
   return (
     <>
@@ -143,7 +151,7 @@ function HourRow({
               s.day === day && s.time !== null && hourFromTime(s.time) === hour,
           )
           .sort(compareSessions);
-        const isToday = sameLocalDay(date, now);
+        const isToday = day === todayDay;
         const time = formatHourLabel(hour);
         return (
           <div

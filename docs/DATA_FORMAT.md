@@ -1,6 +1,6 @@
 # TrainGrid data format
 
-Current as of Epic 2, November 2026. All application data lives in Supabase PostgreSQL; the schema
+Current as of TrainGrid 1.0 (November 2026). All application data lives in Supabase PostgreSQL; the schema
 is defined by `supabase/migrations/`. This page describes the shapes; the access rules are in
 [TECHNICAL_DESIGN.md](TECHNICAL_DESIGN.md).
 

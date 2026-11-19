@@ -3,7 +3,8 @@ import { NavLink } from "@/components/ui/NavLink";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MobileMenu } from "@/components/MobileMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { AccountMenu } from "@/components/auth/AccountMenu";
+import { ProfileLink } from "@/components/profile/ProfileLink";
+import { initialsFor, profileName } from "@/lib/profile/model";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { FeedbackProvider, FeedbackTrigger } from "@/components/feedback/Feedback";
 import { isAdminViewer, parseAdminUserIds } from "@/lib/admin/access";
@@ -34,6 +35,11 @@ export async function AppHeader() {
   if (isMember) {
     items.push({ key: "feedback", render: (c) => <FeedbackTrigger className={c} /> });
   }
+  // Profile is the avatar from `sm` up; on phones it is an entry in the menu.
+  const profile =
+    viewer.status === "member"
+      ? { name: profileName(viewer.displayName, viewer.email), initials: initialsFor(viewer.displayName, viewer.email) }
+      : null;
   if (viewer.status !== "anonymous") {
     items.push({ key: "sign-out", render: (c) => <SignOutButton className={`${c} disabled:opacity-60`} /> });
   }
@@ -63,15 +69,19 @@ export async function AppHeader() {
               ))}
             </nav>
           ) : null}
-          {isMember ? <AccountMenu /> : null}
           {/* On every page, signed in or not. */}
           <ThemeToggle />
+          {profile ? <ProfileLink name={profile.name} initials={profile.initials} /> : null}
           {items.length > 0 ? (
             <MobileMenu>
               {items.map((item) => (
                 <li key={item.key}>{item.render(mobileItem)}</li>
               ))}
-              {isMember ? <li><AccountMenu inline /></li> : null}
+              {profile ? (
+                <li className="mt-1 border-t border-line pt-1">
+                  <ProfileLink name={profile.name} initials={profile.initials} inline />
+                </li>
+              ) : null}
             </MobileMenu>
           ) : null}
         </div>

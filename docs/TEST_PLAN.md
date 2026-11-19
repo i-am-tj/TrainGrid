@@ -1,7 +1,8 @@
 # Test plan
 
-Current as of Epic 2, November 2026. The full security matrix, with a result for every check, is
-in `agents/TEST_PLAN.md`; this page explains the strategy.
+Current as of TrainGrid 1.0 (November 2026). The original release-blocking security matrix, with a
+result for every check, is archived in `agents/archive/TEST_PLAN.md`; every check now runs in CI
+([CI.md](CI.md)). This page explains the strategy.
 
 ## Strategy
 
@@ -37,7 +38,8 @@ against anything but a local URL.
 4. **Admin** — invite, duplicate refused, invalid refused, revoke pending, revoke accepted member;
    non-admins get 404; admin requests replayed by a member or an anonymous visitor change nothing.
 5. **Planner** — seven days, week navigation, timed and untimed sessions, several per day,
-   reschedule, delete, Duplicate Week, mobile layout without horizontal scrolling.
+   reschedule, delete, mobile layout without horizontal scrolling; “today” follows the member's
+   time zone, including the first request around midnight (`e2e/time-zone.spec.ts`).
 6. **Library** — GLOBAL routines read-only, personal routine create/edit/delete, structured fields,
    legacy slug links; All / TrainGrid / Mine views; search and filters (every-word match, item
    names, equipment, combined, malformed URLs, refresh and back); one bounded list request; card
@@ -53,6 +55,9 @@ against anything but a local URL.
     the templates; re-seeding is idempotent; an item id never moves to a different exercise.
 11. **Secrets** — no credentials in files or Git history; the secret key is absent from browser
     bundles.
+12. **Member features** — home sections stream and fail on their own; getting started; feedback
+    (insert-only, rate limited, no native dialogs); profile (numbers, data download, appearance,
+    About TrainGrid); information pages public; slow loaders retry once.
 
 Several suites were confirmed able to fail: with RLS disabled, with the admin check removed, and
 against a simulated exposed function, the relevant tests failed.

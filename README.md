@@ -94,17 +94,22 @@ Every release: [What’s new](https://github.com/i-am-tj/TrainGrid/blob/main/CHA
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/v1/home-phone-dark.png" />
-    <img src="docs/images/v1/home-phone-light.png" alt="Home on a phone" width="240" />
+    <img src="docs/images/v1/home-phone-light.png" alt="Home on a phone" width="200" />
   </picture>
   &nbsp;&nbsp;
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/v1/planner-phone-dark.png" />
-    <img src="docs/images/v1/planner-phone-light.png" alt="The planner’s day view on a phone" width="240" />
+    <img src="docs/images/v1/planner-phone-light.png" alt="The planner’s day view on a phone" width="200" />
   </picture>
   &nbsp;&nbsp;
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/v1/landing-phone-dark.png" />
-    <img src="docs/images/v1/landing-phone-light.png" alt="The public landing page on a phone" width="240" />
+    <img src="docs/images/v1/landing-phone-light.png" alt="The public landing page on a phone" width="200" />
+  </picture>
+  &nbsp;&nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/v1/profile-phone-dark.png" />
+    <img src="docs/images/v1/profile-phone-light.png" alt="Your profile on a phone: your plan in numbers, your data, appearance and About TrainGrid" width="200" />
   </picture>
 </p>
 <p align="center"><em>Made for phones too, in light and dark.</em></p>
@@ -117,7 +122,8 @@ Every release: [What’s new](https://github.com/i-am-tj/TrainGrid/blob/main/CHA
 - **Your plan is yours.** Each member sees and edits only their own sessions and routines, enforced by the database (Row Level Security), not just the app.
 - **A shared library.** TrainGrid routines (runs, lifts, plyometrics, warm-ups, cooldowns) are read-only for everyone. **Copy to My Library** makes an editable copy; the original never changes.
 - **Scheduling copies.** Putting a routine on the calendar copies it into the session, so later edits never rewrite a planned or past session.
-- **Today means your today.** “Today” follows your device’s time zone, on home and in the planner.
+- **Today means your today.** “Today” follows your device’s time zone, on home and in the planner, from the very first page you open.
+- **Your profile.** Your plan in numbers, your data download, appearance, and What’s new, privacy and terms, behind your initials in the header.
 
 Guides: **[Member guide](docs/GUIDE.md)** · **[Admin guide](docs/ADMIN.md)** · all docs in **[docs/](docs/README.md)**
 
@@ -183,7 +189,7 @@ traingrid/
 ├── tests/                # integration and UI harness
 ├── e2e/                  # Playwright, plus docs.capture.ts for screenshots
 ├── docs/
-└── agents/               # roadmap, backlog, decisions, story reports
+└── agents/               # roadmap, decisions, archived epic records
 ```
 
 ---

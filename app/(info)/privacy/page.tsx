@@ -142,7 +142,7 @@ export default function PrivacyPage() {
             <>
               <ul>
                 <li>
-                  <strong>Take it with you:</strong> <em>Export</em> in the header downloads your
+                  <strong>Take it with you:</strong> <em>Download my data</em> on your profile downloads your
                   routines and sessions as a file, whenever you like.
                 </li>
                 <li>

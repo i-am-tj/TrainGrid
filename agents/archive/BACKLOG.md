@@ -1,6 +1,6 @@
 # Epic 1 backlog
 
-Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](ROADMAP.md).
+Last updated: 2026-11-12. Step numbers refer to [ROADMAP.md](../ROADMAP.md).
 
 | Story | Title | Step | Owner | Status |
 | --- | --- | --- | --- | --- |

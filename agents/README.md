@@ -1,32 +1,22 @@
 # agents/ — working records
 
-Living records for multi-step epics. Product documentation stays in `docs/`; this folder holds
-the plan, the state of the work, and the reasoning behind it.
+The plan and the reasoning behind TrainGrid. Product documentation is in [docs/](../docs/README.md).
 
 | File | Purpose |
 | --- | --- |
-| [ROADMAP.md](ROADMAP.md) | Epics and the ordered PR steps for the current epic, with status |
-| [BACKLOG.md](BACKLOG.md) | Every user story: status, owner, which PR step delivers it |
-| [DECISIONS.md](DECISIONS.md) | Locked, approved, deferred and proposed decisions |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Current-state inventory and target architecture |
-| [TEST_PLAN.md](TEST_PLAN.md) | Test layers and the release-blocking security matrix |
-| [STORY_REPORTS.md](STORY_REPORTS.md) | Completion report per story, and the epic completion report |
-| [EPIC-1.md](EPIC-1.md) | Epic 1 specification, verbatim (complete) |
-| [EPIC-3-UI.md](EPIC-3-UI.md) | Epic 3 UI audit, design system, component inventory and route contracts |
-| [EPIC-3-UI-HANDOFF.md](EPIC-3-UI-HANDOFF.md) | Implemented UI exports and backend integration contracts for Claude |
-| [EPIC-3-UI-VERIFICATION.md](EPIC-3-UI-VERIFICATION.md) | Final frontend regression matrix, screenshots, performance evidence and limits |
+| [ROADMAP.md](ROADMAP.md) | Releases, what TrainGrid does today, and what may come next |
+| [DECISIONS.md](DECISIONS.md) | The decisions still in force, one line each |
+| [archive/](archive/README.md) | Completed epics: specifications, handoffs, step reports, full decision history |
 
 Formal architecture decision records live in `docs/adr/`.
 
 ## Conventions
 
-- One branch and one PR per roadmap step: `epic-<n>/NN-short-slug`, branched from `main`.
-- Each epic's records are appended under its own heading; earlier epics' history is never rewritten.
-  Specifications: `EPIC-1.md` (complete), `EPIC-2.md` (complete).
-- A step is done only when its PR is merged and its report is appended to `STORY_REPORTS.md`.
-- Status values: `TODO`, `IN PROGRESS`, `BLOCKED`, `IN REVIEW`, `DONE`.
-- Owner values: `Agent` (code/docs in this repo) or `Tanuj` (console work an agent must not do:
-  creating cloud projects, OAuth credentials, entering secrets, repository settings).
+- One branch and one PR per change, `feat/<short-slug>` from `main`; releases use
+  `feat/release-vX.Y.Z` ([docs/RELEASING.md](../docs/RELEASING.md)).
+- A new decision gets a line in `DECISIONS.md` with the date; a decision that is replaced is
+  removed from there (its history stays in the archive or in Git).
+- Finished epic plans and handoffs move to `archive/`; they are not rewritten.
+- Owner values: `Agent` (code and docs in this repo) or `Tanuj` (console work an agent must not do:
+  cloud projects, OAuth credentials, secrets, repository settings, production data).
 - Never write secrets, personal emails, user UUIDs or private schedule data into this folder.
-- Epic specifications are saved verbatim as `agents/EPIC-<n>.md`; decisions that refine them are
-  recorded in `DECISIONS.md`.

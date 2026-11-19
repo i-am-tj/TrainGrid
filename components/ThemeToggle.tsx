@@ -8,15 +8,15 @@ import { useEffect, useState } from "react";
  * else the system setting), so this only reads and changes it.
  */
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
 export const THEME_COLORS: Record<Theme, string> = { light: "#f4f1ea", dark: "#12100e" };
 
-function currentTheme(): Theme {
+export function currentTheme(): Theme {
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
-function applyTheme(theme: Theme) {
+export function applyTheme(theme: Theme) {
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
   root.style.colorScheme = theme;
@@ -64,6 +64,10 @@ export function ThemeToggle() {
     // keeps the server and client markup equal.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(currentTheme());
+    // Follow changes made elsewhere (the Appearance choice on /profile).
+    const observer = new MutationObserver(() => setTheme(currentTheme()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
   }, []);
 
   if (theme === null) {

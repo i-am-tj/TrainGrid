@@ -6,34 +6,39 @@ import {
   datesOfWeek,
   formatDayNarrow,
   formatLongDay,
-  sameLocalDay,
 } from "@/lib/week";
 import { SessionCard } from "./SessionCard";
 import { btnSecondary } from "@/lib/ui";
+import { dateOfWeekDay } from "@/lib/calendar-date";
 
 export function WeekStrip({
   weekId,
   selectedDay,
+  todayDay,
 }: {
   weekId: string;
   selectedDay: IsoDay;
+  /** The member's today in this week, from the server (see WeekGrid). */
+  todayDay: IsoDay | null;
 }) {
   const dates = datesOfWeek(weekId);
-  const now = new Date();
 
   return (
     <div className="mt-3 flex gap-1">
       {dates.map((date, i) => {
         const day = (i + 1) as IsoDay;
         const selected = day === selectedDay;
-        const isToday = sameLocalDay(date, now);
+        const isToday = day === todayDay;
         return (
           <Link
             key={day}
             href={`/week/${weekId}?day=${day}`}
             scroll={false}
             aria-current={selected ? "date" : undefined}
-            className={`flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center rounded-md py-2 text-center text-xs ${
+            aria-label={isToday ? `${formatLongDay(date)}, today` : undefined}
+            data-today={isToday || undefined}
+            data-date={isToday ? dateOfWeekDay(weekId, day) : undefined}
+            className={`relative flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center rounded-md py-2 text-center text-xs ${
               selected
                 ? "bg-stone-900 text-white"
                 : isToday
@@ -43,6 +48,10 @@ export function WeekStrip({
           >
             <div className="font-semibold">{formatDayNarrow(date)}</div>
             <div>{date.getDate()}</div>
+            {/* Today stays marked when it is also the selected day. */}
+            {isToday && selected ? (
+              <span aria-hidden="true" className="absolute bottom-1 size-1 rounded-full bg-amber-300" />
+            ) : null}
           </Link>
         );
       })}
@@ -54,10 +63,12 @@ export function DayAgenda({
   weekId,
   day,
   sessions,
+  todayDay,
 }: {
   weekId: string;
   day: IsoDay;
   sessions: PlannerSession[];
+  todayDay: IsoDay | null;
 }) {
   const dates = datesOfWeek(weekId);
   const date = dates[day - 1]!;
@@ -98,7 +109,7 @@ export function DayAgenda({
           →
         </Link>
       </div>
-      <WeekStrip weekId={weekId} selectedDay={day} />
+      <WeekStrip weekId={weekId} selectedDay={day} todayDay={todayDay} />
 
       <div className="mt-4 space-y-3">
         {untimed.length > 0 ? (

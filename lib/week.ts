@@ -142,11 +142,3 @@ export const HOURS = Array.from({ length: 24 }, (_, i) => i);
 export function formatHourLabel(hour: number): string {
   return `${String(hour).padStart(2, "0")}:00`;
 }
-
-export function sameLocalDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}

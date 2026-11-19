@@ -1,4 +1,4 @@
-import { copyFile, mkdir } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { accessibilityResults } from "../tests/helpers/accessibility";
 import { todayIn } from "../lib/time-zone";
@@ -16,7 +16,9 @@ async function theme(page: Page, value: "light" | "dark") {
   });
   if (await toggle.count()) await toggle.click();
 }
+/** Screenshots only on request (UI_SHOTS=1), so a test run never rewrites docs/images. */
 async function capture(page: Page, name: string) {
+  if (!process.env.UI_SHOTS) return;
   await mkdir(folder, { recursive: true });
   await page.screenshot({
     path: `${folder}/${name}.png`,
@@ -32,7 +34,7 @@ async function noOverflow(page: Page) {
   ).toBe(true);
 }
 
-test("data download lives in a secondary account disclosure with keyboard and outside dismissal", async ({
+test("the header leads members to their profile, where their data download lives", async ({
   page,
   context,
   baseURL,
@@ -40,44 +42,30 @@ test("data download lives in a secondary account disclosure with keyboard and ou
   await signInAsNewLocalMember(context, baseURL!);
   await page.goto("/library");
   await page.waitForFunction(() => {
-    const summary = document.querySelector("header summary");
-    return !!summary && Object.keys(summary).some((key) => key.startsWith("__reactFiber"));
+    const main = document.getElementById("main-content");
+    return !!main && Object.keys(main).some((key) => key.startsWith("__reactFiber"));
   });
   for (const scheme of ["light", "dark"] as const) {
     await theme(page, scheme);
     for (const width of [320, 360, 1440]) {
       await page.setViewportSize({ width, height: 800 });
-      if (width < 640)
+      await expect(page.getByRole("banner").getByRole("link", { name: /Export|Download my data/ })).toHaveCount(0);
+      if (width < 640) {
         await page.getByLabel("Open menu", { exact: true }).click();
-      await expect(
-        page.getByRole("link", { name: "Export", exact: true }),
-      ).toHaveCount(0);
-      await expect(
-        page.getByRole("link", { name: "Download my data", exact: true }),
-      ).toHaveCount(0);
-      const account = page
-        .locator("header summary:visible")
-        .filter({ hasText: "Account" });
-      await account.focus();
-      await page.keyboard.press("Enter");
-      const download = page
-        .getByRole("navigation", { name: "Account", exact: true })
-        .getByRole("link", { name: "Download my data", exact: true });
-      await expect(download).toHaveAttribute("href", "/api/export");
-      await page.keyboard.press("Tab");
-      await expect(download).toBeFocused();
-      await noOverflow(page);
-      if (width !== 320) await capture(page, `account-${width}-${scheme}`);
-      await page.keyboard.press("Escape");
-      await expect(download).toHaveCount(0);
-      await expect(account).toBeFocused();
-      await account.click();
-      await page.mouse.click(4, 700);
-      await expect(download).toHaveCount(0);
-      if (width < 640)
-        await expect(
-          page.getByLabel("Open menu", { exact: true }),
-        ).toBeVisible();
+        const profile = page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: /Profile/ });
+        await expect(profile).toHaveAttribute("href", "/profile");
+        await noOverflow(page);
+        if (width !== 320) await capture(page, `account-${width}-${scheme}`);
+        await page.keyboard.press("Escape");
+        await expect(page.getByLabel("Open menu", { exact: true })).toBeVisible();
+      } else {
+        await expect(page.getByRole("banner").getByRole("link", { name: "Profile", exact: true })).toHaveAttribute(
+          "href",
+          "/profile",
+        );
+        await noOverflow(page);
+        await capture(page, `account-${width}-${scheme}`);
+      }
     }
   }
 });
@@ -95,8 +83,6 @@ test("planner exposes only available scheduling controls", async ({ page, contex
       await expect(page.locator('input[name="sourceWeekId"], select[name="destWeekId"]')).toHaveCount(0);
       await noOverflow(page);
       await capture(page, `planner-${width}-${scheme}`);
-      await mkdir("docs/images/v1", { recursive: true });
-      await copyFile(`${folder}/planner-${width}-${scheme}.png`, `docs/images/v1/planner-${width === 360 ? "phone" : "desktop"}-${scheme}.png`);
     }
   }
 });
@@ -159,9 +145,7 @@ test("public access guidance gives invited and uninvited visitors a next step wi
   await expect(
     page.getByRole("link", { name: /register|sign up/i }),
   ).toHaveCount(0);
-  await expect(
-    page.getByRole("navigation", { name: "Account", exact: true }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Profile", exact: true })).toHaveCount(0);
   for (const scheme of ["light", "dark"] as const) {
     await theme(page, scheme);
     for (const width of [320, 360, 1440]) {
