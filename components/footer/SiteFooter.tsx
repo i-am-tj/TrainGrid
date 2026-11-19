@@ -13,9 +13,9 @@ const AUTHOR = "Tanuj Chakraborty";
 const SITE = "https://iamtj.dev";
 
 const SOCIAL_LINKS = [
-  { name: "X", href: "https://x.com/_i_am_tj_", Icon: XIcon },
   { name: "GitHub", href: "https://github.com/i-am-tj", Icon: GitHubIcon },
   { name: "LinkedIn", href: "https://www.linkedin.com/in/i-am-tj/", Icon: LinkedInIcon },
+  { name: "X", href: "https://x.com/_i_am_tj_", Icon: XIcon },
   { name: "Medium", href: "https://medium.com/@i-am-tj", Icon: MediumIcon },
 ] as const;
 

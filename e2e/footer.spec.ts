@@ -4,14 +4,19 @@ test("the footer shows the social links, monogram and credit on every page", asy
   await page.goto("/login");
   const footer = page.getByRole("contentinfo");
 
-  await expect(footer.getByText("Follow me")).toBeVisible();
-  for (const [name, href] of [
-    ["X", "https://x.com/_i_am_tj_"],
+  const social = footer.getByRole("navigation", { name: "Follow me" });
+  await expect(social.getByText("Follow me")).toBeVisible();
+  const links = social.getByRole("link");
+  const expectedLinks = [
     ["GitHub", "https://github.com/i-am-tj"],
     ["LinkedIn", "https://www.linkedin.com/in/i-am-tj/"],
+    ["X", "https://x.com/_i_am_tj_"],
     ["Medium", "https://medium.com/@i-am-tj"],
-  ]) {
-    const link = footer.getByRole("link", { name, exact: true });
+  ];
+  await expect(links).toHaveCount(expectedLinks.length);
+  for (const [index, [name, href]] of expectedLinks.entries()) {
+    const link = links.nth(index);
+    await expect(link).toHaveAccessibleName(name);
     await expect(link).toHaveAttribute("href", href);
     await expect(link).toHaveAttribute("target", "_blank");
     await expect(link).toHaveAttribute("rel", "noopener noreferrer");
