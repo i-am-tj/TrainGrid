@@ -50,11 +50,89 @@ test.describe("public landing page", () => {
     }
     expect(await landmarks(page)).toEqual({ banner: 1, main: 1, mainId: "main-content", footer: 1 });
 
-    // The header carries the information pages; Explore features still jumps down the page.
+    // The header carries the information pages; Explore features stays on the landing page.
     await page.setViewportSize({ width: 1280, height: 800 });
     await expect(banner.getByRole("link", { name: "What’s new" })).toHaveAttribute("href", "/whats-new");
     await page.getByRole("main").getByRole("link", { name: "Explore features" }).click();
     await expect(page).toHaveURL(/\/#features$/);
+  });
+
+  for (const { name, viewport, reducedMotion } of [
+    { name: "desktop", viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" },
+    { name: "mobile", viewport: { width: 390, height: 844 }, reducedMotion: "no-preference" },
+    { name: "reduced motion", viewport: { width: 390, height: 844 }, reducedMotion: "reduce" },
+  ] as const) {
+    test("landing section navigation works with " + name, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.emulateMedia({ reducedMotion });
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveCSS(
+        "scroll-behavior",
+        reducedMotion === "reduce" ? "auto" : "smooth",
+      );
+
+      const main = page.getByRole("main");
+      async function expectAtSection(id: string) {
+        await expect.poll(() => main.locator(id).evaluate(el => Math.abs(el.getBoundingClientRect().top)))
+          .toBeLessThan(1);
+      }
+      if (reducedMotion === "reduce") {
+        await expect(page.locator("html")).not.toHaveClass(/\blenis\b/);
+      } else {
+        await expect(page.locator("html")).toHaveClass(/\blenis\b/);
+        if (name === "desktop") {
+          const intermediate = page.waitForFunction(() => scrollY > 0 && scrollY < 200);
+          await page.mouse.wheel(0, 40);
+          await intermediate;
+          // Simulate the decaying wheel events from the same trackpad gesture.
+          for (const delta of [20, 12, 5, 1]) await page.mouse.wheel(0, delta);
+          await expectAtSection("#features");
+          await page.mouse.wheel(0, 40);
+          await expectAtSection("#preview");
+          await page.mouse.wheel(0, -40);
+          await expectAtSection("#features");
+        } else {
+          const session = await page.context().newCDPSession(page);
+          await session.send("Input.dispatchTouchEvent", {
+            type: "touchStart", touchPoints: [{ x: 180, y: 700 }],
+          });
+          for (const y of [640, 570, 500, 430, 360]) {
+            await session.send("Input.dispatchTouchEvent", {
+              type: "touchMove", touchPoints: [{ x: 180, y }],
+            });
+            await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
+          }
+          const beforeRelease = await page.evaluate(() => scrollY);
+          expect(beforeRelease).toBeGreaterThan(0);
+          await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+          await expectAtSection("#features");
+          await session.detach();
+        }
+      }
+      await main.getByRole("link", { name: "Explore features" }).click();
+      await expect(main.locator("#features")).toBeFocused();
+
+      await main.getByRole("link", { name: "Back to top" }).click();
+      await expect(page).toHaveURL(/\/#top$/);
+      await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+    });
+  }
+
+  test("a direct section link works when the visitor's date differs from the server's", async ({ browser, baseURL }) => {
+    const utcDate = todayIn("UTC").date;
+    const timezoneId = ["Pacific/Kiritimati", "Pacific/Pago_Pago"].find((zone) => todayIn(zone).date !== utcDate);
+    const context = await browser.newContext({ baseURL, timezoneId, reducedMotion: "reduce" });
+    try {
+      await context.addCookies([{ name: "tg_tz", value: "UTC", url: baseURL! }]);
+      const page = await context.newPage();
+      await page.goto("/#how-it-works");
+      await expect(page.locator("html")).toHaveAttribute("data-today", utcDate);
+      const heading = page.getByRole("heading", { name: "Browse. Plan. Open." });
+      await expect(heading).toBeVisible();
+      await expect(heading).toBeInViewport();
+    } finally {
+      await context.close();
+    }
   });
 
   test("the landing page renders the same for a signed-in member, with no member data", async ({

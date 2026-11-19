@@ -98,10 +98,11 @@ export function LandingPage({
 
       <section
         id="features"
-        className="landing-container landing-section scroll-mt-8"
+        tabIndex={-1}
+        className="landing-container landing-section"
         aria-labelledby="features-title"
       >
-        <div className="section-intro">
+        <div className="section-intro landing-reveal">
           <p className="ui-eyebrow">The essentials, thoughtfully together</p>
           <h2 id="features-title" className="landing-heading">
             Less figuring it out.
@@ -138,11 +139,13 @@ export function LandingPage({
       </section>
 
       <section
+        id="preview"
+        tabIndex={-1}
         className="landing-section border-y border-line bg-card"
         aria-labelledby="showcase-title"
       >
         <div className="landing-container">
-          <div className="section-intro">
+          <div className="section-intro landing-reveal">
             <p className="ui-eyebrow">From the big picture to the next set</p>
             <h2 id="showcase-title" className="landing-heading">
               One plan.
@@ -171,11 +174,13 @@ export function LandingPage({
       </section>
 
       <section
+        id="how-it-works"
+        tabIndex={-1}
         className="landing-container landing-section"
         aria-labelledby="steps-title"
       >
         <p className="ui-eyebrow">A simple rhythm</p>
-        <h2 id="steps-title" className="landing-heading">
+        <h2 id="steps-title" className="landing-heading landing-reveal">
           Browse. Plan. Open.
         </h2>
         <ol className="mt-10 grid gap-8 md:grid-cols-3">
@@ -204,13 +209,14 @@ export function LandingPage({
 
       <section
         id="about"
+        tabIndex={-1}
         className="landing-container pb-20"
         aria-labelledby="creator-title"
       >
         <div className="creator-card ui-panel p-6 sm:p-10">
           <h2
             id="creator-title"
-            className="ui-eyebrow border-b border-line pb-5"
+            className="ui-eyebrow landing-reveal border-b border-line pb-5"
           >
             A note from the founder
           </h2>
@@ -261,10 +267,10 @@ export function LandingPage({
         </div>
       </section>
 
-      <section id="access" aria-labelledby="access-title" className="scroll-mt-8 border-t border-line bg-card">
+      <section id="access" tabIndex={-1} aria-labelledby="access-title" className="border-t border-line bg-card">
         <div className="landing-container py-14 sm:py-16">
           <p className="ui-eyebrow">Your next week starts here</p>
-          <h2 id="access-title" className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h2 id="access-title" className="landing-reveal mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
             Make a plan. Show up.
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
@@ -283,6 +289,10 @@ export function LandingPage({
             Not invited yet? Request an invite with your email address. Tanuj reviews every request
             personally, and access is approved one person at a time; there is no public sign-up.
           </p>
+          <a href="#top" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-sm pr-2 text-sm font-medium text-accent">
+            <span className="underline-reveal">Back to top</span>
+            <span aria-hidden="true">↑</span>
+          </a>
         </div>
       </section>
     </div>
