@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BrandLogo } from "@/components/BrandLogo";
 import { btnPrimary, btnSecondary } from "@/lib/ui";
 import {
   AgendaPreview,
@@ -42,6 +41,13 @@ const FEATURES = [
   ],
 ] as const;
 
+/** Landing calls to action: one height, label and arrow kept together. */
+const cta = (base: string) =>
+  base.replace("min-h-10", "min-h-12 gap-2").replace("rounded-md", "rounded-full").replace("px-3 py-2", "px-6 py-3");
+const ctaPrimary = cta(btnPrimary);
+const ctaSecondary = cta(btnSecondary);
+const ctaArrow = "transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none";
+
 export type LandingPageProps = { creatorRole?: string };
 
 /** Ready for public routing; intentionally has no auth, database or fixture imports. */
@@ -52,13 +58,6 @@ export function LandingPage({
     <div className="landing">
       <section className="landing-hero landing-container">
         <div className="hero-copy">
-          <div className="mb-8 flex flex-wrap items-center gap-2 text-sm font-semibold">
-            <BrandLogo className="size-7" />
-            TrainGrid
-            <span className="ml-1 rounded-md border border-line px-2 py-0.5 text-[11px] font-normal text-stone-600">
-              Invite-only early access
-            </span>
-          </div>
           <p className="ui-eyebrow">A clear plan. Space to train.</p>
           <h1 className="mt-5 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[1.02] tracking-[-0.055em]">
             Plan the week.
@@ -70,10 +69,11 @@ export function LandingPage({
             the calendar, and know what’s next when it’s time to train.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/login" className={`${btnPrimary} gap-8 !px-5 !py-3`}>
-              Log in <span aria-hidden="true">↗</span>
+            <Link href="/login" className={`${ctaPrimary} group`}>
+              Log in
+              <span aria-hidden="true" className={ctaArrow}>→</span>
             </Link>
-            <a href="#features" className={`${btnSecondary} !px-5 !py-3`}>
+            <a href="#features" className={ctaSecondary}>
               Explore features
             </a>
           </div>
@@ -211,7 +211,7 @@ export function LandingPage({
         className="landing-container pb-20"
         aria-labelledby="creator-title"
       >
-        <div className="creator-card ui-panel mx-auto max-w-5xl p-7 sm:p-10">
+        <div className="creator-card ui-panel p-6 sm:p-10">
           <h2
             id="creator-title"
             className="ui-eyebrow border-b border-line pb-5"
@@ -235,7 +235,7 @@ export function LandingPage({
                 Tanuj Chakraborty
               </h3>
               <p className="mt-2 text-sm text-accent">{creatorRole}</p>
-              <p className="mt-5 max-w-xl text-base leading-7 text-pretty">
+              <p className="mt-5 max-w-2xl border-l-2 border-accent pl-4 text-lg leading-8 text-pretty text-stone-800 sm:pl-5">
                 I built TrainGrid to give training a deliberate place in your
                 week, so you can find routines worth keeping, make them your
                 own, and arrive at each session knowing what’s ahead.
@@ -266,25 +266,21 @@ export function LandingPage({
       </section>
 
       <section id="access" aria-labelledby="access-title" className="scroll-mt-8 border-t border-line bg-card">
-        <div className="landing-container flex flex-col items-start justify-between gap-8 py-14 sm:flex-row sm:items-center">
-          <div>
-            <p className="ui-eyebrow">Your next week starts here</p>
-            <h2 id="access-title" className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Make a plan. Show up.
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-stone-600">
-              TrainGrid is invite-only. If you’ve been invited, log in with Google or GitHub using that email address.
-            </p>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-              Not invited yet? Ask the person who shared TrainGrid with you to arrange an invitation, or <a href="https://iamtj.dev" target="_blank" rel="noopener noreferrer" className="underline-reveal text-accent">contact Tanuj through his portfolio</a>. Access is approved individually; there is no public sign-up.
-            </p>
-          </div>
-          <Link
-            href="/login"
-            className={`${btnPrimary} shrink-0 gap-8 !px-5 !py-3`}
-          >
-            Log in to TrainGrid <span aria-hidden="true">↗</span>
+        <div className="landing-container py-14 sm:py-16">
+          <p className="ui-eyebrow">Your next week starts here</p>
+          <h2 id="access-title" className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+            Make a plan. Show up.
+          </h2>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
+            TrainGrid is invite-only. If you’ve been invited, log in with Google or GitHub using that email address.
+          </p>
+          <Link href="/login" className={`${ctaPrimary} group mt-6`}>
+            Log in to TrainGrid
+            <span aria-hidden="true" className={ctaArrow}>→</span>
           </Link>
+          <p className="mt-6 max-w-xl border-t border-line pt-5 text-sm leading-6 text-stone-600">
+            Not invited yet? Ask the person who shared TrainGrid with you to arrange an invitation, or <a href="https://iamtj.dev" target="_blank" rel="noopener noreferrer" className="underline-reveal text-accent">contact Tanuj through his portfolio</a>. Access is approved individually; there is no public sign-up.
+          </p>
         </div>
       </section>
     </div>

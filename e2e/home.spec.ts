@@ -50,9 +50,10 @@ test.describe("public landing page", () => {
     }
     expect(await landmarks(page)).toEqual({ banner: 1, main: 1, mainId: "main-content", footer: 1 });
 
-    // In-page anchors work from the public header.
+    // The header carries the information pages; Explore features still jumps down the page.
     await page.setViewportSize({ width: 1280, height: 800 });
-    await banner.getByRole("link", { name: "Features" }).click();
+    await expect(banner.getByRole("link", { name: "What’s new" })).toHaveAttribute("href", "/whats-new");
+    await page.getByRole("main").getByRole("link", { name: "Explore features" }).click();
     await expect(page).toHaveURL(/\/#features$/);
   });
 

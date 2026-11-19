@@ -12,7 +12,8 @@ export function NavLink({
   children: React.ReactNode;
   className: string;
 }) {
-  const path = usePathname();
+  // Null outside the App Router (the static UI preview).
+  const path = usePathname() ?? "";
   // The planner link points at /week/current, which redirects to a real week.
   const active = href.startsWith("/week/")
     ? path.startsWith("/week/")

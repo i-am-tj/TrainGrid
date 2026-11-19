@@ -8,7 +8,7 @@ import { createLocalRoutineFor, createLocalSessionFor, signInAsNewLocalMember } 
 /**
  * /profile: who the member is, their plan in numbers, their data and
  * appearance, and What's new, Privacy and Terms (which members no longer
- * find in the footer). Set PROFILE_SHOTS=<folder> to save screenshots.
+ * find in the public header). Set PROFILE_SHOTS=<folder> to save screenshots.
  */
 
 async function hydrated(page: Page) {
@@ -35,8 +35,8 @@ test("a member's profile shows who they are, their numbers, their data and About
 
   await page.goto("/home");
   await hydrated(page);
-  // Members reach About TrainGrid through the profile, not the footer.
-  await expect(page.getByRole("navigation", { name: "About TrainGrid" })).toHaveCount(0);
+  // Members reach About TrainGrid through the profile; the footer carries no site links.
+  await expect(page.getByRole("contentinfo").getByRole("link", { name: "Privacy" })).toHaveCount(0);
   await page.getByRole("banner").getByRole("link", { name: "Profile", exact: true }).click();
   await expect(page).toHaveURL(/\/profile$/);
 
@@ -121,10 +121,11 @@ test("the profile reads well on phones and desktops, light and dark", async ({ p
   }
 });
 
-test("visitors still find What's new, Privacy and Terms in the footer", async ({ page }) => {
+test("visitors find What's new, Privacy and Terms in the header", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
-  const about = page.getByRole("navigation", { name: "About TrainGrid" });
-  await expect(about.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
+  const nav = page.getByRole("banner").getByRole("navigation", { name: "Main" });
+  await expect(nav.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
   const response = await page.goto("/profile");
   expect(new URL(page.url()).pathname).toBe("/login");
   expect(response?.status()).toBe(200);

@@ -41,14 +41,18 @@ test.describe("signed out", () => {
       await expect(page.getByRole("banner")).toHaveCount(1);
       await expect(page.getByRole("main")).toHaveCount(1);
       await expect(page.getByRole("contentinfo")).toHaveCount(1);
-      // The public header's section links lead back to the landing page.
-      await expect(page.getByRole("banner").getByRole("link", { name: "Features" }).first()).toHaveAttribute("href", "/#features");
+      // The public header's navigation is the information pages, the current one marked.
+      const current = page.getByRole("banner").getByRole("navigation", { name: "Main" }).locator(`a[href="${path}"]`);
+      await expect(current).toHaveAttribute("aria-current", "page");
+      await expect(page.getByRole("banner").getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
     });
   }
 
-  test("the footer and the sign-in page link to the information pages", async ({ page }) => {
+  test("the header and the sign-in page link to the information pages; the footer does not", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/login");
-    const about = page.getByRole("navigation", { name: "About TrainGrid" });
+    const about = page.getByRole("banner").getByRole("navigation", { name: "Main" });
+    await expect(page.getByRole("contentinfo").getByRole("link", { name: "Privacy" })).toHaveCount(0);
     await expect(about.getByRole("link", { name: "What’s new" })).toHaveAttribute("href", "/whats-new");
     await expect(about.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
     await expect(about.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
