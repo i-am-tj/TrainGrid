@@ -47,7 +47,7 @@ superseded or one-off decisions left out here) is in
 | V1-01 | No browser-native dialogs: every interruption is the themed `Modal` on `<dialog>`. |
 | V1-02 | Feedback is stored insert-only for the member (10 per 24 h) and emailed to the owner as “TrainGrid Feedback”. |
 | V1-03 | Getting started on `/home`: three steps derived from the member's own data, hideable per device. |
-| V1-04, V1-07 | `/privacy`, `/terms` and `/whats-new` are public. Visitors find them in the footer; members on `/profile`. |
+| V1-04, V1-07 | `/privacy`, `/terms` and `/whats-new` are public. Visitors find them in the header's navigation (which replaced Features and About, 2026-11-19); members on `/profile`. The footer carries only the credit, monogram and social links. |
 | V1-05, V1-06 | Installable (manifest and icons); server errors are logged without personal data, with optional webhook alerts. |
 | V1-07 | **Profile** (`/profile`, 2026-11-18): identity, plan numbers, data download, appearance (light, dark or device), time zone, sign out, and About TrainGrid. The header shows the member's initials; the phone menu has a Profile row. |
 | V1-08 | **First-request time zone** (2026-11-18): the server stamps the day it rendered on `<html data-today>`. When the device's day differs (no cookie yet, or a stale one after travel), the pre-paint script saves the zone and loads the page once more (`/week/current` again if it was a redirect), at most once per day and zone. The planner's today highlight comes from the server's today, never the render-time clock. |

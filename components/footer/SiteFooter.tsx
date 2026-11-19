@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { Suspense } from "react";
-import { getViewer } from "@/lib/auth/session";
 import { GitHubIcon, LinkedInIcon, MediumIcon, XIcon } from "./SocialIcons";
 
 /**
@@ -14,12 +11,6 @@ import { GitHubIcon, LinkedInIcon, MediumIcon, XIcon } from "./SocialIcons";
 
 const AUTHOR = "Tanuj Chakraborty";
 const SITE = "https://iamtj.dev";
-
-const SITE_LINKS = [
-  { name: "What’s new", href: "/whats-new" },
-  { name: "Privacy", href: "/privacy" },
-  { name: "Terms", href: "/terms" },
-] as const;
 
 const SOCIAL_LINKS = [
   { name: "X", href: "https://x.com/_i_am_tj_", Icon: XIcon },
@@ -88,32 +79,6 @@ export function SiteFooter() {
           </ul>
         </nav>
       </div>
-      {/* Visitors find What's new, Privacy and Terms here; members on /profile. */}
-      <Suspense fallback={null}>
-        <AboutLinks />
-      </Suspense>
     </footer>
-  );
-}
-
-/** Release notes and the legal pages, for anyone who is not a member. */
-async function AboutLinks() {
-  const viewer = await getViewer();
-  if (viewer.status === "member") return null;
-  return (
-    <nav aria-label="About TrainGrid" className="border-t border-line">
-      <ul className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-1 gap-y-1 px-3 py-2 text-xs sm:px-4 md:justify-end">
-        {SITE_LINKS.map(({ name, href }) => (
-          <li key={href}>
-            <Link
-              href={href}
-              className="underline-reveal-parent inline-flex min-h-8 items-center rounded-md px-2 text-stone-600 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
-            >
-              <span className="underline-reveal">{name}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
   );
 }

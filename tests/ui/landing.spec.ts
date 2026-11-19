@@ -137,7 +137,7 @@ test("mobile public menu retains native no-JavaScript access", async ({
     page
       .getByRole("navigation", { name: "Main", exact: true })
       .last()
-      .getByRole("link", { name: "About" }),
+      .getByRole("link", { name: "Privacy" }),
   ).toBeVisible();
   expect(
     await page.evaluate(
@@ -146,7 +146,7 @@ test("mobile public menu retains native no-JavaScript access", async ({
   ).toBe(true);
 });
 
-test("Behind TrainGrid uses one card with aligned portrait and details in both themes", async ({
+test("the founder note uses one card with aligned portrait and details in both themes", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -161,7 +161,7 @@ test("Behind TrainGrid uses one card with aligned portrait and details in both t
     exact: true,
   });
   await expect(
-    card.getByRole("heading", { name: "Behind TrainGrid", exact: true }),
+    card.getByRole("heading", { name: "A note from the founder", exact: true }),
   ).toBeVisible();
   await expect(
     card.getByText("Made with intention", { exact: true }),

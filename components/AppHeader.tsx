@@ -2,6 +2,7 @@ import Link from "next/link";
 import { NavLink } from "@/components/ui/NavLink";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MobileMenu } from "@/components/MobileMenu";
+import { INFO_LINKS } from "@/components/marketing/PublicHeader";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ProfileLink } from "@/components/profile/ProfileLink";
 import { initialsFor, profileName } from "@/lib/profile/model";
@@ -40,6 +41,13 @@ export async function AppHeader() {
     viewer.status === "member"
       ? { name: profileName(viewer.displayName, viewer.email), initials: initialsFor(viewer.displayName, viewer.email) }
       : null;
+  if (!isMember) {
+    // Sign-in page and signed-in non-members: the same links as the public
+    // header (members find them on their profile).
+    for (const { name, href } of INFO_LINKS) {
+      items.push({ key: href, render: (c) => <NavLink href={href} className={c}>{name}</NavLink> });
+    }
+  }
   if (viewer.status !== "anonymous") {
     items.push({ key: "sign-out", render: (c) => <SignOutButton className={`${c} disabled:opacity-60`} /> });
   }

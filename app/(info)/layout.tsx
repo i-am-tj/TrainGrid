@@ -11,7 +11,7 @@ export default async function InfoLayout({ children }: { children: React.ReactNo
   const viewer = await getViewer();
   return (
     <>
-      {viewer.status === "member" ? <AppHeader /> : <PublicHeader anchorBase="/" />}
+      {viewer.status === "member" ? <AppHeader /> : <PublicHeader />}
       <main id="main-content" tabIndex={-1} className="app-main flex-1">
         {children}
       </main>

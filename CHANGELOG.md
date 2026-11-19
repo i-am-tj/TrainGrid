@@ -14,6 +14,14 @@ in the app at `/whats-new`.
   time zone TrainGrid uses for “today”, and sign out.
 - **About TrainGrid** now lives on your profile: What’s new, the privacy notice and the terms.
 
+### Landing page
+
+- **A cleaner header**: What’s new, Privacy and Terms sit in the navigation, and **Log in** is a
+  compact button that stays in view on phones. The footer is a single, quiet row.
+- **Log in buttons that belong**: the label and arrow sit together, at one height and shape, and
+  the closing “Log in to TrainGrid” follows the sentence it answers.
+- **A note from the founder** lines up with the rest of the page and reads as a note.
+
 ### Planner and home
 
 - **Today is right from the first page**: just after midnight, or straight after travelling,
