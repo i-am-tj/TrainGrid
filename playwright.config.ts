@@ -24,6 +24,9 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   use: {
     baseURL: "http://127.0.0.1:3010",
+    // Tests plan sessions on UTC dates (todayIn("UTC")); the browser agrees, whatever
+    // the machine's zone and time of day. e2e/time-zone.spec.ts sets its own zones.
+    timezoneId: "UTC",
     trace: "on-first-retry",
   },
   webServer: [

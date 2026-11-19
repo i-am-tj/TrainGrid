@@ -16,20 +16,45 @@ export type InviteRequestRow = {
   name: string | null;
   note: string | null;
   created_at: string;
+  /** What happened to this address before: a member whose access was revoked, or a revoked invitation. */
+  history: "former_member" | "revoked_invitation" | null;
 };
 
-/** Pending requests, oldest first (first come, first reviewed). */
+/** Pending requests, oldest first (first come, first reviewed), with each address's history. */
 export async function listPendingInviteRequests(): Promise<InviteRequestRow[]> {
   if (!(await getAdminViewer())) throw new NotAdminError();
-  const { data, error } = await createSupabaseAdminClient()
+  const db = createSupabaseAdminClient();
+  const { data, error } = await db
     .from("invite_requests")
     .select("id, email, name, note, created_at")
     .eq("status", "pending")
     .order("created_at", { ascending: true })
     .limit(200);
   // The table may not exist yet while a release rolls out: show no requests.
-  if (error) return [];
-  return data;
+  if (error || data.length === 0) return [];
+
+  // Live invitations resolve requests (trigger), so any earlier one here is revoked.
+  const earlier = await db
+    .from("invitations")
+    .select("email, accepted_at")
+    .in("email", data.map((row) => row.email))
+    .not("revoked_at", "is", null);
+  const history = new Map<string, InviteRequestRow["history"]>();
+  for (const row of earlier.data ?? []) {
+    if (row.accepted_at) history.set(row.email, "former_member");
+    else if (!history.has(row.email)) history.set(row.email, "revoked_invitation");
+  }
+  return data.map((row) => ({ ...row, history: history.get(row.email) ?? null }));
+}
+
+/** How many requests wait for review; 0 when unknown. For the header badge. */
+export async function countPendingInviteRequests(): Promise<number> {
+  if (!(await getAdminViewer())) return 0;
+  const { count, error } = await createSupabaseAdminClient()
+    .from("invite_requests")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending");
+  return error ? 0 : (count ?? 0);
 }
 
 /** Declines a pending request. Nothing is sent to the person who asked. */

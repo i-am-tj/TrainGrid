@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { accessibilityResults } from "../tests/helpers/accessibility";
 import {
+  createRevokedInvitation,
   deleteLocalInvitations,
   deleteLocalInviteRequests,
   readRows,
@@ -76,6 +77,9 @@ test("a visitor requests an invite from the landing page; the admin invites them
   await expect(sent).toContainText("reviews every request personally");
   await expect(sent).toContainText(VISITOR);
   await expect(dialog.getByRole("button", { name: "Done" })).toBeFocused();
+  // The confirmation stands alone: the header and its intro are hidden.
+  await expect(dialog.getByRole("heading", { name: "Request an invite" })).toHaveClass(/\bsr-only\b/);
+  await expect(dialog.getByText("invite-only for now")).toHaveCount(0);
 
   // Stored, normalised and pending.
   expect(await readRows("invite_requests", { email: VISITOR })).toEqual([
@@ -105,7 +109,13 @@ test("a visitor requests an invite from the landing page; the admin invites them
   const context = await browser.newContext();
   const admin = await context.newPage();
   await signInAsLocalAdmin(context, baseURL!);
-  await admin.goto("/admin/invitations");
+  // The header counts requests waiting for review, on every page.
+  await admin.goto("/library");
+  const invitationsLink = admin.getByRole("banner").getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Invitations" });
+  await expect(invitationsLink.getByTestId("pending-requests-badge")).toHaveText("1");
+  await expect(invitationsLink).toHaveAccessibleDescription("1 request to review");
+  await invitationsLink.click();
+  await expect(admin).toHaveURL(/\/admin\/invitations$/);
   const requests = admin.getByTestId("invite-requests");
   const row = requests.getByRole("listitem").filter({ hasText: VISITOR });
   await expect(row).toContainText("Riley <b>Runner</b>");
@@ -115,10 +125,36 @@ test("a visitor requests an invite from the landing page; the admin invites them
   await expect(requests.getByRole("listitem").filter({ hasText: VISITOR })).toHaveCount(0);
   expect(await readRows("invite_requests", { email: VISITOR })).toEqual([expect.objectContaining({ status: "invited" })]);
   expect(await readRows("invitations", { email: VISITOR })).toHaveLength(1);
+  // Nothing left to review: the badge goes.
+  await expect(admin.getByTestId("pending-requests-badge")).toHaveCount(0);
   // The invitation email went to the visitor.
   const invitationEmails = (await (await fetch(MOCK)).json()) as Sent[];
   expect(invitationEmails.some((email) => email.to === VISITOR)).toBe(true);
   await context.close();
+});
+
+test("a revoked address can ask again, and the admin sees its history", async ({ page, browser, baseURL }) => {
+  const former = `former-${Date.now()}@example.test`;
+  await createRevokedInvitation(former);
+  await page.goto("/login?request=invite");
+  await hydrated(page);
+  const dialog = page.getByRole("dialog", { name: "Request an invite" });
+  await dialog.getByRole("textbox", { name: "Email address" }).fill(former);
+  await dialog.getByRole("button", { name: "Send request" }).click();
+  await expect(dialog.getByTestId("invite-request-sent")).toBeVisible();
+  expect(await readRows("invite_requests", { email: former })).toEqual([expect.objectContaining({ status: "pending" })]);
+
+  const context = await browser.newContext();
+  const admin = await context.newPage();
+  await signInAsLocalAdmin(context, baseURL!);
+  await admin.goto("/admin/invitations");
+  const row = admin.getByTestId("invite-requests").getByRole("listitem").filter({ hasText: former });
+  await expect(row).toContainText("An earlier invitation was revoked.");
+  await row.getByRole("button", { name: "Invite and email" }).click();
+  await expect(admin.getByRole("status").filter({ hasText: `Invited ${former}.` })).toBeVisible();
+  expect((await readRows("invitations", { email: former })).filter((i) => i.revoked_at === null)).toHaveLength(1);
+  await context.close();
+  await deleteLocalInvitations([former]);
 });
 
 test("an admin can dismiss a request without contacting the person", async ({ page, browser, baseURL }) => {

@@ -29,6 +29,7 @@ export function RequestInvite({
   const [open, setOpen] = useState(defaultOpen);
   const [round, setRound] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const close = () => {
     setOpen(false);
@@ -45,6 +46,7 @@ export function RequestInvite({
         type="button"
         onClick={() => {
           setRound((value) => value + 1);
+          setSent(false);
           setOpen(true);
         }}
         className={
@@ -60,10 +62,11 @@ export function RequestInvite({
         onClose={close}
         dismissible={!busy}
         title="Request an invite"
-        description="TrainGrid is invite-only while it is shaped with its first members. Leave your email and Tanuj, its founder, will review your request personally."
+        description="TrainGrid is invite-only for now. Leave your email and Tanuj, its founder, will review it personally."
+        headerHidden={sent}
         initialFocus="input[name=email]"
       >
-        <RequestForm key={round} defaultEmail={defaultEmail} onBusy={setBusy} onDone={close} />
+        <RequestForm key={round} defaultEmail={defaultEmail} onBusy={setBusy} onSent={setSent} onDone={close} />
       </Modal>
     </>
   );
@@ -72,10 +75,12 @@ export function RequestInvite({
 function RequestForm({
   defaultEmail,
   onBusy,
+  onSent,
   onDone,
 }: {
   defaultEmail: string;
   onBusy: (busy: boolean) => void;
+  onSent: (sent: boolean) => void;
   onDone: () => void;
 }) {
   const [state, action, pending] = useActionState<InviteRequestState, FormData>(requestInviteAction, null);
@@ -83,6 +88,8 @@ function RequestForm({
   const ids = { email: useId(), name: useId(), note: useId(), error: useId(), counter: useId() };
 
   useEffect(() => onBusy(pending), [pending, onBusy]);
+  // The confirmation stands on its own: the dialog hides its header.
+  useEffect(() => onSent(state?.status === "sent"), [state, onSent]);
 
   if (state?.status === "sent") return <RequestSent email={state.email} onDone={onDone} />;
 
@@ -167,12 +174,16 @@ function RequestForm({
       ) : null}
 
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Two short lines, one below the other, beside the buttons. */}
         <p className="min-w-0 text-xs leading-5 text-stone-600">
-          Used only to review your request. See the{" "}
-          <a href="/privacy#invite-requests" className="text-accent underline underline-offset-2">
-            privacy notice
-          </a>
-          .
+          <span className="block">Used only to review your request.</span>
+          <span className="block">
+            See the{" "}
+            <a href="/privacy#invite-requests" className="text-accent underline underline-offset-2">
+              privacy notice
+            </a>
+            .
+          </span>
         </p>
         <div className="flex shrink-0 justify-end gap-2">
           <button type="button" className={`${btnSecondary} whitespace-nowrap`} disabled={pending} onClick={onDone}>
@@ -212,13 +223,14 @@ function SendButton() {
 
 function RequestSent({ email, onDone }: { email: string; onDone: () => void }) {
   return (
-    <div className="flex flex-col items-center py-2 text-center" role="status" data-testid="invite-request-sent">
+    <div className="flex flex-col items-center pb-1 pt-4 text-center" role="status" data-testid="invite-request-sent">
       <span className="inline-flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
         <svg aria-hidden="true" viewBox="0 0 24 24" className="ui-check-draw size-7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 12.5l4.5 4.5L19 7.5" />
         </svg>
       </span>
-      <h3 className="mt-4 text-lg font-semibold">Request sent</h3>
+      {/* The dialog's own title stays for screen readers; this is the visible heading. */}
+      <p className="mt-4 text-xl font-semibold tracking-tight">Request sent</p>
       <p className="mt-2 max-w-sm text-sm leading-6 text-stone-600">
         Thank you. Your note is with Tanuj, who reviews every request personally, so it can take a
         little while.

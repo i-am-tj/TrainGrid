@@ -132,6 +132,12 @@ export async function deleteLocalInviteRequests() {
   await serviceClient().from("invite_requests").delete().like("email", "%@example.test");
 }
 
+/** An invitation that was revoked before anyone accepted it. */
+export async function createRevokedInvitation(email: string) {
+  const { error } = await serviceClient().from("invitations").insert({ email, revoked_at: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+}
+
 /** Removes invitations created by E2E runs. */
 export async function deleteLocalInvitations(emails: string[]) {
   if (emails.length === 0) return;

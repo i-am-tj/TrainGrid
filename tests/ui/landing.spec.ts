@@ -182,14 +182,8 @@ test("the founder note uses one card with aligned portrait and details in both t
         expect(textBox.x - imageBox.x - imageBox.width).toBeGreaterThanOrEqual(
           40,
         );
-        expect(
-          Math.abs(
-            imageBox.y +
-              imageBox.height / 2 -
-              contentBox.y -
-              contentBox.height / 2,
-          ),
-        ).toBeLessThanOrEqual(1);
+        // Portrait and details start on the same line (top-aligned in the wide card).
+        expect(Math.abs(imageBox.y - contentBox.y)).toBeLessThanOrEqual(1);
       } else {
         expect(textBox.y).toBeGreaterThanOrEqual(
           imageBox.y + imageBox.height + 32,

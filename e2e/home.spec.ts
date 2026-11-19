@@ -125,9 +125,9 @@ test.describe("public landing page", () => {
     try {
       await context.addCookies([{ name: "tg_tz", value: "UTC", url: baseURL! }]);
       const page = await context.newPage();
-      await page.goto("/#how-it-works");
+      await page.goto("/#access");
       await expect(page.locator("html")).toHaveAttribute("data-today", utcDate);
-      const heading = page.getByRole("heading", { name: "Browse. Plan. Open." });
+      const heading = page.getByRole("heading", { name: /^Make a plan\.\s*Show up\.$/ });
       await expect(heading).toBeVisible();
       await expect(heading).toBeInViewport();
     } finally {

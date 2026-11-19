@@ -136,6 +136,7 @@ async function RequestList({ emailReady, timeZone }: { emailReady: boolean; time
         name: request.name,
         note: request.note,
         requestedLabel: formatTime.format(new Date(request.created_at)),
+        history: request.history,
       }))}
     />
   );

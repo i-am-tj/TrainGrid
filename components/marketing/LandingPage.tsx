@@ -109,10 +109,6 @@ export function LandingPage({
             <br />
             More getting to it.
           </h2>
-          <p className="max-w-md text-sm leading-7 text-stone-600">
-            Your calendar and workout reference, in one place. Enough structure
-            to stay intentional. Enough flexibility to make it yours.
-          </p>
         </div>
         <div className="feature-grid">
           {FEATURES.map(([icon, title, description]) => (
@@ -174,125 +170,89 @@ export function LandingPage({
       </section>
 
       <section
-        id="how-it-works"
+        id="access"
         tabIndex={-1}
-        className="landing-container landing-section"
-        aria-labelledby="steps-title"
+        aria-labelledby="access-title"
+        className="landing-final border-t border-line bg-card"
       >
-        <p className="ui-eyebrow">A simple rhythm</p>
-        <h2 id="steps-title" className="landing-heading landing-reveal">
-          Browse. Plan. Open.
-        </h2>
-        <ol className="mt-10 grid gap-8 md:grid-cols-3">
-          {[
-            [
-              "Browse routines",
-              "Start with the shared library, or create something personal.",
-            ],
-            [
-              "Plan your week",
-              "Schedule the sessions around the rest of your life.",
-            ],
-            [
-              "Open a planned workout",
-              "Your instructions, equipment and workout details are ready.",
-            ],
-          ].map(([title, copy], i) => (
-            <li key={title} className="border-t border-line pt-5">
-              <span className="font-mono text-xs text-accent">0{i + 1}</span>
-              <h3 className="mt-4 font-semibold">{title}</h3>
-              <p className="mt-2 text-sm leading-7 text-stone-600">{copy}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section
-        id="about"
-        tabIndex={-1}
-        className="landing-container pb-20"
-        aria-labelledby="creator-title"
-      >
-        <div className="creator-card ui-panel p-6 sm:p-10">
-          <h2
-            id="creator-title"
-            className="ui-eyebrow landing-reveal border-b border-line pb-5"
-          >
-            A note from the founder
-          </h2>
-          <div className="creator-layout mt-8">
-            <div className="creator-mark">
-              <Image
-                src="/marketing/tanuj-chakraborty.jpg"
-                alt="Tanuj Chakraborty"
-                width={1170}
-                height={1170}
-                unoptimized
-                loading="lazy"
-                className="aspect-square w-44 max-w-full rounded-2xl border border-hairline object-cover sm:w-56"
-              />
+        {/* The call to action leads; the founder's note takes the wider column, so it reads as a wide card. */}
+        <div className="landing-container grid gap-10 py-14 sm:py-20 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] xl:items-center xl:gap-14">
+          <div>
+            <p className="ui-eyebrow">Your next week starts here</p>
+            <h2 id="access-title" className="landing-heading landing-reveal">
+              Make a plan.
+              <br />
+              Show up.
+            </h2>
+            <p className="mt-4 max-w-md text-sm leading-7 text-stone-600">
+              TrainGrid is invite-only. If you’ve been invited, log in with Google or GitHub using
+              that email address. If not, request an invite: every request is reviewed personally.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/login" className={`${ctaPrimary} group`}>
+                Log in to TrainGrid
+                <span aria-hidden="true" className={ctaArrow}>→</span>
+              </Link>
+              <Link href="/login?request=invite" className={ctaSecondary}>
+                Request an invite
+              </Link>
             </div>
-            <div className="creator-details">
-              <h3 className="text-3xl font-semibold tracking-tight">
-                Tanuj Chakraborty
-              </h3>
-              <p className="mt-2 text-sm text-accent">{creatorRole}</p>
-              <p className="mt-5 max-w-2xl border-l-2 border-accent pl-4 text-lg leading-8 text-pretty text-stone-800 sm:pl-5">
-                I built TrainGrid to give training a deliberate place in your
-                week, so you can find routines worth keeping, make them your
-                own, and arrive at each session knowing what’s ahead.
-              </p>
-              <p className="mt-5 max-w-2xl border-t border-line pt-4 text-sm leading-6 text-muted">
-                For more of my work, visit my{" "}
-                <a
-                  className="font-medium text-accent underline underline-offset-4"
-                  href="https://iamtj.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  portfolio
-                </a>
-                {" "}or explore my projects on{" "}
-                <a
-                  className="font-medium text-accent underline underline-offset-4"
-                  href="https://github.com/i-am-tj"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  GitHub
-                </a>.
-              </p>
+            <p className="mt-6 text-xs leading-5 text-stone-600">
+              Access is approved one person at a time; there is no public sign-up.
+            </p>
+            <a href="#top" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-sm pr-2 text-sm font-medium text-accent">
+              <span className="underline-reveal">Back to top</span>
+              <span aria-hidden="true">↑</span>
+            </a>
+          </div>
+
+          <div id="about" className="creator-card ui-panel bg-background px-6 py-7 sm:px-10 sm:py-9">
+            <h2 id="creator-title" className="ui-eyebrow landing-reveal border-b border-line pb-4">
+              A note from the founder
+            </h2>
+            <div className="creator-layout creator-layout-wide mt-6">
+              <div className="creator-mark">
+                <Image
+                  src="/marketing/tanuj-chakraborty.jpg"
+                  alt="Tanuj Chakraborty"
+                  width={1170}
+                  height={1170}
+                  unoptimized
+                  loading="lazy"
+                  className="aspect-square w-32 max-w-full rounded-2xl border border-hairline object-cover sm:w-36"
+                />
+              </div>
+              <div className="creator-details">
+                <h3 className="text-2xl font-semibold tracking-tight sm:text-3xl">Tanuj Chakraborty</h3>
+                <p className="mt-1.5 text-sm text-accent">{creatorRole}</p>
+                <p className="mt-4 border-l-2 border-accent pl-4 text-base leading-7 text-pretty text-stone-800 sm:text-lg sm:leading-8">
+                  I built TrainGrid to give training a deliberate place in your
+                  week, so you can find routines worth keeping, make them your
+                  own, and arrive at each session knowing what’s ahead.
+                </p>
+                <p className="mt-4 border-t border-line pt-3 text-sm leading-6 text-muted">
+                  More of my work: my{" "}
+                  <a
+                    className="font-medium text-accent underline underline-offset-4"
+                    href="https://iamtj.dev"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    portfolio
+                  </a>
+                  {" "}and{" "}
+                  <a
+                    className="font-medium text-accent underline underline-offset-4"
+                    href="https://github.com/i-am-tj"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    GitHub
+                  </a>.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section id="access" tabIndex={-1} aria-labelledby="access-title" className="border-t border-line bg-card">
-        <div className="landing-container py-14 sm:py-16">
-          <p className="ui-eyebrow">Your next week starts here</p>
-          <h2 id="access-title" className="landing-reveal mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Make a plan. Show up.
-          </h2>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-            TrainGrid is invite-only. If you’ve been invited, log in with Google or GitHub using that email address.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/login" className={`${ctaPrimary} group`}>
-              Log in to TrainGrid
-              <span aria-hidden="true" className={ctaArrow}>→</span>
-            </Link>
-            <Link href="/login?request=invite" className={ctaSecondary}>
-              Request an invite
-            </Link>
-          </div>
-          <p className="mt-6 max-w-xl border-t border-line pt-5 text-sm leading-6 text-stone-600">
-            Not invited yet? Request an invite with your email address. Tanuj reviews every request
-            personally, and access is approved one person at a time; there is no public sign-up.
-          </p>
-          <a href="#top" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-sm pr-2 text-sm font-medium text-accent">
-            <span className="underline-reveal">Back to top</span>
-            <span aria-hidden="true">↑</span>
-          </a>
         </div>
       </section>
     </div>

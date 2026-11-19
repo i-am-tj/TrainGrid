@@ -27,7 +27,7 @@ export const loginPill =
 export function PublicHeader({ showLogin = true }: { showLogin?: boolean }) {
   return (
     <header className="relative z-30 border-b border-line bg-card">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-3 py-3 sm:px-4">
+      <div className="landing-container flex flex-wrap items-center justify-between gap-2 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <Link href="/" className="inline-flex items-center gap-2 text-base font-semibold tracking-tight">
             <BrandLogo />
