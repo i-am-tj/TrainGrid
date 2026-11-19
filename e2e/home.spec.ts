@@ -50,12 +50,47 @@ test.describe("public landing page", () => {
     }
     expect(await landmarks(page)).toEqual({ banner: 1, main: 1, mainId: "main-content", footer: 1 });
 
-    // The header carries the information pages; Explore features still jumps down the page.
+    // The header carries the information pages; Explore features stays on the landing page.
     await page.setViewportSize({ width: 1280, height: 800 });
     await expect(banner.getByRole("link", { name: "What’s new" })).toHaveAttribute("href", "/whats-new");
     await page.getByRole("main").getByRole("link", { name: "Explore features" }).click();
     await expect(page).toHaveURL(/\/#features$/);
   });
+
+  for (const { name, viewport, reducedMotion } of [
+    { name: "desktop", viewport: { width: 1440, height: 900 }, reducedMotion: "no-preference" },
+    { name: "mobile", viewport: { width: 390, height: 844 }, reducedMotion: "no-preference" },
+    { name: "reduced motion", viewport: { width: 390, height: 844 }, reducedMotion: "reduce" },
+  ] as const) {
+    test("landing section navigation works with " + name, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.emulateMedia({ reducedMotion });
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveCSS(
+        "scroll-behavior",
+        reducedMotion === "reduce" ? "auto" : "smooth",
+      );
+
+      const main = page.getByRole("main");
+      for (const [label, id] of [
+        ["Explore features", "features"],
+        ["See the planner in action", "preview"],
+        ["How it works", "how-it-works"],
+        ["Meet the founder", "about"],
+        ["Get access", "access"],
+      ]) {
+        await main.getByRole("link", { name: label, exact: true }).click();
+        await expect(page).toHaveURL(new RegExp("/#" + id + "$"));
+        const section = main.locator("#" + id);
+        await expect(section).toBeFocused();
+        await expect(section.getByRole("heading", { level: 2 })).toBeInViewport();
+      }
+
+      await main.getByRole("link", { name: "Back to top" }).click();
+      await expect(page).toHaveURL(/\/#top$/);
+      await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+    });
+  }
 
   test("the landing page renders the same for a signed-in member, with no member data", async ({
     page,

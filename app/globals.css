@@ -183,6 +183,26 @@ body {
 }
 
 /* Marketing compositions are static examples of the application's actual models. */
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.landing):not(:has(#main-content:target)) {
+    scroll-behavior: smooth;
+  }
+
+  @supports (animation-timeline: view()) and (animation-range: entry) {
+    .landing-reveal {
+      animation: landing-intro-rise ease-out both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@keyframes landing-intro-rise {
+  from { transform: translateY(8px); }
+  to { transform: none; }
+}
+
+.landing > section[id] { scroll-margin-top: 2rem; }
 .landing-container { width: min(100% - 2rem, 76rem); margin-inline: auto; }
 .landing-section { padding-block: clamp(4rem, 8vw, 7rem); }
 .landing-heading { margin-top: 1rem; font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.12; letter-spacing: -0.045em; font-weight: 600; }
