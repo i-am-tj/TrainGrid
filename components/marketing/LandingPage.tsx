@@ -231,19 +231,15 @@ export function LandingPage({
               />
             </div>
             <div className="creator-details">
-              <figure>
-                <blockquote className="max-w-xl text-base leading-7 text-pretty">
-                  <p>
-                    I built TrainGrid to give training a deliberate place in your
-                    week, so you can find routines worth keeping, make them your
-                    own, and arrive at each session knowing what’s ahead.
-                  </p>
-                </blockquote>
-                <figcaption className="mt-5 text-sm">
-                  <span className="block font-semibold">Tanuj Chakraborty</span>
-                  <span className="mt-1 block text-muted">{creatorRole}</span>
-                </figcaption>
-              </figure>
+              <h3 className="text-3xl font-semibold tracking-tight">
+                Tanuj Chakraborty
+              </h3>
+              <p className="mt-2 text-sm text-accent">{creatorRole}</p>
+              <p className="mt-5 max-w-xl text-base leading-7 text-pretty">
+                I built TrainGrid to give training a deliberate place in your
+                week, so you can find routines worth keeping, make them your
+                own, and arrive at each session knowing what’s ahead.
+              </p>
               <p className="mt-5 max-w-2xl border-t border-line pt-4 text-sm leading-6 text-muted">
                 For more of my work, visit my{" "}
                 <a
