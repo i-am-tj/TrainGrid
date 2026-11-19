@@ -48,18 +48,6 @@ const ctaPrimary = cta(btnPrimary);
 const ctaSecondary = cta(btnSecondary);
 const ctaArrow = "transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none";
 
-function SectionLink({ href, children }: { href: `#${string}`; children: string }) {
-  return (
-    <a
-      href={href}
-      className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-sm pr-2 text-sm font-medium text-accent"
-    >
-      <span className="underline-reveal">{children}</span>
-      <span aria-hidden="true">{href === "#top" ? "↑" : "↓"}</span>
-    </a>
-  );
-}
-
 export type LandingPageProps = { creatorRole?: string };
 
 /** Ready for public routing; intentionally has no auth, database or fixture imports. */
@@ -148,7 +136,6 @@ export function LandingPage({
             </article>
           ))}
         </div>
-        <SectionLink href="#preview">See the planner in action</SectionLink>
       </section>
 
       <section
@@ -183,7 +170,6 @@ export function LandingPage({
               </p>
             </div>
           </div>
-          <SectionLink href="#how-it-works">How it works</SectionLink>
         </div>
       </section>
 
@@ -219,7 +205,6 @@ export function LandingPage({
             </li>
           ))}
         </ol>
-        <SectionLink href="#about">Meet the founder</SectionLink>
       </section>
 
       <section
@@ -280,7 +265,6 @@ export function LandingPage({
             </div>
           </div>
         </div>
-        <SectionLink href="#access">Get access</SectionLink>
       </section>
 
       <section id="access" tabIndex={-1} aria-labelledby="access-title" className="border-t border-line bg-card">
@@ -305,7 +289,10 @@ export function LandingPage({
             Not invited yet? Request an invite with your email address. Tanuj reviews every request
             personally, and access is approved one person at a time; there is no public sign-up.
           </p>
-          <SectionLink href="#top">Back to top</SectionLink>
+          <a href="#top" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-sm pr-2 text-sm font-medium text-accent">
+            <span className="underline-reveal">Back to top</span>
+            <span aria-hidden="true">↑</span>
+          </a>
         </div>
       </section>
     </div>

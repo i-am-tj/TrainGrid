@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LandingScroll } from "@/components/marketing/LandingScroll";
 import { LandingPage } from "@/components/marketing/LandingPage";
 import { landingMetadata } from "@/components/marketing/metadata";
 import { canonicalUrl } from "@/lib/site";
@@ -15,5 +16,10 @@ export function generateMetadata(): Metadata {
 }
 
 export default function HomePage() {
-  return <LandingPage />;
+  return (
+    <>
+      <LandingScroll />
+      <LandingPage />
+    </>
+  );
 }

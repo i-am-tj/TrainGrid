@@ -189,16 +189,17 @@ body {
   }
 
   @supports (animation-timeline: view()) and (animation-range: entry) {
-    .landing-reveal {
+    .landing-reveal,
+    .landing :is(.feature-grid, .showcase-grid, ol, .creator-layout) {
       animation: landing-intro-rise ease-out both;
       animation-timeline: view();
-      animation-range: entry 0% entry 100%;
+      animation-range: entry 0% entry 120px;
     }
   }
 }
 
 @keyframes landing-intro-rise {
-  from { transform: translateY(8px); }
+  from { transform: translateY(18px); }
   to { transform: none; }
 }
 

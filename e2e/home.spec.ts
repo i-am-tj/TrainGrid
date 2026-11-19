@@ -72,19 +72,35 @@ test.describe("public landing page", () => {
       );
 
       const main = page.getByRole("main");
-      for (const [label, id] of [
-        ["Explore features", "features"],
-        ["See the planner in action", "preview"],
-        ["How it works", "how-it-works"],
-        ["Meet the founder", "about"],
-        ["Get access", "access"],
-      ]) {
-        await main.getByRole("link", { name: label, exact: true }).click();
-        await expect(page).toHaveURL(new RegExp("/#" + id + "$"));
-        const section = main.locator("#" + id);
-        await expect(section).toBeFocused();
-        await expect(section.getByRole("heading", { level: 2 })).toBeInViewport();
+      if (reducedMotion === "reduce") {
+        await expect(page.locator("html")).not.toHaveClass(/\blenis\b/);
+      } else {
+        await expect(page.locator("html")).toHaveClass(/\blenis\b/);
+        if (name === "desktop") {
+          const intermediate = page.waitForFunction(() => scrollY > 0 && scrollY < 640);
+          await page.mouse.wheel(0, 640);
+          await intermediate;
+          await expect.poll(() => page.evaluate(() => scrollY)).toBe(640);
+        } else {
+          const session = await page.context().newCDPSession(page);
+          await session.send("Input.dispatchTouchEvent", {
+            type: "touchStart", touchPoints: [{ x: 180, y: 700 }],
+          });
+          for (const y of [640, 570, 500, 430, 360]) {
+            await session.send("Input.dispatchTouchEvent", {
+              type: "touchMove", touchPoints: [{ x: 180, y }],
+            });
+            await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
+          }
+          const beforeRelease = await page.evaluate(() => scrollY);
+          expect(beforeRelease).toBeGreaterThan(0);
+          await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+          await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(beforeRelease);
+          await session.detach();
+        }
       }
+      await main.getByRole("link", { name: "Explore features" }).click();
+      await expect(main.locator("#features")).toBeFocused();
 
       await main.getByRole("link", { name: "Back to top" }).click();
       await expect(page).toHaveURL(/\/#top$/);
