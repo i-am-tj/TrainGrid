@@ -8,9 +8,11 @@ import { requireSupabaseEnv } from "./env";
  * Supabase client that uses the secret key and therefore BYPASSES Row Level
  * Security.
  *
- * It exists for one purpose: managing invitations, a table no member may
- * touch. Callers must have established that the current user is an admin
- * before creating it. Never use it for ordinary reads or writes of user
+ * It exists for invitations, which no member may touch: admins manage
+ * invitations and invite requests (callers must have established that the
+ * current user is an admin before creating it), and the public "Request an
+ * invite" action makes exactly one call with it, to request_invite(), which
+ * validates and rate-limits on its own. Never use it for ordinary reads or writes of user
  * data; those go through the per-request client so RLS stays in force.
  *
  * `server-only` makes the build fail if this module is ever imported from

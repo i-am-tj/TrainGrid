@@ -39,6 +39,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"invite_requests": {
+                  Row: {
+                    "created_at": string,"email": string,"id": string,"ip_hash": string | null,"name": string | null,"note": string | null,"resolved_at": string | null,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"email": string,"id"?: string,"ip_hash"?: string | null,"name"?: string | null,"note"?: string | null,"resolved_at"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"email"?: string,"id"?: string,"ip_hash"?: string | null,"name"?: string | null,"note"?: string | null,"resolved_at"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"member_feedback": {
                   Row: {
                     "created_at": string,"id": string,"kind": string,"message": string,"page_path": string | null,"user_id": string
@@ -158,6 +172,9 @@ isOneToOne: false
                            },
 "is_member":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"request_invite":
+{ Args: { "p_email": string,"p_ip_hash"?: string,"p_name"?: string,"p_note"?: string }; Returns: string
                            },
 "revoke_invitation":
 { Args: { "p_invitation_id": string,"p_protected_user_ids": (string)[] }; Returns: string

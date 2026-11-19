@@ -7,6 +7,21 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Request an invite
+
+- **No invitation yet? Ask for one**: on the sign-in page (and from “No invitation yet?” and
+  “Request an invite” on the landing page), leave your email, and if you like your name and a
+  note. Every request is reviewed personally; if you are invited, the invitation arrives at that
+  address and you sign in as usual.
+
+### For admins
+
+- **Requests on the Invitations page**: new requests arrive by email from “TrainGrid Requests”
+  (reply to answer the person), and wait on Invitations → Requests, where **Invite and email**
+  invites them in one click and **Dismiss** declines quietly. Optional setting:
+  `TRAINGRID_INVITE_REQUESTS_TO` (falls back to `TRAINGRID_FEEDBACK_TO`). Needs migration
+  `20261120000000_invite_requests`.
+
 ### Profile
 
 - **Your profile**: tap your initials in the header (or **Profile** in the phone menu) to see your

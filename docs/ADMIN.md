@@ -42,6 +42,25 @@ here, so their email can’t sign in again, then delete the user in Supabase →
 Users. Their profile, routines, sessions and feedback are removed with them; the revoked invitation
 stays as a record that the address was once invited.
 
+## Review invite requests
+
+Visitors without an invitation can ask for one: **Request an invite** on the sign-in page (the
+landing page's "No invitation yet?" links open it too). They give an email address and, if they
+like, a name and a short note.
+
+- Each new request is emailed to `TRAINGRID_INVITE_REQUESTS_TO` (or, if unset,
+  `TRAINGRID_FEEDBACK_TO`) from **TrainGrid Requests**, with a link to the Invitations page.
+  Reply to the email to answer the person directly.
+- On **Invitations → Requests**, oldest first: **Invite and email** creates the invitation and
+  sends it (just **Invite** when email is not set up); **Dismiss** declines quietly. Nothing is
+  sent to the person when you dismiss. Inviting the same address from the form above also clears
+  its request.
+- Once invited, they come back to `/login` and continue with the Google or GitHub account that
+  uses that address.
+- Limits: one pending request per address, three per network per hour, 50 a day in total (then
+  requests pause until the next day). The visitor is never told whether an address is already
+  invited. Requests are deleted after 180 days.
+
 ## Read feedback
 
 Members’ feedback is stored in the `member_feedback` table: Supabase → Table Editor →

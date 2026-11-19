@@ -21,6 +21,11 @@ person who builds TrainGrid.
 If you see an "invite-only" note, the email you signed in with does not match your invitation.
 Sign out and try the other account, or ask whoever invited you to check the address.
 
+**No invitation yet?** Choose **Request an invite** on the sign-in page and leave your email
+address (and, if you like, your name and a short note). Every request is reviewed personally. If
+you are invited, the invitation arrives at that address; then come back and continue with the
+Google or GitHub account that uses it.
+
 ## 2. Home: today at a glance
 
 Home shows the day ahead and the week around it:

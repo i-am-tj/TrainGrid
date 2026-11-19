@@ -61,7 +61,7 @@ export function Modal({
         // A click on the backdrop lands on the <dialog> itself, outside its panel.
         if (dismissible && event.target === event.currentTarget) event.currentTarget.close();
       }}
-      className={`ui-modal ui-panel m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto p-0 text-foreground shadow-2xl ${className}`}
+      className={`ui-modal ui-panel m-auto text-left max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto p-0 text-foreground shadow-2xl ${className}`}
     >
       <div className="relative p-5 sm:p-7">
         <button

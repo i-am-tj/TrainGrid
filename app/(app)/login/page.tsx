@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LoginView } from "@/components/auth/LoginView";
+import { RequestInvite } from "@/components/auth/RequestInvite";
 import { ProviderSubmit } from "@/components/auth/ProviderSubmit";
 import { signInWithProvider } from "@/lib/auth/actions";
 import { OAUTH_PROVIDERS, loginErrorMessage } from "@/lib/auth/providers";
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 type SearchParams = Promise<{
   error?: string | string[];
   next?: string | string[];
+  request?: string | string[];
 }>;
 
 export default async function LoginPage({
@@ -34,6 +36,14 @@ export default async function LoginPage({
       configured={configured}
       viewer={viewer}
       error={error}
+      requestInvite={
+        configured && viewer.status !== "member" ? (
+          <RequestInvite
+            defaultOpen={first(params.request) === "invite"}
+            defaultEmail={viewer.status === "not_member" ? (viewer.email ?? "") : ""}
+          />
+        ) : undefined
+      }
       providerForms={OAUTH_PROVIDERS.map((provider) => (
         <form key={provider.id} action={signInWithProvider}>
           <input type="hidden" name="provider" value={provider.id} />

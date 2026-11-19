@@ -127,6 +127,11 @@ export async function signInAsLocalAdmin(context: BrowserContext, baseURL: strin
   await adoptSession(context, baseURL, jar);
 }
 
+/** Removes invite requests from E2E runs (all on example.test), so limits start fresh. */
+export async function deleteLocalInviteRequests() {
+  await serviceClient().from("invite_requests").delete().like("email", "%@example.test");
+}
+
 /** Removes invitations created by E2E runs. */
 export async function deleteLocalInvitations(emails: string[]) {
   if (emails.length === 0) return;
@@ -192,7 +197,7 @@ export async function createLocalSessionFor(userId: string, name: string, date: 
 
 /** Reads rows as the service role, to check what really happened. */
 export async function readRows(
-  table: "routines" | "scheduled_sessions" | "invitations" | "invitation_email_deliveries" | "member_feedback",
+  table: "routines" | "scheduled_sessions" | "invitations" | "invitation_email_deliveries" | "member_feedback" | "invite_requests",
   filter: Record<string, string>) {
   let query = serviceClient().from(table).select("*");
   for (const [column, value] of Object.entries(filter)) query = query.eq(column, value);

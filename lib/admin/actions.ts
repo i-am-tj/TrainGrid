@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { emailFeedback, type EmailFeedback } from "@/lib/admin/invitation-model";
+import { dismissInviteRequest } from "@/lib/admin/invite-requests";
 import {
   NotAdminError,
   createInvitation,
@@ -80,4 +81,13 @@ export async function revokeAction(
 ): Promise<InvitationFormState> {
   const result = await run(() => revokeInvitation(formData.get("id")));
   return result.ok ? { ok: true, message: "Revoked." } : result.state;
+}
+
+/** Declines an invite request. Admins only. */
+export async function dismissInviteRequestAction(
+  _previous: InvitationFormState,
+  formData: FormData,
+): Promise<InvitationFormState> {
+  const result = await run(() => dismissInviteRequest(formData.get("id")));
+  return result.ok ? { ok: true, message: "Request dismissed." } : result.state;
 }

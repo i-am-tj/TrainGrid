@@ -7,6 +7,8 @@ import { PageHeading } from "@/components/ui/Presentation";
 import { InvitationEmailPreview } from "@/components/admin/InvitationEmailPreview";
 import { InvitationListView } from "@/components/admin/InvitationListView";
 import { InviteForm, RevokeForm, SendEmailForm } from "@/components/admin/InvitationForms";
+import { InviteRequestList } from "@/components/admin/InviteRequests";
+import { listPendingInviteRequests } from "@/lib/admin/invite-requests";
 import { getAdminViewer } from "@/lib/admin/guard";
 import {
   canEmailInvitation,
@@ -72,6 +74,18 @@ export default async function InvitationsPage() {
         cannot be revoked.
       </p>
 
+      <section className="mt-7" aria-labelledby="requests-title">
+        <h2 id="requests-title" className="text-lg font-semibold tracking-tight">
+          Requests
+        </h2>
+        <p className="mt-1 text-sm text-stone-600">
+          People who asked for an invitation from the sign-in page, oldest first.
+        </p>
+        <Suspense fallback={<SectionLoader label="Loading requests…" minHeight="min-h-24" />}>
+          <RequestList emailReady={emailReady} timeZone={timeZone} />
+        </Suspense>
+      </section>
+
       <section className="ui-panel mt-7 px-5 py-6 sm:p-7">
         <h2 className="text-lg font-semibold tracking-tight">Invite someone</h2>
         <div className="mt-3">
@@ -106,6 +120,24 @@ export default async function InvitationsPage() {
         </Suspense>
       </section>
     </div>
+  );
+}
+
+/** Pending invite requests, streamed behind their own loader. */
+async function RequestList({ emailReady, timeZone }: { emailReady: boolean; timeZone: string }) {
+  const requests = await listPendingInviteRequests();
+  const formatTime = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone });
+  return (
+    <InviteRequestList
+      emailReady={emailReady}
+      requests={requests.map((request) => ({
+        id: request.id,
+        email: request.email,
+        name: request.name,
+        note: request.note,
+        requestedLabel: formatTime.format(new Date(request.created_at)),
+      }))}
+    />
   );
 }
 
