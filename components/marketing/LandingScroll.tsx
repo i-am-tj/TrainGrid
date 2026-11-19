@@ -41,8 +41,8 @@ export function LandingScroll() {
       if (next === undefined) return;
       destination = next;
       scroll?.scrollTo(next, {
-        duration: 0.7,
-        easing: t => 1 - (1 - t) ** 3,
+        duration: 1.25,
+        easing: t => (1 - Math.cos(Math.PI * t)) / 2,
         onComplete: () => { destination = undefined; },
       });
     }
