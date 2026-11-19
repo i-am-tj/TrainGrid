@@ -211,12 +211,12 @@ export function LandingPage({
         className="landing-container pb-20"
         aria-labelledby="creator-title"
       >
-        <div className="creator-card ui-panel p-7 sm:p-10">
+        <div className="creator-card ui-panel mx-auto max-w-5xl p-7 sm:p-10">
           <h2
             id="creator-title"
             className="ui-eyebrow border-b border-line pb-5"
           >
-            Behind TrainGrid
+            A note from the founder
           </h2>
           <div className="creator-layout mt-8">
             <div className="creator-mark">
@@ -227,37 +227,43 @@ export function LandingPage({
                 height={1170}
                 unoptimized
                 loading="lazy"
-                className="aspect-square w-56 max-w-full rounded-2xl border border-hairline object-cover"
+                className="aspect-square w-44 max-w-full rounded-2xl border border-hairline object-cover sm:w-56"
               />
             </div>
             <div className="creator-details">
-              <h3 className="text-3xl font-semibold tracking-tight">
-                Tanuj Chakraborty
-              </h3>
-              <p className="mt-2 text-sm text-accent">{creatorRole}</p>
-              <p className="mt-5 max-w-lg text-sm leading-7 text-stone-600">
-                TrainGrid was created to make the training week easier to plan:
-                a clear calendar, useful routines, and a straightforward answer
-                to “what am I doing today?”
-              </p>
-              <div className="mt-6 flex flex-wrap gap-5 text-sm">
+              <figure>
+                <blockquote className="max-w-2xl text-xl leading-relaxed tracking-tight sm:text-2xl">
+                  <p>
+                    I built TrainGrid to give training a deliberate place in your
+                    week, so you can find routines worth keeping, make them your
+                    own, and arrive at each session knowing what’s ahead.
+                  </p>
+                </blockquote>
+                <figcaption className="mt-5 text-sm">
+                  <span className="block font-semibold">Tanuj Chakraborty</span>
+                  <span className="mt-1 block text-muted">{creatorRole}</span>
+                </figcaption>
+              </figure>
+              <p className="mt-5 max-w-2xl border-t border-line pt-4 text-sm leading-6 text-muted">
+                For more of my work, visit my{" "}
                 <a
-                  className="underline-reveal py-2"
+                  className="font-medium text-accent underline underline-offset-4"
                   href="https://iamtj.dev"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Portfolio ↗
+                  portfolio
                 </a>
+                {" "}or explore my projects on{" "}
                 <a
-                  className="underline-reveal py-2"
+                  className="font-medium text-accent underline underline-offset-4"
                   href="https://github.com/i-am-tj"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  GitHub ↗
-                </a>
-              </div>
+                  GitHub
+                </a>.
+              </p>
             </div>
           </div>
         </div>
