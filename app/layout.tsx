@@ -67,7 +67,8 @@ export const dynamic = "force-dynamic";
  *   2. records the browser's IANA time zone in a cookie, so the server decides
  *      "today" for /home and the planner in the member's own time zone
  *      (lib/time-zone.ts). The value is validated on the server before use;
- *   3. corrects the first request. Before the cookie exists (or after
+ *   3. corrects the first request outside the date-independent landing page.
+ *      Before the cookie exists (or after
  *      travelling, while it names the old zone) the server can only guess the
  *      zone, and around midnight the guess lands on the wrong day. The server
  *      stamps the day it used on <html data-today>; when the browser's own day
@@ -91,7 +92,7 @@ const THEME_INIT = `(function () {
     var local = part("year") + "-" + part("month") + "-" + part("day");
     var stored = document.cookie.split("; ").indexOf(name + encodeURIComponent(tz)) !== -1;
     var once = "tg_tz_corrected:" + tz + ":" + local;
-    if (served && served !== local && stored && sessionStorage.getItem(once) === null) {
+    if (location.pathname !== "/" && served && served !== local && stored && sessionStorage.getItem(once) === null) {
       sessionStorage.setItem(once, "1");
       root.style.visibility = "hidden";
       var target = location.pathname + location.search + location.hash;

@@ -92,6 +92,23 @@ test.describe("public landing page", () => {
     });
   }
 
+  test("a direct section link works when the visitor's date differs from the server's", async ({ browser, baseURL }) => {
+    const utcDate = todayIn("UTC").date;
+    const timezoneId = ["Pacific/Kiritimati", "Pacific/Pago_Pago"].find((zone) => todayIn(zone).date !== utcDate);
+    const context = await browser.newContext({ baseURL, timezoneId, reducedMotion: "reduce" });
+    try {
+      await context.addCookies([{ name: "tg_tz", value: "UTC", url: baseURL! }]);
+      const page = await context.newPage();
+      await page.goto("/#how-it-works");
+      await expect(page.locator("html")).toHaveAttribute("data-today", utcDate);
+      const heading = page.getByRole("heading", { name: "Browse. Plan. Open." });
+      await expect(heading).toBeVisible();
+      await expect(heading).toBeInViewport();
+    } finally {
+      await context.close();
+    }
+  });
+
   test("the landing page renders the same for a signed-in member, with no member data", async ({
     page,
     context,
