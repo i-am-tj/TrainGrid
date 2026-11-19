@@ -149,10 +149,6 @@ export function LandingPage({
               <br />
               Every useful detail.
             </h2>
-            <p className="max-w-md text-sm leading-7 text-stone-600">
-              See the full week on desktop, take the day’s agenda on your phone,
-              and open the workout when you need it.
-            </p>
           </div>
           <div className="showcase-grid">
             <div className="showcase-agenda">
