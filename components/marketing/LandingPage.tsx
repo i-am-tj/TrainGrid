@@ -232,7 +232,7 @@ export function LandingPage({
             </div>
             <div className="creator-details">
               <figure>
-                <blockquote className="max-w-2xl text-xl leading-relaxed tracking-tight sm:text-2xl">
+                <blockquote className="max-w-xl text-base leading-7 text-pretty">
                   <p>
                     I built TrainGrid to give training a deliberate place in your
                     week, so you can find routines worth keeping, make them your
