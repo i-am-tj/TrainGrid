@@ -21,6 +21,7 @@ export function Modal({
   dismissible = true,
   initialFocus,
   className = "max-w-lg",
+  headerHidden = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -31,6 +32,8 @@ export function Modal({
   /** CSS selector inside the dialog to focus on open; else the first focusable element. */
   initialFocus?: string;
   className?: string;
+  /** Keeps the title for screen readers but hides the header (e.g. on a confirmation screen). */
+  headerHidden?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -52,7 +55,7 @@ export function Modal({
     <dialog
       ref={dialog}
       aria-labelledby={titleId}
-      aria-describedby={description ? descriptionId : undefined}
+      aria-describedby={description && !headerHidden ? descriptionId : undefined}
       onClose={onClose}
       onCancel={(event) => {
         if (!dismissible) event.preventDefault();
@@ -75,15 +78,15 @@ export function Modal({
             <path d="M5 5l10 10M15 5L5 15" />
           </svg>
         </button>
-        <h2 id={titleId} className="pr-10 text-xl font-semibold tracking-tight">
+        <h2 id={titleId} className={headerHidden ? "sr-only" : "pr-10 text-xl font-semibold tracking-tight"}>
           {title}
         </h2>
-        {description ? (
+        {description && !headerHidden ? (
           <p id={descriptionId} className="mt-2 pr-6 text-sm leading-6 text-stone-600">
             {description}
           </p>
         ) : null}
-        <div className="mt-5">{children}</div>
+        <div className={headerHidden ? "" : "mt-5"}>{children}</div>
       </div>
     </dialog>
   );

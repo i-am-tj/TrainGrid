@@ -3,7 +3,7 @@
 
 begin;
 
-select plan(25);
+select plan(27);
 
 -- ---------------------------------------------------------------------------
 -- Privileges: nothing through the API
@@ -85,6 +85,17 @@ select results_eq(
 select is(
   public.request_invite('runner@example.test', null, null, null),
   'received', 'once invited, asking again still reads as received'
+);
+
+-- A revoked invitation (or a revoked member) can ask again: it is stored for review.
+insert into public.invitations (email, revoked_at) values ('former@example.test', now());
+select is(
+  public.request_invite('former@example.test', null, null, null),
+  'created', 'an address whose invitation was revoked can request again'
+);
+select is(
+  (select status from public.invite_requests where email = 'former@example.test'),
+  'pending', 'and the request waits for review'
 );
 
 -- 50 in 24 hours, then requests pause.

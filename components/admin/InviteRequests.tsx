@@ -11,7 +11,13 @@ export type InviteRequestItem = {
   name: string | null;
   note: string | null;
   requestedLabel: string;
+  history: "former_member" | "revoked_invitation" | null;
 };
+
+const HISTORY_LABEL = {
+  former_member: "Former member · access revoked. Inviting restores their data.",
+  revoked_invitation: "An earlier invitation was revoked.",
+} as const;
 
 type Notice = { tone: "success" | "warning" | "error"; message: string };
 
@@ -98,6 +104,11 @@ function RequestRow({
           )}
         </p>
         <p className="mt-0.5 text-xs text-stone-600">Requested {request.requestedLabel}</p>
+        {request.history ? (
+          <p className="mt-1.5 inline-flex rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-900">
+            {HISTORY_LABEL[request.history]}
+          </p>
+        ) : null}
         {request.note ? (
           <p className="mt-2 max-w-xl whitespace-pre-wrap border-l-2 border-accent/60 pl-3 text-sm leading-6 text-stone-700 [overflow-wrap:anywhere]">
             {request.note}

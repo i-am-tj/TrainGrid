@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { PendingRequestsBadge } from "@/components/admin/PendingRequestsBadge";
 import { NavLink } from "@/components/ui/NavLink";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MobileMenu } from "@/components/MobileMenu";
@@ -30,7 +32,20 @@ export async function AppHeader() {
   if (isAdmin) {
     items.push({
       key: "invitations",
-      render: (c) => <NavLink href="/admin/invitations" className={c}>Invitations</NavLink>,
+      render: (c) => {
+        // Desktop and phone menu each render the link; their ids must differ.
+        const id = `pending-requests-${c === desktopItem ? "inline" : "menu"}`;
+        return (
+          <NavLink href="/admin/invitations" className={c} describedBy={id}>
+            <span className="relative">
+              Invitations
+              <Suspense fallback={<span id={id} className="sr-only" />}>
+                <PendingRequestsBadge descriptionId={id} />
+              </Suspense>
+            </span>
+          </NavLink>
+        );
+      },
     });
   }
   if (isMember) {

@@ -8,17 +8,9 @@ import "lenis/dist/lenis.css";
 function sectionStops() {
   const sections = Array.from(document.querySelectorAll<HTMLElement>(".landing > section"));
   const limit = document.documentElement.scrollHeight - window.innerHeight;
-  const steps = document.querySelector("#how-it-works > .ui-eyebrow");
-  const card = document.querySelector(".creator-card");
-  const founderFitsWithSteps = steps && card &&
-    card.getBoundingClientRect().bottom - steps.getBoundingClientRect().top + 32 <= window.innerHeight;
   const stops = [0];
   for (const section of sections.slice(1)) {
-    if (section.id === "about" && founderFitsWithSteps) continue;
-    const top = section.id === "how-it-works" && founderFitsWithSteps
-      ? steps.getBoundingClientRect().top - 16
-      : section.getBoundingClientRect().top;
-    stops.push(Math.min(limit, Math.round(window.scrollY + top)));
+    stops.push(Math.min(limit, Math.round(window.scrollY + section.getBoundingClientRect().top)));
   }
   return [...stops, limit];
 }

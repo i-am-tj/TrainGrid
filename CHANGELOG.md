@@ -21,6 +21,10 @@ in the app at `/whats-new`.
   invites them in one click and **Dismiss** declines quietly. Optional setting:
   `TRAINGRID_INVITE_REQUESTS_TO` (falls back to `TRAINGRID_FEEDBACK_TO`). Needs migration
   `20261120000000_invite_requests`.
+- **A count to review**: the Invitations link shows how many requests are waiting, on every page
+  and in the phone menu.
+- **History at a glance**: a request from someone whose access or invitation was revoked is
+  marked as such; inviting them restores their data.
 
 ### Profile
 
@@ -31,6 +35,9 @@ in the app at `/whats-new`.
 
 ### Landing page
 
+- **Four calm screens**: the opening, the essentials, the product up close, and a closing screen
+  that pairs the note from the founder with how to get in. Each fills the screen as you page
+  through.
 - **A cleaner header**: What’s new, Privacy and Terms sit in the navigation, and **Log in** is a
   compact button that stays in view on phones. The footer is a single, quiet row.
 - **Log in buttons that belong**: the label and arrow sit together, at one height and shape, and

@@ -203,7 +203,8 @@ body {
   to { transform: none; }
 }
 
-.landing > #access { min-height: 100svh; display: grid; align-items: center; }
+/* Each section after the hero fills the screen, so section paging lands on whole sections. */
+.landing > :is(#features, #preview, #access) { min-height: 100svh; display: grid; align-content: center; }
 .landing > section[id] { scroll-margin-top: 2rem; }
 html.lenis .landing > section[id] { scroll-margin-top: 0; }
 .landing-container { width: min(100% - 2rem, 76rem); margin-inline: auto; }
