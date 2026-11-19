@@ -175,12 +175,42 @@ export function LandingPage({
         aria-labelledby="access-title"
         className="landing-final border-t border-line bg-card"
       >
-        <div className="landing-container grid gap-10 py-14 sm:py-20 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
-          <div id="about" className="creator-card ui-panel bg-background p-6 sm:p-8">
+        {/* The call to action leads; the founder's note takes the wider column, so it reads as a wide card. */}
+        <div className="landing-container grid gap-10 py-14 sm:py-20 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] xl:items-center xl:gap-14">
+          <div>
+            <p className="ui-eyebrow">Your next week starts here</p>
+            <h2 id="access-title" className="landing-heading landing-reveal">
+              Make a plan.
+              <br />
+              Show up.
+            </h2>
+            <p className="mt-4 max-w-md text-sm leading-7 text-stone-600">
+              TrainGrid is invite-only. If you’ve been invited, log in with Google or GitHub using
+              that email address. If not, request an invite: every request is reviewed personally.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/login" className={`${ctaPrimary} group`}>
+                Log in to TrainGrid
+                <span aria-hidden="true" className={ctaArrow}>→</span>
+              </Link>
+              <Link href="/login?request=invite" className={ctaSecondary}>
+                Request an invite
+              </Link>
+            </div>
+            <p className="mt-6 text-xs leading-5 text-stone-600">
+              Access is approved one person at a time; there is no public sign-up.
+            </p>
+            <a href="#top" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-sm pr-2 text-sm font-medium text-accent">
+              <span className="underline-reveal">Back to top</span>
+              <span aria-hidden="true">↑</span>
+            </a>
+          </div>
+
+          <div id="about" className="creator-card ui-panel bg-background px-6 py-7 sm:px-10 sm:py-9">
             <h2 id="creator-title" className="ui-eyebrow landing-reveal border-b border-line pb-4">
               A note from the founder
             </h2>
-            <div className="creator-layout mt-6">
+            <div className="creator-layout creator-layout-wide mt-6">
               <div className="creator-mark">
                 <Image
                   src="/marketing/tanuj-chakraborty.jpg"
@@ -189,7 +219,7 @@ export function LandingPage({
                   height={1170}
                   unoptimized
                   loading="lazy"
-                  className="aspect-square w-36 max-w-full rounded-2xl border border-hairline object-cover sm:w-44"
+                  className="aspect-square w-32 max-w-full rounded-2xl border border-hairline object-cover sm:w-36"
                 />
               </div>
               <div className="creator-details">
@@ -222,35 +252,6 @@ export function LandingPage({
                 </p>
               </div>
             </div>
-          </div>
-
-          <div>
-            <p className="ui-eyebrow">Your next week starts here</p>
-            <h2 id="access-title" className="landing-heading landing-reveal">
-              Make a plan.
-              <br />
-              Show up.
-            </h2>
-            <p className="mt-4 max-w-md text-sm leading-7 text-stone-600">
-              TrainGrid is invite-only. If you’ve been invited, log in with Google or GitHub using
-              that email address. If not, request an invite: every request is reviewed personally.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/login" className={`${ctaPrimary} group`}>
-                Log in to TrainGrid
-                <span aria-hidden="true" className={ctaArrow}>→</span>
-              </Link>
-              <Link href="/login?request=invite" className={ctaSecondary}>
-                Request an invite
-              </Link>
-            </div>
-            <p className="mt-6 text-xs leading-5 text-stone-600">
-              Access is approved one person at a time; there is no public sign-up.
-            </p>
-            <a href="#top" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-sm pr-2 text-sm font-medium text-accent">
-              <span className="underline-reveal">Back to top</span>
-              <span aria-hidden="true">↑</span>
-            </a>
           </div>
         </div>
       </section>
