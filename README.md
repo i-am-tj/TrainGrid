@@ -4,8 +4,8 @@
 
 <h1 align="center">TrainGrid</h1>
 
-<p align="center"><strong>Plan the week. Own the work.</strong><br />
-A calm, invite-only training planner: your week at a glance, a shared library of routines, and a straight answer to “what am I doing today?”</p>
+<p align="center"><strong>Plan the week. Train with it.</strong><br />
+A calm, invite-only training planner: your week at a glance, a shared library of routines, and each session run on your phone, set by set.</p>
 
 <p align="center">
   <a href="https://github.com/i-am-tj/TrainGrid/releases"><img alt="Release" src="https://img.shields.io/github/v/release/i-am-tj/TrainGrid?include_prereleases&sort=semver&label=release&color=9a4e24" /></a>
@@ -123,6 +123,7 @@ Every release: [What’s new](https://github.com/i-am-tj/TrainGrid/blob/main/CHA
 - **Your plan is yours.** Each member sees and edits only their own sessions and routines, enforced by the database (Row Level Security), not just the app.
 - **A shared library.** TrainGrid routines (runs, lifts, plyometrics, warm-ups, cooldowns) are read-only for everyone. **Copy to My Library** makes an editable copy; the original never changes.
 - **Scheduling copies.** Putting a routine on the calendar copies it into the session, so later edits never rewrite a planned or past session.
+- **Train with the plan.** Start a planned session on your phone and log each set (weight and reps, reps, or a tick). The rest timer starts from the plan’s rest, each exercise shows last time’s numbers, and a summary closes the workout. Sets save on the phone at once and reach TrainGrid when the connection returns; the planned session itself never changes.
 - **Today means your today.** “Today” follows your device’s time zone, on home and in the planner, from the very first page you open.
 - **Your profile.** Your plan in numbers, your data download, appearance, and What’s new, privacy and terms, behind your initials in the header.
 

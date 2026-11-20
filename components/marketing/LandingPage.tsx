@@ -4,6 +4,7 @@ import { btnPrimary, btnSecondary } from "@/lib/ui";
 import {
   AgendaPreview,
   LibraryPreview,
+  LiveWorkoutPreview,
   PlannerPreview,
   WorkoutPreview,
 } from "./ProductPreview";
@@ -12,33 +13,40 @@ const FEATURES = [
   [
     "week",
     "Weekly training planner",
-    "Give every session a place. See Monday through Sunday together, or focus on one day.",
+    "See Monday through Sunday together, or focus on one day. Give a session a start time, or leave it untimed.",
   ],
   [
     "library",
     "A shared workout library",
-    "Find running, strength and plyometrics routines. Browse, filter and make a plan.",
+    "Find running, strength and plyometrics routines. Filter by category, exercise and equipment to fit your setup.",
   ],
   [
     "routine",
     "Routines that feel like yours",
-    "Build a personal routine or copy a TrainGrid favourite. Keep the details that matter to you.",
+    "Build your own or copy a TrainGrid favourite. Each planned session keeps its own copy, so editing a routine never rewrites your week.",
   ],
   [
-    "time",
-    "Your time. Your schedule.",
-    "Set a start time and optional duration, or leave a session untimed. Plans can be flexible.",
+    "lift",
+    "Train it, set by set",
+    "Start a planned session on your phone and log weight and reps as you go. Every set is saved at once, even without signal.",
   ],
   [
-    "snapshot",
-    "A workout of its own",
-    "Every scheduled session keeps an independent snapshot. Edit a routine without rewriting your week.",
+    "rest",
+    "Rest, timed for you",
+    "Log a set and the rest from your plan starts counting down, with the next set lined up. Add time or skip it.",
   ],
   [
-    "equipment",
-    "Find the right fit",
-    "Search by exercise, category and equipment to find a routine that fits your setup.",
+    "lasttime",
+    "Last time, right there",
+    "Each exercise shows what you did last time, so you know what to match or beat. Finish with your time, sets and volume.",
   ],
+] as const;
+
+const WORKOUT_STEPS = [
+  ["Start", "Open a planned session and tap Start workout. The screen stays awake while you train."],
+  ["Log", "Weight and reps, reps only, or a simple tick, set by set. Last time’s numbers are filled in to start from."],
+  ["Rest", "The rest timer starts when you log a set and tells you what’s next."],
+  ["Finish", "See your time, sets and volume, and leave a note for next time."],
 ] as const;
 
 /** Landing calls to action: one height, label and arrow kept together. */
@@ -62,11 +70,12 @@ export function LandingPage({
           <h1 className="mt-5 text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[1.02] tracking-[-0.055em]">
             Plan the week.
             <br />
-            <span className="text-accent">Own the work.</span>
+            <span className="text-accent">Train with it.</span>
           </h1>
           <p className="mt-6 max-w-md text-base leading-7 text-stone-600">
-            A considered home for your training week. Find a routine, put it on
-            the calendar, and know what’s next when it’s time to train.
+            Find a routine and give it a place in your week. When it’s time,
+            start the session on your phone: log every set, rest on a timer,
+            and see what you did last time.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/login" className={`${ctaPrimary} group`}>
@@ -165,6 +174,45 @@ export function LandingPage({
                 03 — Know the planned work
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="workout"
+        tabIndex={-1}
+        className="landing-container landing-section"
+        aria-labelledby="workout-title"
+      >
+        <div className="workout-showcase">
+          <div>
+            <div className="landing-reveal">
+              <p className="ui-eyebrow">When it’s time to train</p>
+              <h2 id="workout-title" className="landing-heading">
+                Start the session.
+                <br />
+                Log every set.
+              </h2>
+              <p className="mt-5 max-w-md text-sm leading-7 text-stone-600">
+                Your planned session becomes a focused, phone-first workout.
+                Progress saves to your phone straight away and to TrainGrid
+                when the connection returns.
+              </p>
+            </div>
+            <ol className="workout-steps mt-8">
+              {WORKOUT_STEPS.map(([title, description]) => (
+                <li key={title}>
+                  <h3 className="text-base font-semibold tracking-tight">{title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-stone-600">{description}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div>
+            <LiveWorkoutPreview />
+            <p className="mt-4 text-center text-xs text-stone-600">
+              04 — Train with the plan
+            </p>
           </div>
         </div>
       </section>

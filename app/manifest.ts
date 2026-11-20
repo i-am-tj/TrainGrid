@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "TrainGrid",
     short_name: "TrainGrid",
-    description: "Plan your training week, keep your routines, and see the week ahead at a glance.",
+    description: "Plan your training week, then run each workout on your phone: log your sets, rest on a timer, and keep going without signal.",
     start_url: "/home",
     scope: "/",
     display: "standalone",

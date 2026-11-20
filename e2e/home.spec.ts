@@ -41,7 +41,8 @@ test.describe("public landing page", () => {
     expect(html).toContain('content="http://127.0.0.1:3010/marketing/og-preview.png"');
 
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Own the work.");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Train with it.");
+    await expect(page.getByRole("heading", { name: /^Start the session\.\s*Log every set\.$/ })).toBeAttached();
     const banner = page.getByRole("banner");
     await expect(banner.getByRole("link", { name: "Log in" }).first()).toHaveAttribute("href", "/login");
     await expect(banner.getByRole("link", { name: "TrainGrid", exact: true })).toHaveAttribute("href", "/");

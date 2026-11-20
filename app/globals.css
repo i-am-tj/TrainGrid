@@ -204,7 +204,7 @@ body {
 }
 
 /* Each section after the hero fills the screen, so section paging lands on whole sections. */
-.landing > :is(#features, #preview, #access) { min-height: 100svh; display: grid; align-content: center; }
+.landing > :is(#features, #preview, #workout, #access) { min-height: 100svh; display: grid; align-content: center; }
 .landing > section[id] { scroll-margin-top: 2rem; }
 html.lenis .landing > section[id] { scroll-margin-top: 0; }
 /* One gutter for every landing section: 1rem a side on phones, growing to 3rem on tablets and small laptops. */
@@ -233,6 +233,24 @@ html.lenis .landing > section[id] { scroll-margin-top: 0; }
 .feature-card:hover { background: var(--surface-elevated); }
 .showcase-grid { display: grid; gap: 2rem; align-items: center; }
 .showcase-agenda { padding: 2rem 1rem; border-radius: 1rem; background: var(--background); }
+/* The live workout screen, drawn at phone size beside its four steps. */
+.workout-showcase { display: grid; gap: 3rem; align-items: center; }
+.workout-steps { display: grid; gap: 1px; border: 1px solid var(--line); border-radius: 1rem; overflow: hidden; background: var(--line); counter-reset: workout-step; }
+.workout-steps > li { display: grid; grid-template-columns: 2.5rem 1fr; gap: 0 1rem; padding: 1.25rem 1.5rem; background: var(--card); counter-increment: workout-step; }
+.workout-steps > li::before { content: "0" counter(workout-step); grid-row: span 2; padding-top: 0.15rem; font-family: var(--font-geist-mono), monospace; font-size: 0.75rem; color: var(--accent); }
+.preview-phone { width: min(100%, 22rem); margin-inline: auto; border-radius: 2rem; }
+.preview-phone-icon { display: grid; width: 1.75rem; height: 1.75rem; place-items: center; border-radius: 999px; font-size: 0.875rem; color: var(--muted); }
+.preview-progress { position: relative; flex: 1; height: 5px; overflow: hidden; border-radius: 999px; background: var(--color-stone-200); }
+.preview-progress > span { position: absolute; inset-block: 0; left: 0; border-radius: inherit; background: var(--accent); }
+.preview-stepper { display: flex; height: 2.5rem; margin-top: 0.25rem; align-items: center; justify-content: space-between; padding-inline: 0.6rem; border: 1px solid var(--color-stone-300); border-radius: 0.75rem; background: var(--color-white); color: var(--muted); }
+.preview-stepper strong { font-size: 1.125rem; font-variant-numeric: tabular-nums; color: var(--foreground); }
+.preview-set-dot { display: grid; width: 1.5rem; height: 1.5rem; flex-shrink: 0; place-items: center; border: 1px solid var(--color-stone-300); border-radius: 999px; font-size: 0.6875rem; font-weight: 600; }
+.preview-set-done { border-color: transparent; background: #047857; color: #fff; }
+.preview-rest-ring { position: relative; display: grid; width: 2.75rem; height: 2.75rem; flex-shrink: 0; place-items: center; }
+.preview-rest-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); fill: none; stroke-width: 4; }
+.preview-rest-ring circle:first-child { stroke: var(--line); }
+.preview-rest-ring circle:last-child { stroke: var(--accent); stroke-linecap: round; }
+.preview-rest-ring strong { font-family: var(--font-geist-mono), monospace; font-size: 0.6875rem; font-variant-numeric: tabular-nums; }
 .creator-card { overflow: hidden; }
 .creator-layout { display: flex; flex-wrap: wrap; gap: 2rem 2.5rem; align-items: center; }
 .creator-mark { display: flex; flex: 0 1 14rem; min-width: 0; margin-inline: auto; justify-content: center; }
@@ -252,6 +270,7 @@ html.lenis .landing > section[id] { scroll-margin-top: 0; }
   .section-intro > .landing-heading { margin-top: 0; }
   .section-intro > p:last-child { justify-self: end; }
   .feature-grid, .showcase-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .workout-showcase { grid-template-columns: minmax(0,1.1fr) minmax(0,0.9fr); gap: 4rem; }
 }
 @media (max-width: 639px) {
   .preview-session span { display: none; }

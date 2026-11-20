@@ -101,7 +101,7 @@ export function AgendaPreview({
           Warm up, find your rhythm, then 6 × 400m.
         </p>
         <span className="mt-4 inline-block text-xs text-accent">
-          Open planned workout ↗
+          Start workout ↗
         </span>
       </div>
       <p className="mt-8 border-t border-line pt-4 text-xs text-stone-600">
@@ -167,5 +167,124 @@ export function WorkoutPreview() {
         Changing the source routine leaves this planned session intact.
       </p>
     </div>
+  );
+}
+
+const LIVE_SETS = [
+  { weight: "82.5", reps: 6, done: true },
+  { weight: "82.5", reps: 6, done: true },
+  { weight: "82.5", reps: 5, done: false },
+  { weight: "82.5", reps: 5, done: false },
+] as const;
+
+/**
+ * The live workout screen (/workout/[id]) mid-session: two sets logged, the
+ * third open, the rest timer running. Static markup in the landing styles;
+ * it shares no code with the real player.
+ */
+export function LiveWorkoutPreview() {
+  const focused = LIVE_SETS.findIndex((set) => !set.done);
+  return (
+    <figure
+      className="preview-phone product-frame"
+      aria-label="Example live workout on a phone: two sets of back squat logged, the third ready to log, last time’s numbers and the rest timer counting down"
+    >
+      <div aria-hidden="true">
+        <div className="flex items-center gap-2 border-b border-line px-3 py-2.5">
+          <span className="preview-phone-icon">×</span>
+          <div className="min-w-0 flex-1 text-center">
+            <p className="truncate text-xs font-semibold">Lower A</p>
+            <p className="text-[10px] text-stone-600">
+              <span className="font-mono tabular-nums">18:42</span> · Saved
+            </p>
+          </div>
+          <span className="preview-phone-icon">≡</span>
+        </div>
+        <div className="flex gap-1 px-3 py-2">
+          {[0.5, 0, 0, 0].map((fill, index) => (
+            <span key={index} className="preview-progress">
+              <span style={{ width: `${fill * 100}%` }} />
+            </span>
+          ))}
+        </div>
+
+        <div className="px-4 pb-4 pt-2">
+          <p className="ui-eyebrow">Exercise 1 of 4</p>
+          <p className="mt-1.5 text-xl font-semibold tracking-tight">Back squat</p>
+          <div className="mt-2 flex flex-wrap gap-1">
+            {["4 × 5–6", "RPE 7–8", "Rest 2 min"].map((chip) => (
+              <span key={chip} className="rounded-full border border-line px-2 py-0.5 text-[10px] text-stone-600">
+                {chip}
+              </span>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-stone-600">
+            Last time <span className="font-semibold tabular-nums text-stone-900">80 kg × 6, 6, 5, 5</span>
+          </p>
+
+          <div className="mt-3 space-y-1.5">
+            {LIVE_SETS.map((set, index) =>
+              index === focused ? (
+                <div key={index} className="rounded-2xl border border-stone-300 bg-card p-3">
+                  <div className="flex items-baseline justify-between text-xs">
+                    <span className="font-semibold">
+                      Set {index + 1} <span className="font-normal text-stone-500">of {LIVE_SETS.length}</span>
+                    </span>
+                    <span className="text-stone-600">Target 5–6</span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {[
+                      ["Weight (kg)", set.weight],
+                      ["Reps", `${set.reps}`],
+                    ].map(([label, value]) => (
+                      <div key={label}>
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-stone-600">{label}</p>
+                        <p className="preview-stepper">
+                          <span>−</span>
+                          <strong>{value}</strong>
+                          <span>+</span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2.5 flex h-10 items-center justify-center gap-1.5 rounded-xl bg-stone-900 text-sm font-semibold text-white">
+                    ✓ Log set
+                  </p>
+                </div>
+              ) : (
+                <p
+                  key={index}
+                  className={`flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-sm tabular-nums ${
+                    set.done ? "bg-emerald-50 font-semibold text-emerald-900" : "text-stone-600"
+                  }`}
+                >
+                  <span className={`preview-set-dot ${set.done ? "preview-set-done" : ""}`}>
+                    {set.done ? "✓" : index + 1}
+                  </span>
+                  {set.weight} kg × {set.reps}
+                  <span className="ml-auto text-[10px] font-normal text-stone-500">{set.done ? "Edit" : ""}</span>
+                </p>
+              ),
+            )}
+          </div>
+        </div>
+
+        <div className="mx-3 mb-3 flex items-center gap-2.5 rounded-2xl border border-line bg-background p-2.5 shadow-sm">
+          <span className="preview-rest-ring">
+            <svg viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="16" />
+              <circle cx="20" cy="20" r="16" pathLength="100" strokeDasharray="100" strokeDashoffset="30" />
+            </svg>
+            <strong>1:24</strong>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-xs font-semibold">Rest</span>
+            <span className="block truncate text-[10px] text-stone-600">Next: set 3 of Back squat</span>
+          </span>
+          <span className="text-xs font-medium tabular-nums text-stone-700">+15</span>
+          <span className="rounded-lg bg-stone-900 px-2.5 py-1.5 text-xs font-semibold text-white">Skip</span>
+        </div>
+      </div>
+    </figure>
   );
 }

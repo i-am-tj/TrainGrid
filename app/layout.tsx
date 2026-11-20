@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   // the deployment origin is not known; Next.js then falls back to the request.
   metadataBase: siteMetadataBase(),
   title: "TrainGrid",
-  description: "A lightweight 7-day training planner and workout reference.",
+  description: "Plan your training week, then run each workout on your phone: log every set, rest on a timer, and see last time’s numbers.",
   applicationName: "TrainGrid",
   // Installed on a phone's home screen: open like an app, titled TrainGrid.
   appleWebApp: { capable: true, title: "TrainGrid", statusBarStyle: "default" },
@@ -44,8 +44,8 @@ export const metadata: Metadata = {
     siteName: "TrainGrid",
     type: "website",
     title: "TrainGrid",
-    description: "Plan the week. Own the work. An invite-only training planner.",
-    images: [{ url: "/marketing/og-preview.png", width: 1200, height: 630, alt: "TrainGrid weekly training planner" }],
+    description: "Plan the week, then train with it. An invite-only training planner and workout log.",
+    images: [{ url: "/marketing/og-preview.png", width: 1200, height: 630, alt: "TrainGrid: an example training week beside a workout being logged on a phone" }],
   },
   twitter: { card: "summary_large_image", images: ["/marketing/og-preview.png"] },
 };
