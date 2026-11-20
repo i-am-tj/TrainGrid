@@ -153,6 +153,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"workout_logs": {
+                  Row: {
+                    "created_at": string,"entries": NonNullable<Json>,"finished_at": string | null,"id": string,"notes": string,"session_id": string,"started_at": string,"status": string,"unit": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"entries"?: NonNullable<Json>,"finished_at"?: string | null,"id"?: string,"notes"?: string,"session_id": string,"started_at"?: string,"status"?: string,"unit"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"entries"?: NonNullable<Json>,"finished_at"?: string | null,"id"?: string,"notes"?: string,"session_id"?: string,"started_at"?: string,"status"?: string,"unit"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "workout_logs_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: true
+      referencedRelation: "scheduled_sessions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "workout_logs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {

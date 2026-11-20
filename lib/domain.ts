@@ -59,6 +59,8 @@ export type PlannerSession = {
   day: IsoDay;
   time: string | null;
   durationMinutes: number | null;
+  /** True once the live workout for this session is finished. */
+  completed?: boolean;
 };
 
 export function isSessionType(value: string): value is SessionType {

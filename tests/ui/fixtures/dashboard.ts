@@ -42,6 +42,8 @@ const ready: DashboardData = {
       detail:
         "Conversational pace. An easy warm-up, steady running and a relaxed cooldown.",
       href: "/session/example-run",
+      workout: "completed",
+      workoutHref: "/workout/example-run",
     },
     {
       id: "example-lift",
@@ -51,6 +53,8 @@ const ready: DashboardData = {
       durationLabel: "60 min",
       detail: "Back squat · Romanian deadlift · Split squat · Core",
       href: "/session/example-lift",
+      workout: "none",
+      workoutHref: "/workout/example-lift",
     },
     {
       id: "example-mobility",

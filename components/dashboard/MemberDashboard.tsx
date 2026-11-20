@@ -226,6 +226,19 @@ export function TodaySessionList({
               {session.timeLabel ?? "No set time"}
               {session.durationLabel ? ` · ${session.durationLabel}` : ""}
             </span>
+            {session.workout === "completed" ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 font-medium text-emerald-900">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+                Done
+              </span>
+            ) : session.workout === "in_progress" ? (
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1 font-medium text-amber-900">
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
+                In progress
+              </span>
+            ) : null}
           </div>
           <h3 className="mt-3 text-lg font-semibold leading-snug tracking-tight [overflow-wrap:anywhere]">
             <Link
@@ -240,16 +253,44 @@ export function TodaySessionList({
               {session.detail}
             </p>
           )}
-          <Link
-            href={session.href}
-            className={`${textLink} mt-4 inline-flex min-h-10 items-center text-sm`}
-            aria-label={`Open session: ${session.name}`}
-          >
-            Open session{" "}
-            <span aria-hidden="true" className="ml-3">
-              ↗
-            </span>
-          </Link>
+          {session.workoutHref ? (
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Link
+                href={session.workoutHref}
+                className={
+                  session.workout === "completed"
+                    ? `${btnSecondary} min-h-12 rounded-xl px-4`
+                    : "workout-log-button ui-control inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold"
+                }
+                aria-label={`${session.workout === "in_progress" ? "Resume" : session.workout === "completed" ? "View" : "Start"} workout: ${session.name}`}
+              >
+                {session.workout === "completed" ? null : (
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="size-3.5" fill="currentColor">
+                    <path d="M8 5.5v13l11-6.5-11-6.5z" />
+                  </svg>
+                )}
+                {session.workout === "in_progress" ? "Resume workout" : session.workout === "completed" ? "View workout" : "Start workout"}
+              </Link>
+              <Link
+                href={session.href}
+                className={`${textLink} inline-flex min-h-10 items-center text-sm`}
+                aria-label={`Session details: ${session.name}`}
+              >
+                Details
+              </Link>
+            </div>
+          ) : (
+            <Link
+              href={session.href}
+              className={`${textLink} mt-4 inline-flex min-h-10 items-center text-sm`}
+              aria-label={`Open session: ${session.name}`}
+            >
+              Open session{" "}
+              <span aria-hidden="true" className="ml-3">
+                ↗
+              </span>
+            </Link>
+          )}
         </li>
       ))}
     </ul>

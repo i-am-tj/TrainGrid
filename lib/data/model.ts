@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import type { EquipmentType, IsoDay, SessionType } from "@/lib/domain";
+import type { WorkoutStatus } from "@/lib/workouts/model";
 
 /** A Supabase client typed against the TrainGrid schema. */
 export type Db = SupabaseClient<Database>;
@@ -59,6 +60,8 @@ export type ScheduledSessionRecord = {
   /** Provenance only; never determines the content. */
   sourceRoutineId: string | null;
   items: SnapshotItem[];
+  /** The live workout for this session: started, finished, or not yet (null). */
+  workoutStatus?: WorkoutStatus | null;
 };
 
 export class DataError extends Error {

@@ -9,6 +9,9 @@ export type DashboardSession = {
   durationLabel: string | null;
   detail: string;
   href: string;
+  /** The live workout for this session. Absent in previews; "none" until started. */
+  workout?: "none" | "in_progress" | "completed";
+  workoutHref?: string;
 };
 export type DashboardDay = {
   date: string;

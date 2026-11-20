@@ -30,7 +30,8 @@ Google or GitHub account that uses it.
 
 Home shows the day ahead and the week around it:
 
-- **Today’s planned sessions**, untimed first, then by start time. Open one to see its full workout.
+- **Today’s planned sessions**, untimed first, then by start time. **Start workout** runs one
+  right away (see below); **Details** shows its full workout.
 - **This week**: how many sessions are planned on each day. Tap a day to open it in the planner.
 - **Quick actions** for the things you do most.
 - **My routines**: your three most recently changed routines, ready to schedule.
@@ -54,6 +55,23 @@ done. You can also hide it with **×**.
   sessions per day are fine.
 - Open a session to **edit**, **reschedule** or **delete** it, or to **customise** its workout for
   that day only.
+
+### Run a workout
+
+Open the gym, open TrainGrid: **Start workout** on today’s session (on Home or the session page).
+
+- One exercise at a time, with what you planned (“4 × 5–6”, the target, the rest) and what you did
+  **last time**.
+- Set the weight and reps with **−** and **+** (or tap the number), then **Log set**. The next set
+  starts with the same numbers, so most sets are one tap.
+- The **rest timer** starts on its own and buzzes (and chimes) when it’s time: **+15**, **−15** or
+  **Skip**. Runs and distances are a tick per set.
+- Swipe, or use the arrows, to move between exercises; the list button shows them all, switches
+  between kg and lb, turns the chime off, or discards the workout.
+- Your screen stays on, and every set is kept on your phone the moment you log it and saved to
+  TrainGrid as soon as there’s signal. Close it any time and **Resume** later.
+- **Finish workout** asks how it felt and shows your time, sets, volume and every exercise. Done
+  sessions get a tick on Home, the session page and the planner.
 
 ## 4. Routines and the library
 

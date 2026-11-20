@@ -47,8 +47,8 @@ Equipment is a tag on a workout item, not a session type.
 | `video_url` | text or null | YouTube link |
 | `sort_order` | integer ≥ 0 | Unique within the routine |
 
-These describe what to **plan**. There are no performed-workout fields (weights lifted, reps done,
-sets completed); those will be separate tables in a later epic.
+These describe what to **plan**. What was actually done (weights lifted, reps, sets completed) is
+recorded separately, per session, in [workout logs](#workout-logs).
 
 ## Scheduled sessions
 
@@ -92,6 +92,46 @@ Array order is display order. `source_item_id` is the routine item this was copi
 for blank sessions and items added later. The database rejects a snapshot that is not an object with
 `version` 1 and an `items` array; the app validates every field with Zod.
 
+## Workout logs
+
+`public.workout_logs`: what the member actually did in a scheduled session (live workouts). One per
+session; deleted with the session or the member. Logging never changes the session’s snapshot.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid | |
+| `user_id` | uuid | Defaults to the caller; members cannot set or change it |
+| `session_id` | uuid, unique | The scheduled session; cannot be changed after insert |
+| `status` | `in_progress` or `completed` | `completed` exactly when `finished_at` is set |
+| `started_at` | timestamptz | When Start was tapped |
+| `finished_at` | timestamptz or null | When Finish was tapped (kept on later edits) |
+| `unit` | `kg` or `lb` | The unit of every weight in the log |
+| `entries` | jsonb, ≤ 200 kB | The performed sets |
+| `notes` | text, ≤ 2000 | “How did it feel?” |
+
+```json
+{
+  "version": 1,
+  "items": [
+    {
+      "item_id": "6c1e…",
+      "name": "Back Squat",
+      "sets": [
+        { "weight": 100, "reps": 6, "done": true },
+        { "weight": 100, "reps": null, "done": false }
+      ]
+    }
+  ]
+}
+```
+
+`item_id` is the snapshot item the sets belong to; `name` is copied so the log reads correctly if the
+session is customised later. Only sets with `done: true` count as performed. Weights are 0–2000 with
+two decimals at most, reps whole numbers 0–1000, at most 30 sets per exercise. How the screen reads
+the plan (“4 × 5–6” is four sets with five reps suggested; “Rest: 2 min” starts a two-minute timer;
+loaded equipment logs weight and reps, bodyweight logs reps, runs and distances log a tick per set)
+lives in `lib/workouts/model.ts`.
+
 ## Membership
 
 `public.profiles`: `id` (the Supabase Auth user id), `display_name`, `avatar_url`, `revoked_at`.
@@ -107,7 +147,7 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
 ```json
 {
   "format": "traingrid-export",
-  "version": 2,
+  "version": 3,
   "exportedAt": "2026-11-13T09:00:00.000Z",
   "routines": [
     {
@@ -127,12 +167,24 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
       "name": "Lower A", "category": "strength", "durationMinutes": null, "notes": "",
       "sourceRoutineId": "…", "items": [ { "id": "…", "sourceItemId": "…", "name": "Back Squat", "…": "…" } ]
     }
+  ],
+  "workoutLogs": [
+    {
+      "id": "…", "sessionId": "…", "status": "completed",
+      "startedAt": "2026-11-09T08:02:11.000Z", "finishedAt": "2026-11-09T08:58:40.000Z",
+      "unit": "kg", "notes": "",
+      "entries": { "version": 1, "items": [
+        { "item_id": "…", "name": "Back Squat", "sets": [ { "weight": 100, "reps": 6, "done": true } ] }
+      ] },
+      "updatedAt": "2026-11-09T08:58:40.000Z"
+    }
   ]
 }
 ```
 
-It contains only the member’s PERSONAL routines and scheduled sessions: no GLOBAL routines, other
-members, invitations, profile or account details. There is no import.
+It contains only the member’s PERSONAL routines, scheduled sessions and workout logs: no GLOBAL
+routines, other members, invitations, profile or account details. There is no import. Version 3
+added `workoutLogs`; versions 1 and 2 had no logs.
 
 ## Seed templates (tooling input)
 

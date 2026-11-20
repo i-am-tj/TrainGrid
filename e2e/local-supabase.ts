@@ -201,9 +201,44 @@ export async function createLocalSessionFor(userId: string, name: string, date: 
   return data.id;
 }
 
+/** A strength session for today with a loaded lift and a bodyweight move (live workout tests). */
+export async function createLocalWorkoutSessionFor(userId: string, name: string, date: string): Promise<string> {
+  const item = (name: string, instruction: string, rest: string, equipment: string[]) => ({
+    id: crypto.randomUUID(),
+    source_item_id: null,
+    name,
+    instruction,
+    rest,
+    target: "",
+    notes: "",
+    equipment,
+    video_url: null,
+  });
+  const { data, error } = await serviceClient()
+    .from("scheduled_sessions")
+    .insert({
+      user_id: userId,
+      date,
+      start_time: null,
+      name,
+      category: "strength",
+      snapshot: {
+        version: 1,
+        items: [
+          item("Bench Press", "2 × 5", "60 sec", ["barbell", "bench"]),
+          item("Push-up", "1 × 10", "", ["bodyweight"]),
+        ],
+      },
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return data.id;
+}
+
 /** Reads rows as the service role, to check what really happened. */
 export async function readRows(
-  table: "routines" | "scheduled_sessions" | "invitations" | "invitation_email_deliveries" | "member_feedback" | "invite_requests",
+  table: "routines" | "scheduled_sessions" | "invitations" | "invitation_email_deliveries" | "member_feedback" | "invite_requests" | "workout_logs",
   filter: Record<string, string>) {
   let query = serviceClient().from(table).select("*");
   for (const [column, value] of Object.entries(filter)) query = query.eq(column, value);

@@ -7,6 +7,21 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Live workouts
+
+- **Take TrainGrid to the gym**: **Start workout** on today’s session (on Home or the session
+  page) and work through it one exercise at a time, on a screen made for a phone in one hand.
+- **One tap per set**: weight and reps start from the plan, your previous set and what you did
+  **last time**; adjust with − and + if you need to, then **Log set**. Bodyweight work logs reps;
+  runs and distances get a tick per set.
+- **Rest timer**: starts on its own from the session’s rest, buzzes and chimes when it’s time,
+  with +15, −15 and Skip.
+- **Never lose a set**: the screen stays on, and every set is kept on your phone at once and saved
+  to TrainGrid as soon as there’s signal. Leave and **Resume** any time.
+- **Finish strong**: a summary of your time, sets, volume and every exercise, with a note on how
+  it felt. Done sessions get a tick on Home, the session page and the planner, and your data
+  download now includes your workouts. Needs migration `20261120020000_workout_logs`.
+
 ### Request an invite
 
 - **No invitation yet? Ask for one**: on the sign-in page (and from “No invitation yet?” and

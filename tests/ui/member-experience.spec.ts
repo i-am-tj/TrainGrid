@@ -82,8 +82,17 @@ test("dashboard preserves prepared counts, times, details and navigation targets
   await expect(page.getByText("No set time", { exact: true })).toBeVisible();
   await expect(page.getByText("07:00 · 45 min")).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Open session: Lower A", exact: true }),
+    page.getByRole("link", { name: "Session details: Lower A", exact: true }),
   ).toHaveAttribute("href", "/session/example-lift");
+  await expect(
+    page.getByRole("link", { name: "Start workout: Lower A", exact: true }),
+  ).toHaveAttribute("href", "/workout/example-lift");
+  await expect(
+    page.getByRole("link", { name: "View workout: Easy morning run", exact: true }),
+  ).toHaveAttribute("href", "/workout/example-run");
+  await expect(
+    page.getByRole("link", { name: "Open session: Keep it moving", exact: true }),
+  ).toHaveAttribute("href", "/session/example-mobility");
   await expect(
     page.getByRole("link", { name: "Schedule routine: Lower A", exact: true }),
   ).toHaveAttribute("href", "/week/current/add?routine=example-lower");
@@ -126,7 +135,7 @@ test("empty day, empty week and missing routines remain distinct", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(`${preview}/dashboard-no-routines.html`);
   await expect(
-    page.getByRole("link", { name: "Open session: Lower A", exact: true }),
+    page.getByRole("link", { name: "Start workout: Lower A", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Create your first routine" }),

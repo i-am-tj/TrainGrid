@@ -11,5 +11,6 @@ export function toPlannerSession(session: ScheduledSessionRecord): PlannerSessio
     day: session.day,
     time: session.startTime,
     durationMinutes: session.durationMinutes,
+    ...(session.workoutStatus === "completed" ? { completed: true } : {}),
   };
 }
