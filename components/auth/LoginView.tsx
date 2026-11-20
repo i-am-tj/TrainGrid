@@ -144,18 +144,18 @@ export function LoginView({
             <p className="mt-8 text-4xl font-semibold leading-[1.12] tracking-tight">
               Plan the week.
               <br />
-              <span className="text-accent">Own the work.</span>
+              <span className="text-accent">Train with it.</span>
             </p>
             <p className="mt-5 text-sm leading-7 text-stone-600">
-              Your calendar, your routines, and a clear answer to “what am I
-              doing today?”
+              Your calendar and your routines, then each session on your
+              phone: every set logged, rest timed, last time in view.
             </p>
           </div>
           <ol className="space-y-4 text-sm">
             {[
               "Browse routines",
               "Plan your week",
-              "Open a planned workout",
+              "Train it, set by set",
             ].map((step, i) => (
               <li
                 key={step}

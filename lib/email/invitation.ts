@@ -33,8 +33,8 @@ export function renderInvitationEmail({
   const href = escapeHtml(url.href);
   const subject = "You’re invited to TrainGrid";
   const preheader =
-    "Your training week, thoughtfully together. Join invite-only early access.";
-  const text = `${subject}\n\nPlan the week. Own the work.\n\nTrainGrid brings your weekly training planner, shared workout library and personal routines together.\n\nYou’re invited using: ${email}\n\nOpen TrainGrid: ${url.href}\n\nSign in with the Google or GitHub account whose verified email matches ${email}. There’s no separate TrainGrid password.\n\nTrainGrid is in invite-only early access. If you weren’t expecting this invitation, you can ignore it.\n\nTrainGrid · A clear plan. Space to train.`;
+    "Plan your training week, then train with it on your phone. Join invite-only early access.";
+  const text = `${subject}\n\nPlan the week. Train with it.\n\nTrainGrid brings your weekly training planner, shared workout library and personal routines together, then runs each workout on your phone: log every set, rest on a timer and see last time’s numbers.\n\nYou’re invited using: ${email}\n\nOpen TrainGrid: ${url.href}\n\nSign in with the Google or GitHub account whose verified email matches ${email}. There’s no separate TrainGrid password.\n\nTrainGrid is in invite-only early access. If you weren’t expecting this invitation, you can ignore it.\n\nTrainGrid · A clear plan. Space to train.`;
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>${escapeHtml(subject)}</title>
 <style>@media only screen and (max-width:600px){.email-pad{padding:28px 20px!important}.email-heading{font-size:30px!important}}</style></head>
@@ -47,8 +47,8 @@ export function renderInvitationEmail({
 <tr><td class="email-pad" style="padding:16px 40px 40px">
 <p style="margin:0 0 16px;color:#9a4e24;font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase">A clear plan. Space to train.</p>
 <h1 class="email-heading" style="margin:0 0 20px;font-size:36px;line-height:1.15;letter-spacing:-1px">You’re invited to TrainGrid.</h1>
-<p style="margin:0 0 16px;font-size:16px;line-height:26px">Plan the week. Own the work.</p>
-<p style="margin:0 0 24px;font-size:14px;line-height:24px;color:#57534e">Your weekly training planner, shared workout library and personal routines, thoughtfully together.</p>
+<p style="margin:0 0 16px;font-size:16px;line-height:26px">Plan the week. Train with it.</p>
+<p style="margin:0 0 24px;font-size:14px;line-height:24px;color:#57534e">Your weekly training planner, shared workout library and personal routines, together. When it’s time to train, run the workout on your phone: log every set, rest on a timer and see last time’s numbers.</p>
 <p style="margin:0 0 24px;padding:16px;border:1px solid #e7e0d4;border-radius:8px;font-size:14px;line-height:24px;word-break:break-all">Invited email<br><strong>${escapeHtml(email)}</strong></p>
 <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td bgcolor="#1c1917" style="border-radius:8px;mso-padding-alt:14px 24px"><a href="${href}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:14px 24px;border:1px solid #1c1917;border-radius:8px;color:#fffcf7;font-size:14px;font-weight:bold;text-decoration:none">Open TrainGrid &#8599;</a></td></tr></table>
 <p style="margin:24px 0 0;font-size:14px;line-height:24px;color:#57534e">Sign in with the Google or GitHub account whose verified email matches <strong style="word-break:break-all">${escapeHtml(email)}</strong>. There’s no separate TrainGrid password.</p>

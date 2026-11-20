@@ -14,6 +14,8 @@ describe("invitation email presentation", () => {
       expect(body).toContain("Google or GitHub");
       expect(body).toContain("verified email");
       expect(body).toContain("invite-only early access");
+      expect(body).toContain("Plan the week. Train with it.");
+      expect(body).toContain("log every set");
       expect(body).toContain("https://traingrid.example.test/login");
     }
     expect(email.html).toContain(
