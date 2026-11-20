@@ -43,9 +43,14 @@ for (const theme of ["light", "dark"] as const) {
         theme === "dark",
       );
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-        "Plan the week.Own the work.",
+        "Plan the week.Train with it.",
       );
       await expect(page.locator("#features article")).toHaveCount(6);
+      await expect(page.locator("#workout ol > li")).toHaveCount(4);
+      // The phone-sized workout preview never pushes past its column.
+      const phone = (await page.locator(".preview-phone").boundingBox())!;
+      expect(phone.x).toBeGreaterThanOrEqual(0);
+      expect(phone.x + phone.width).toBeLessThanOrEqual(width!);
       await expect(
         page.getByRole("link", { name: "Explore features" }),
       ).toHaveAttribute("href", "#features");
@@ -125,6 +130,39 @@ test("semantic navigation, focus, public-only content and feature anchor", async
     page.getByRole("link", { name: "Log in", exact: true }).first(),
   ).toHaveAttribute("href", "/login");
   await expect(page.getByText("Example training week")).toBeVisible();
+});
+
+test("the workout section shows the live workout screen as a labelled example", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("http://ui-preview.test/");
+  const section = page.getByRole("region", { name: /^Start the session\.\s*Log every set\.$/ });
+  await section.scrollIntoViewIfNeeded();
+  for (const step of ["Start", "Log", "Rest", "Finish"]) {
+    await expect(section.getByRole("heading", { name: step, exact: true })).toBeVisible();
+  }
+  const preview = section.getByRole("figure", { name: /^Example live workout on a phone/ });
+  await expect(preview).toBeVisible();
+  // The drawing is decorative: the figure's label is all assistive technology reads,
+  // so the static "Log set" is never mistaken for a working button.
+  await expect(preview.getByRole("button")).toHaveCount(0);
+  await expect(preview.getByText("Last time")).toBeVisible();
+  for (const theme of ["light", "dark"] as const) {
+    await page.evaluate(
+      (dark) => document.documentElement.classList.toggle("dark", dark),
+      theme === "dark",
+    );
+    for (const width of [320, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await section.scrollIntoViewIfNeeded();
+      await mkdir("docs/images/live-workouts", { recursive: true });
+      await section.screenshot({
+        path: `docs/images/live-workouts/landing-workout-${width}-${theme}.png`,
+        animations: "disabled",
+      });
+    }
+  }
 });
 
 test("mobile public menu retains native no-JavaScript access", async ({
