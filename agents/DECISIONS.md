@@ -1,6 +1,6 @@
 # Decisions
 
-Last updated: 2026-11-18
+Last updated: 2026-11-20
 
 The decisions that still shape TrainGrid, one line each, grouped by area. IDs are kept so older
 records and commits still resolve. The full history (every proposal, its reasoning, and the
@@ -35,8 +35,8 @@ superseded or one-off decisions left out here) is in
 | ID | Decision |
 | --- | --- |
 | D-03, D-15 | Scheduling copies the routine into the session (a versioned snapshot); later edits never rewrite a session. |
-| D-04A | TrainGrid plans training; it does not log performance (Strava and Hevy do that). |
-| D-06, D-56 | Members export their own data (`traingrid-export` v2). There is no hosted import. |
+| V1-11 | **Live workouts** (2026-11-20, replaces D-04A “plans, does not log”): a scheduled session can be started at `/workout/[id]`, its sets logged (weight and reps, reps, or a tick) with a rest timer, and finished. One `workout_logs` row per session (unique `session_id`), the sets in a versioned JSON document like the snapshot; the planned snapshot is never changed by logging. Strictly the member's own rows under RLS with `is_member()`; owner defaults to the caller and cannot be set. The screen reads the plan's text (“4 × 5–6”, “Rest: 2 min”, equipment) in `lib/workouts/model.ts`; no new item fields. Progress saves to the phone at once and to the server shortly after, retrying when the connection returns. |
+| D-06, D-56 | Members export their own data (`traingrid-export` v3, with workout logs since V1-11). There is no hosted import. |
 | D-12, D-54, D-55 | Sessions store a calendar `date` (no time zone) and an optional start time on the hour or half hour. |
 | E2-D01, E2-D03 | The library shows All / TrainGrid / Mine. Shared routines are seeded from `data/templates/` and read-only; members copy them to edit. |
 | E3-I01, E3-I02 | `/` is the public landing page for everyone; route groups choose the shell (marketing, app, info). |

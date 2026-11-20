@@ -10,6 +10,7 @@ import {
   type SnapshotItem,
 } from "./model";
 import { snapshotSchema, type SnapshotDoc, type workoutItemInputSchema } from "./schemas";
+import type { WorkoutStatus } from "@/lib/workouts/model";
 
 /** Pure conversions between database rows and the app's types. */
 
@@ -32,7 +33,10 @@ type SessionRow = Pick<
   | "notes"
   | "source_routine_id"
   | "snapshot"
->;
+> & {
+  /** Embedded when the query asks for it (one log per session). */
+  workout_logs?: { status: string } | Array<{ status: string }> | null;
+};
 
 type ParsedItem = z.output<typeof workoutItemInputSchema>;
 
@@ -76,6 +80,12 @@ export function parseSnapshot(value: Json): SnapshotDoc {
   return parsed.data;
 }
 
+function workoutStatus(value: SessionRow["workout_logs"]): WorkoutStatus | null {
+  const log = Array.isArray(value) ? value[0] : value;
+  if (!log) return null;
+  return log.status === "completed" ? "completed" : "in_progress";
+}
+
 export function sessionFromRow(row: SessionRow): ScheduledSessionRecord {
   const { weekId, day } = weekDayOfDate(row.date);
   return {
@@ -89,6 +99,7 @@ export function sessionFromRow(row: SessionRow): ScheduledSessionRecord {
     durationMinutes: row.duration_minutes,
     notes: row.notes,
     sourceRoutineId: row.source_routine_id,
+    ...(row.workout_logs !== undefined ? { workoutStatus: workoutStatus(row.workout_logs) } : {}),
     items: parseSnapshot(row.snapshot).items.map(
       (item): SnapshotItem => ({
         id: item.id,

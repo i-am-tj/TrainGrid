@@ -38,7 +38,7 @@ import { validate } from "./validate";
  */
 
 const SESSION_COLUMNS =
-  "id, date, start_time, name, category, duration_minutes, notes, source_routine_id, snapshot";
+  "id, date, start_time, name, category, duration_minutes, notes, source_routine_id, snapshot, workout_logs(status)";
 
 const NOT_FOUND = () => new DataError("not_found", "Session not found.");
 

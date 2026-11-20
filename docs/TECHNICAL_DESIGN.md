@@ -67,7 +67,8 @@ profiles.id ── revoked_at
       ├── routines.owner_user_id          (PERSONAL; GLOBAL routines have none)
       │       └── workout_items.routine_id
       └── scheduled_sessions.user_id
-              └── snapshot (jsonb copy of the workout)
+              ├── snapshot (jsonb copy of the workout)
+              └── workout_logs.session_id   (one per session: the sets actually done)
 
 invitations (email, invited_by, accepted_at, accepted_by, revoked_at)
       └── invitation_email_deliveries (one row per send attempt; service role only)
@@ -82,6 +83,7 @@ member_feedback (user_id, kind, message, page_path; insert-only for members)
 | `routines` | `scope` (`GLOBAL`/`PERSONAL`), `owner_user_id`, `slug`, `name`, `category`, `description` | Check constraint: GLOBAL ⇔ no owner. Only GLOBAL routines have slugs. |
 | `workout_items` | `routine_id`, `name`, `instruction`, `rest`, `target`, `notes`, `equipment[]`, `video_url`, `sort_order` | Planned fields only — no performed-workout data. Access follows the routine. |
 | `scheduled_sessions` | `user_id`, `date`, `start_time`, `name`, `category`, `duration_minutes`, `notes`, `source_routine_id`, `snapshot` | `source_routine_id` is provenance only and is cleared if the routine is deleted. |
+| `workout_logs` | `user_id` (defaults to the caller), `session_id` (unique), `status`, `started_at`, `finished_at`, `unit`, `entries` | Strictly the member's own rows, active members only. `session_id` must be the caller's session and cannot be changed; deleted with the session. |
 | `invitation_email_deliveries` | `invitation_id`, `status` (`preparing`/`accepted`/`failed`), `failure_code`, `provider_message_id` | Closed to API roles; written by admin actions with the secret key. |
 | `member_feedback` | `user_id` (defaults to the caller), `kind`, `message`, `page_path` | Members may insert their own rows only (column grant + RLS), at most 10 per 24 h; nobody reads it through the API. |
 
@@ -98,8 +100,9 @@ A scheduled session always holds its own copy of the workout:
 - Customising a session rewrites only that session’s snapshot; items keep their ids where they
   already belong to the snapshot.
 
-Item ids are stable UUIDs so a future exercise catalogue and performed-workout logs can refer to them
-without changing this model.
+Item ids are stable UUIDs, so a workout log refers to the snapshot item each set belongs to, and a
+future exercise catalogue can too, without changing this model. “Last time” matches exercises by
+name across the member's recent completed workouts.
 
 ## Code structure
 

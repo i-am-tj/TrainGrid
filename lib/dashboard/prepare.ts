@@ -140,6 +140,8 @@ export function prepareDashboardWeek(
         durationLabel: formatDuration(record.durationMinutes),
         detail: sessionDetail(record),
         href: `/session/${encodeURIComponent(record.id)}`,
+        workout: record.workoutStatus ?? "none",
+        workoutHref: `/workout/${encodeURIComponent(record.id)}`,
       }),
     );
 

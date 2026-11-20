@@ -148,7 +148,7 @@ test("D10, D12: export holds only my data; there is no import", async ({ page })
   await download.saveAs(path);
   const data = JSON.parse(readFileSync(path, "utf8"));
 
-  expect(data).toMatchObject({ format: "traingrid-export", version: 2 });
+  expect(data).toMatchObject({ format: "traingrid-export", version: 3 });
   expect(data.routines.map((r: { name: string }) => r.name)).toEqual(["My Export Routine"]);
   expect(data.sessions.map((s: { name: string }) => s.name)).toEqual(["Lower A"]);
   expect(JSON.stringify(data)).not.toMatch(/invitation|revoked_at|@example\.test/);

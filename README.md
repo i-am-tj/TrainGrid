@@ -20,7 +20,8 @@ A calm, invite-only training planner: your week at a glance, a shared library of
   </picture>
 </p>
 
-TrainGrid is **not** a workout logger. It plans training; keep Strava or Hevy for recording it.
+TrainGrid plans the week **and** goes to the gym with you: start a session on your phone, log each
+set’s weight and reps, rest between sets on a timer, and finish with a summary.
 
 ---
 

@@ -622,7 +622,7 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
   describe("export", () => {
     it("D10: contains only the caller's own routines and sessions", async () => {
       const data = await exportUserData(a.db, a.id);
-      expect(data).toMatchObject({ format: "traingrid-export", version: 2 });
+      expect(data).toMatchObject({ format: "traingrid-export", version: 3 });
 
       const allA = await service().from("scheduled_sessions").select("id").eq("user_id", a.id);
       expect(data.sessions.map((s) => s.id).sort()).toEqual(allA.data!.map((r) => r.id).sort());

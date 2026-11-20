@@ -399,3 +399,45 @@ html.lenis .landing > section[id] { scroll-margin-top: 0; }
 }
 .profile-stat { transition: color var(--motion-fast) var(--ease-ui); }
 .profile-stat:hover { color: var(--accent); }
+
+/*
+ * Live workout (components/workout). Full screen: the site footer steps aside,
+ * and the primary action is the copper accent so it reads at arm's length.
+ */
+body:has(.workout-screen) > footer { display: none; }
+.focus-main { min-width: 0; }
+.workout-screen { overflow-wrap: anywhere; -webkit-tap-highlight-color: transparent; }
+.workout-log-button {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 18px -8px color-mix(in oklab, var(--accent) 70%, transparent);
+  transition: transform var(--motion-fast) var(--ease-ui), filter var(--motion-fast) var(--ease-ui), background-color var(--motion-fast) var(--ease-ui);
+}
+:root.dark .workout-log-button { color: #1b1410; }
+.workout-log-button:hover { filter: brightness(1.06); }
+.workout-log-button:active { transform: scale(0.98); }
+.workout-log-button:disabled { filter: saturate(0.4); box-shadow: none; }
+.workout-done-dot { background: #059669; }
+.workout-progress-fill { background: var(--accent); transition: width var(--motion-standard) var(--ease-ui); }
+.workout-stepper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent); }
+.workout-set-editor { animation: workout-pop 220ms var(--ease-ui) both; }
+.workout-complete-note { background: color-mix(in oklab, #059669 12%, var(--card)); color: var(--foreground); }
+.workout-exercise { animation: workout-slide-next 280ms var(--ease-ui) both; }
+.workout-exercise[data-direction="-1"] { animation-name: workout-slide-prev; }
+.workout-rest { animation: workout-rise 260ms var(--ease-ui) both; border-color: color-mix(in oklab, var(--accent) 30%, var(--line)); }
+.workout-rest-over { background: color-mix(in oklab, var(--accent) 14%, var(--card)); }
+.workout-rest-ring { transition: stroke-dashoffset 250ms linear; }
+.workout-trophy {
+  color: var(--accent);
+  background: radial-gradient(120% 120% at 30% 20%, color-mix(in oklab, var(--accent) 24%, var(--card)), color-mix(in oklab, var(--accent) 8%, var(--card)));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 35%, transparent), 0 10px 30px -12px color-mix(in oklab, var(--accent) 60%, transparent);
+}
+.workout-celebrate { animation: enter-ui 420ms var(--ease-ui) both; }
+@keyframes workout-slide-next { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes workout-slide-prev { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes workout-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes workout-pop { from { opacity: 0.4; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .workout-exercise, .workout-rest, .workout-set-editor, .workout-celebrate { animation: none; }
+  .workout-log-button, .workout-progress-fill, .workout-rest-ring { transition: none; }
+}

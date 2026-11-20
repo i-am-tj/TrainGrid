@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   alternates: canonicalUrl("/privacy") ? { canonical: canonicalUrl("/privacy")! } : undefined,
 };
 
-const UPDATED = "19 November 2026";
+const UPDATED = "20 November 2026";
 
 /**
  * The privacy notice. Written from what the code and database actually do;
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         </p>
       }
       summary={[
-        "TrainGrid stores only what it needs to plan your training: your sign-in details and the sessions, routines and notes you create.",
+        "TrainGrid stores only what it needs to plan and run your training: your sign-in details, the sessions, routines and notes you create, and the workouts you log.",
         "Your plan is private to you. Nobody else can see it, including other members.",
         "There are no adverts, no analytics trackers and no selling of data. Ever.",
         "You can export everything as a file at any time, and ask for it all to be deleted.",
@@ -54,7 +54,8 @@ export default function PrivacyPage() {
               </p>
               <p>
                 <strong>Your training.</strong> The sessions you plan (name, date, time, duration,
-                notes and workout items) and the routines you create or copy.
+                notes and workout items), the routines you create or copy, and the workouts you log:
+                when you started and finished, the weight and reps of each set, and any note you add.
               </p>
               <p>
                 <strong>Feedback you send.</strong> Your message, its kind (idea, problem or praise)
@@ -162,7 +163,7 @@ export default function PrivacyPage() {
               <ul>
                 <li>
                   <strong>Take it with you:</strong> <em>Download my data</em> on your profile downloads your
-                  routines and sessions as a file, whenever you like.
+                  routines, sessions and logged workouts as a file, whenever you like.
                 </li>
                 <li>
                   <strong>Delete it:</strong> ask through {contact} and your account and everything in
