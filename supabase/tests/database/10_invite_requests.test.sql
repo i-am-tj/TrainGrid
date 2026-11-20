@@ -3,7 +3,7 @@
 
 begin;
 
-select plan(27);
+select plan(29);
 
 -- ---------------------------------------------------------------------------
 -- Privileges: nothing through the API
@@ -29,6 +29,8 @@ select ok(
   has_function_privilege('service_role', 'public.request_invite(text, text, text, text)', 'execute'),
   'the server (service role) can call request_invite'
 );
+select ok(has_table_privilege('service_role', 'public.invite_requests', 'select'), 'the server can list requests');
+select ok(has_table_privilege('service_role', 'public.invite_requests', 'update'), 'the server can resolve requests');
 
 -- ---------------------------------------------------------------------------
 -- Requests (as the service role, as the server does)

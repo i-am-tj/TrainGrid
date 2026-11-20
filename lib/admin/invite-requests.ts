@@ -30,8 +30,12 @@ export async function listPendingInviteRequests(): Promise<InviteRequestRow[]> {
     .eq("status", "pending")
     .order("created_at", { ascending: true })
     .limit(200);
-  // The table may not exist yet while a release rolls out: show no requests.
-  if (error || data.length === 0) return [];
+  if (error) {
+    // Logged so a missing grant or table is visible, not just an empty list.
+    console.error("invite requests not listed", { code: error.code });
+    return [];
+  }
+  if (data.length === 0) return [];
 
   // Live invitations resolve requests (trigger), so any earlier one here is revoked.
   const earlier = await db
@@ -54,6 +58,7 @@ export async function countPendingInviteRequests(): Promise<number> {
     .from("invite_requests")
     .select("id", { count: "exact", head: true })
     .eq("status", "pending");
+  if (error) console.error("invite requests not counted", { code: error.code });
   return error ? 0 : (count ?? 0);
 }
 
