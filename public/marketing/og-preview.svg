@@ -17,9 +17,10 @@
 <text x="120" y="85" fill="#1c1917" font-family="Arial,sans-serif" font-size="26" font-weight="700">TrainGrid</text>
 <text x="64" y="218" fill="#9a4e24" font-family="Arial,sans-serif" font-size="14" letter-spacing="3">A CLEAR PLAN. SPACE TO TRAIN.</text>
 <text x="60" y="309" fill="#1c1917" font-family="Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Plan the week.</text>
-<text x="60" y="393" fill="#9a4e24" font-family="Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Own the work.</text>
-<text x="64" y="452" fill="#57534e" font-family="Arial,sans-serif" font-size="21">Your training week, thoughtfully together.</text>
-<text x="64" y="563" fill="#57534e" font-family="Arial,sans-serif" font-size="14">WEEKLY PLANNER  /  WORKOUT LIBRARY  /  PERSONAL ROUTINES</text>
+<text x="60" y="393" fill="#9a4e24" font-family="Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Train with it.</text>
+<text x="64" y="452" fill="#57534e" font-family="Arial,sans-serif" font-size="21">Plan your week, then run each session on your phone.</text>
+<text x="64" y="563" fill="#57534e" font-family="Arial,sans-serif" font-size="14">WEEKLY PLANNER  /  WORKOUT LIBRARY  /  LIVE WORKOUTS</text>
+<g transform="translate(-70 -40)">
 <rect x="680" y="156" width="460" height="330" rx="18" fill="#fffcf7" stroke="#e7e0d4"/>
 <text x="704" y="192" fill="#1c1917" font-family="Arial,sans-serif" font-size="17" font-weight="700">Your week, at a glance.</text>
 <text x="704" y="218" fill="#57534e" font-family="Arial,sans-serif" font-size="11">EXAMPLE TRAINING WEEK</text>
@@ -27,5 +28,38 @@
 <g font-family="Arial,sans-serif" font-size="10" fill="#57534e" text-anchor="middle"><text x="730" y="237">MON</text><text x="790" y="237">TUE</text><text x="850" y="237">WED</text><text x="910" y="237">THU</text><text x="970" y="237">FRI</text><text x="1030" y="237">SAT</text><text x="1090" y="237">SUN</text></g>
 <g fill="#eaf3f8"><rect x="704" y="257" width="52" height="75" rx="4"/><rect x="824" y="257" width="52" height="75" rx="4"/><rect x="1004" y="270" width="52" height="125" rx="4"/></g><g fill="#f8eddb"><rect x="764" y="347" width="52" height="75" rx="4"/><rect x="884" y="347" width="52" height="75" rx="4"/></g><rect x="944" y="315" width="52" height="60" rx="4" fill="#e6f2eb"/>
 <g font-family="Arial,sans-serif" fill="#1c1917" font-size="9"><text x="709" y="281">Easy run</text><text x="829" y="281">Intervals</text><text x="769" y="372">Lower A</text><text x="889" y="372">Upper A</text><text x="949" y="340">Plyo</text><text x="1009" y="294">Long run</text></g>
+</g>
+<defs><filter id="lift" x="-20%" y="-10%" width="140%" height="130%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1c1917" flood-opacity="0.14"/></filter></defs>
+<g font-family="Arial,sans-serif" transform="translate(-10 0)">
+<rect x="940" y="196" width="210" height="400" rx="30" fill="#fffcf7" stroke="#e7e0d4" filter="url(#lift)"/>
+<text x="1045" y="228" text-anchor="middle" font-size="13" font-weight="700" fill="#1c1917">Lower A</text>
+<text x="1045" y="244" text-anchor="middle" font-size="10" fill="#57534e">18:42 · Saved</text>
+<path d="M940 256h210" stroke="#e7e0d4"/>
+<g fill="#e7e0d4"><rect x="956" y="266" width="41" height="4" rx="2"/><rect x="1001" y="266" width="41" height="4" rx="2"/><rect x="1046" y="266" width="41" height="4" rx="2"/><rect x="1091" y="266" width="41" height="4" rx="2"/></g>
+<rect x="956" y="266" width="20" height="4" rx="2" fill="#9a4e24"/>
+<text x="956" y="294" font-size="9" font-weight="700" letter-spacing="1.5" fill="#9a4e24">EXERCISE 1 OF 4</text>
+<text x="956" y="316" font-size="18" font-weight="700" fill="#1c1917">Back squat</text>
+<text x="956" y="336" font-size="10" fill="#57534e">Last time <tspan font-weight="700" fill="#1c1917">80 kg × 6, 6, 5, 5</tspan></text>
+<g><rect x="952" y="346" width="186" height="26" rx="8" fill="#e6f2eb"/><rect x="952" y="376" width="186" height="26" rx="8" fill="#e6f2eb"/>
+<circle cx="967" cy="359" r="8" fill="#047857"/><circle cx="967" cy="389" r="8" fill="#047857"/>
+<path d="m963 359 3 3 5-6m-8 33 3 3 5-6" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="982" y="363" font-size="11" font-weight="700" fill="#064e3b">82.5 kg × 6</text><text x="982" y="393" font-size="11" font-weight="700" fill="#064e3b">82.5 kg × 6</text></g>
+<rect x="952" y="408" width="186" height="96" rx="12" fill="#fffcf7" stroke="#d6cfc4"/>
+<text x="964" y="426" font-size="10" font-weight="700" fill="#1c1917">Set 3 <tspan font-weight="400" fill="#57534e">of 4</tspan></text>
+<text x="1126" y="426" text-anchor="end" font-size="10" fill="#57534e">Target 5–6</text>
+<rect x="964" y="436" width="78" height="28" rx="8" fill="#fff" stroke="#d6cfc4"/><rect x="1048" y="436" width="78" height="28" rx="8" fill="#fff" stroke="#d6cfc4"/>
+<g font-size="12" fill="#57534e"><text x="972" y="454">−</text><text x="1031" y="454">+</text><text x="1056" y="454">−</text><text x="1115" y="454">+</text></g>
+<text x="1003" y="455" text-anchor="middle" font-size="14" font-weight="700" fill="#1c1917">82.5</text><text x="1087" y="455" text-anchor="middle" font-size="14" font-weight="700" fill="#1c1917">5</text>
+<rect x="964" y="472" width="162" height="24" rx="8" fill="#1c1917"/>
+<text x="1045" y="488" text-anchor="middle" font-size="11" font-weight="700" fill="#fffcf7">✓ Log set</text>
+<rect x="950" y="520" width="190" height="56" rx="14" fill="#f4f1ea" stroke="#e7e0d4"/>
+<circle cx="977" cy="548" r="15" fill="none" stroke="#e7e0d4" stroke-width="3.5"/>
+<circle cx="977" cy="548" r="15" fill="none" stroke="#9a4e24" stroke-width="3.5" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="30" transform="rotate(-90 977 548)"/>
+<text x="977" y="551" text-anchor="middle" font-size="9" font-weight="700" fill="#1c1917">1:24</text>
+<text x="1000" y="545" font-size="11" font-weight="700" fill="#1c1917">Rest</text>
+<text x="1000" y="560" font-size="9" fill="#57534e">Next: set 3</text>
+<rect x="1088" y="536" width="42" height="24" rx="7" fill="#1c1917"/>
+<text x="1109" y="552" text-anchor="middle" font-size="10" font-weight="700" fill="#fffcf7">Skip</text>
+</g>
 <rect x="940" y="57" width="200" height="30" rx="7" fill="none" stroke="#e7e0d4"/><text x="1040" y="77" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#57534e">INVITE-ONLY EARLY ACCESS</text>
 </svg>

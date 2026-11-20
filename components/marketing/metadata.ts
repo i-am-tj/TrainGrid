@@ -14,7 +14,7 @@ export const landingMetadata: Metadata = {
         url: "/marketing/og-preview.png",
         width: 1200,
         height: 630,
-        alt: "TrainGrid: Plan the week. Own the work. Example weekly training planner.",
+        alt: "TrainGrid: Plan the week. Train with it. An example training week beside a workout being logged on a phone.",
       },
     ],
   },

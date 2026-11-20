@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     type: "website",
     title: "TrainGrid",
     description: "Plan the week, then train with it. An invite-only training planner and workout log.",
-    images: [{ url: "/marketing/og-preview.png", width: 1200, height: 630, alt: "TrainGrid weekly training planner" }],
+    images: [{ url: "/marketing/og-preview.png", width: 1200, height: 630, alt: "TrainGrid: an example training week beside a workout being logged on a phone" }],
   },
   twitter: { card: "summary_large_image", images: ["/marketing/og-preview.png"] },
 };
