@@ -255,3 +255,63 @@ export async function linkSessionToRoutine(sessionId: string, routineId: string)
     .eq("id", sessionId);
   if (error) throw new Error(error.message);
 }
+
+/** Gives a local member a social profile directly (test fixture). New profiles are private unless asked. */
+export async function createLocalSocialProfile(
+  userId: string,
+  fields: { username: string; displayName: string; bio?: string; visibility?: "public" | "private" },
+) {
+  const { error } = await serviceClient()
+    .from("social_profiles")
+    .insert({
+      user_id: userId,
+      username: fields.username,
+      display_name: fields.displayName,
+      bio: fields.bio ?? "",
+      visibility: fields.visibility ?? "private",
+    });
+  if (error) throw new Error(`Could not create social profile: ${error.message}`);
+}
+
+/** A follow between two local members, approved or pending (test fixture). */
+export async function createLocalFollow(followerId: string, followeeId: string, status: "accepted" | "pending" = "accepted") {
+  const db = serviceClient();
+  const inserted = await db.from("follows").insert({ follower_id: followerId, followee_id: followeeId });
+  if (inserted.error) throw new Error(`Could not create follow: ${inserted.error.message}`);
+  // The database decides the status from the profile's visibility; fix it up as asked.
+  const updated = await db
+    .from("follows")
+    .update({ status, accepted_at: status === "accepted" ? new Date().toISOString() : null })
+    .eq("follower_id", followerId)
+    .eq("followee_id", followeeId);
+  if (updated.error) throw new Error(`Could not set follow status: ${updated.error.message}`);
+}
+
+/** A session post by a member about one of their own sessions; the database copies the summary. */
+export async function createLocalPostFor(
+  userId: string,
+  sessionId: string,
+  caption: string,
+  showsDuration = false,
+  createdAt?: string,
+) {
+  const { data, error } = await serviceClient()
+    .from("session_posts")
+    .insert({
+      author_id: userId,
+      session_id: sessionId,
+      caption,
+      shows_duration: showsDuration,
+      ...(createdAt ? { created_at: createdAt } : {}),
+    } as never)
+    .select("id")
+    .single();
+  if (error) throw new Error(`Could not create post: ${error.message}`);
+  return (data as { id: string }).id;
+}
+
+/** Revokes a local member's access, as an admin would (data kept). */
+export async function revokeLocalMember(userId: string) {
+  const { error } = await serviceClient().from("profiles").update({ revoked_at: new Date().toISOString() }).eq("id", userId);
+  if (error) throw new Error(`Could not revoke member: ${error.message}`);
+}
