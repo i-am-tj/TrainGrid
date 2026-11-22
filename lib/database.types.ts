@@ -5,7 +5,33 @@ export type Database = {
   
   "public": {
           Tables: {
-            "invitation_email_deliveries": {
+            "follows": {
+                  Row: {
+                    "accepted_at": string | null,"created_at": string,"followee_id": string,"follower_id": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "accepted_at"?: string | null,"created_at"?: string,"followee_id": string,"follower_id"?: string,"status"?: string
+                  }
+                  Update: {
+                    "accepted_at"?: string | null,"created_at"?: string,"followee_id"?: string,"follower_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "follows_followee_id_fkey"
+      columns: ["followee_id"]
+isOneToOne: false
+      referencedRelation: "social_profiles"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "follows_follower_id_fkey"
+      columns: ["follower_id"]
+isOneToOne: false
+      referencedRelation: "social_profiles"
+      referencedColumns: ["user_id"]
+    }
+                  ]
+                },"invitation_email_deliveries": {
                   Row: {
                     "created_at": string,"failure_code": string | null,"finished_at": string | null,"id": string,"invitation_id": string,"provider": string,"provider_message_id": string | null,"requested_by": string | null,"status": string
                   }
@@ -133,6 +159,52 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"session_posts": {
+                  Row: {
+                    "author_id": string,"caption": string,"created_at": string,"edited_at": string | null,"id": string,"session_category": string,"session_date": string,"session_duration_minutes": number | null,"session_id": string | null,"session_name": string,"shows_duration": boolean,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_id"?: string,"caption"?: string,"created_at"?: string,"edited_at"?: string | null,"id"?: string,"session_category": string,"session_date": string,"session_duration_minutes"?: number | null,"session_id"?: string | null,"session_name": string,"shows_duration"?: boolean,"updated_at"?: string
+                  }
+                  Update: {
+                    "author_id"?: string,"caption"?: string,"created_at"?: string,"edited_at"?: string | null,"id"?: string,"session_category"?: string,"session_date"?: string,"session_duration_minutes"?: number | null,"session_id"?: string | null,"session_name"?: string,"shows_duration"?: boolean,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "session_posts_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "social_profiles"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "session_posts_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "scheduled_sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"social_profiles": {
+                  Row: {
+                    "avatar_url": string | null,"bio": string,"created_at": string,"display_name": string,"updated_at": string,"use_identity_avatar": boolean,"user_id": string,"username": string,"visibility": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "avatar_url"?: string | null,"bio"?: string,"created_at"?: string,"display_name": string,"updated_at"?: string,"use_identity_avatar"?: boolean,"user_id"?: string,"username": string,"visibility"?: string
+                  }
+                  Update: {
+                    "avatar_url"?: string | null,"bio"?: string,"created_at"?: string,"display_name"?: string,"updated_at"?: string,"use_identity_avatar"?: boolean,"user_id"?: string,"username"?: string,"visibility"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "social_profiles_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"workout_items": {
                   Row: {
                     "created_at": string,"equipment": (string)[],"id": string,"instruction": string,"name": string,"notes": string,"rest": string,"routine_id": string,"sort_order": number,"target": string,"updated_at": string,"video_url": string | null
@@ -207,6 +279,21 @@ isOneToOne: false
                            },
 "save_personal_routine":
 { Args: { "p_category": string,"p_description": string,"p_items": Json,"p_name": string,"p_routine_id": string }; Returns: string
+                           },
+"search_social_profiles":
+{ Args: { "p_limit"?: number,"p_query": string }; Returns: {
+              "avatar_url": string,"bio": string,"display_name": string,"user_id": string,"username": string,"visibility": string
+            }[]
+                           },
+"social_posts":
+{ Args: { "p_author"?: string,"p_before_created_at"?: string,"p_before_id"?: string,"p_limit"?: number }; Returns: {
+              "author_avatar_url": string,"author_display_name": string,"author_id": string,"author_username": string,"caption": string,"created_at": string,"edited_at": string,"id": string,"session_category": string,"session_date": string,"session_duration_minutes": number,"session_name": string,"shows_duration": boolean
+            }[]
+                           },
+"social_profile":
+{ Args: { "p_username": string }; Returns: {
+              "avatar_url": string,"bio": string,"can_view_posts": boolean,"created_at": string,"display_name": string,"follower_count": number,"following_count": number,"follows_viewer": string,"is_self": boolean,"post_count": number,"user_id": string,"username": string,"viewer_follow": string,"visibility": string
+            }[]
                            }
           }
           Enums: {
