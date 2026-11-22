@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { todayIn } from "../lib/time-zone";
 import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState } from "./local-supabase";
 
 /**
@@ -148,13 +149,16 @@ test("with reduced motion the logo stays still", async ({ page }) => {
 
 test("changing the planner's day shows the week's section loader, not the page loader", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
-  await page.goto("/week/current");
-  await page.waitForURL(/\/week\//);
+  // Start mid-week (Wednesday), so the next day is in the same week whatever
+  // today is: from a Sunday, "Next day" would open the following week's page.
+  const { weekId } = todayIn("UTC");
+  await page.goto(`/week/${weekId}?day=3`);
   await waitForHydration(page);
   await slowNavigations(page, /^\/week\/[^/]+\?day=/);
   const loadersSeen = await recordLoaders(page);
   await page.getByRole("link", { name: "Next day" }).click();
   await expect.poll(loadersSeen).toContainEqual(expect.stringMatching(/^section-loader: Loading your calendar…/));
+  await page.waitForURL(`/week/${weekId}?day=4`);
   await expect(page.getByRole("heading", { name: /^Week of/ })).toBeVisible();
   await expect(page.getByTestId("section-loader")).toHaveCount(0);
   // Same page, another day: the page loader never shows.
