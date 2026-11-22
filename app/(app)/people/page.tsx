@@ -7,6 +7,7 @@ import { countIncomingRequests, getOwnSocialProfile, listNewestProfiles, searchP
 import { socialMetadata } from "@/lib/social/metadata";
 import { SEARCH_MAX, SEARCH_MIN } from "@/lib/social/model";
 import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("People");
 
@@ -15,7 +16,7 @@ export const metadata = socialMetadata("People");
  * newest profiles. Only social profiles are listed (members opt in by
  * creating one), and an email address is never searched or shown.
  */
-export default async function PeoplePage({
+async function PeoplePageContent({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -127,4 +128,9 @@ export default async function PeoplePage({
       </div>
     </div>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function PeoplePage(props: Parameters<typeof PeoplePageContent>[0]) {
+  return socialPage(() => PeoplePageContent(props));
 }

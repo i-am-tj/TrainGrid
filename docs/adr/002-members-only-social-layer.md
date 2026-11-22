@@ -105,6 +105,13 @@ or link previews.
 - The data download (`traingrid-export` v4) includes the member's social profile, relationships
   (by username) and posts.
 - Deleting a social profile deletes its posts and relationships; the plan is untouched.
+- If the app is deployed before this migration reaches the database (as happened on 2026-11-22),
+  the API answers "not found" for the social tables. `lib/social/availability.ts` turns those
+  answers (`PGRST205`, `PGRST202`, `42P01`, `42883`, `3F000`, and a `HEAD` count that comes back
+  empty) into a `SocialUnavailableError`: social pages show a calm "not available yet" panel,
+  actions show the same message on the form, the header badge stays hidden, and the data download
+  still works with an empty `social` section. The migration should still be applied before or with
+  the deploy.
 - Blocking and reporting are not part of this release. Because profiles are private by default and
   removing a follower is immediate, a member can always cut someone off; a block list is a natural
   next step.

@@ -20,7 +20,7 @@ async function attempt<T>(run: () => Promise<T>): Promise<WorkoutActionResult<T>
   try {
     return { ok: true, value: await run() };
   } catch (error) {
-    if (error instanceof DataError) return { ok: false, reason: error.code };
+    if (error instanceof DataError) return { ok: false, reason: error.code === "unavailable" ? "failed" : error.code };
     // memberData() redirects a signed-out visitor; let Next handle that.
     if (error instanceof Error && "digest" in error) throw error;
     console.error("workout action failed", { message: error instanceof Error ? error.message : "unknown" });

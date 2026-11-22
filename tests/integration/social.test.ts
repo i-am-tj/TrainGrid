@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { exportUserData } from "@/lib/data/export";
-import { DataError } from "@/lib/data/model";
+import { DataError, type Db } from "@/lib/data/model";
 import { createAdhocSession, deleteSession, updateSessionDetails } from "@/lib/data/sessions";
 import {
   acceptFollowRequest,
@@ -8,6 +8,7 @@ import {
   createPost,
   deletePost,
   deleteSocialProfile,
+  exportSocialData,
   followMember,
   getOwnSocialProfile,
   getPost,
@@ -25,6 +26,7 @@ import {
   unfollowMember,
   updatePostCaption,
 } from "@/lib/data/social";
+import { SocialUnavailableError } from "@/lib/social/availability";
 import { anonymous, createTestUser, deleteTestUsers, integrationReady, service, type TestUser } from "./helpers";
 
 /**
@@ -419,5 +421,53 @@ describe.skipIf(!integrationReady)("social (local Supabase)", () => {
       expect((await exportUserData(user.db, user.id)).sessions.map((x) => x.id)).toContain(s.id); // the plan stays
       expect((await getProfileCard(fan.db, pubName))?.followerCount).toBeGreaterThanOrEqual(0);
     });
+  });
+});
+
+/**
+ * Deployed before the social migration: the API answers "not found" for the
+ * social tables and functions. A client on the exposed but empty
+ * `graphql_public` schema gets exactly those answers (PGRST205 / PGRST202),
+ * as production did when the app went out ahead of its migration.
+ */
+describe.skipIf(!integrationReady)("social before its migration (local Supabase)", () => {
+  let user: TestUser;
+  let missing: Db;
+
+  beforeAll(async () => {
+    user = await createTestUser("snomig");
+    // PostgREST picks the schema from these headers; graphql_public has no tables or social functions.
+    missing = await user.clientWithFetch((input, init) => {
+      const headers = new Headers(init?.headers);
+      if (String(input).includes("/rest/v1/")) {
+        headers.set("Accept-Profile", "graphql_public");
+        headers.set("Content-Profile", "graphql_public");
+      }
+      return fetch(input, { ...init, headers });
+    });
+  });
+
+  afterAll(async () => {
+    if (!integrationReady) return;
+    await deleteTestUsers();
+  });
+
+  const unavailable = (promise: Promise<unknown>) =>
+    expect(promise).rejects.toBeInstanceOf(SocialUnavailableError);
+
+  it("reports reads as unavailable, not as server errors", async () => {
+    await unavailable(getOwnSocialProfile(missing, user.id));
+    await unavailable(getProfileCard(missing, "someone"));
+    await unavailable(searchProfiles(missing, "someone"));
+    await unavailable(listPosts(missing, {}));
+    await unavailable(countIncomingRequests(missing, user.id));
+    await unavailable(exportSocialData(missing, user.id));
+  });
+
+  it("reports writes as unavailable, with a message for the form", async () => {
+    const error = await followMember(missing, user.id, crypto.randomUUID()).catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(SocialUnavailableError);
+    expect(error).toBeInstanceOf(DataError);
+    expect((error as DataError).message).toMatch(/aren’t available right now/);
   });
 });

@@ -1,6 +1,7 @@
 import type { WorkoutLog } from "@/lib/workouts/model";
 import { itemFromRow, sessionFromRow } from "./mappers";
 import type { Db, PlannedItem, ScheduledSessionRecord } from "./model";
+import { SocialUnavailableError } from "@/lib/social/availability";
 import { exportSocialData, type SocialExport } from "./social";
 import { logFromRow } from "./workouts";
 
@@ -54,7 +55,11 @@ export async function exportUserData(db: Db, userId: string): Promise<UserExport
       .select("id, session_id, status, started_at, finished_at, unit, entries, notes, updated_at")
       .eq("user_id", userId)
       .order("started_at"),
-    exportSocialData(db, userId),
+    // Before the social migration exists, the download still works, with no social data.
+    exportSocialData(db, userId).catch((error: unknown): SocialExport => {
+      if (error instanceof SocialUnavailableError) return { profile: null, following: [], followers: [], posts: [] };
+      throw error;
+    }),
   ]);
   if (routines.error || sessions.error || logs.error) throw new Error("Could not export your data.");
 

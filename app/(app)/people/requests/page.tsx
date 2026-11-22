@@ -8,13 +8,14 @@ import { acceptRequestAction, rejectRequestAction, unfollowAction } from "@/lib/
 import { socialMetadata } from "@/lib/social/metadata";
 import { timeAgo } from "@/lib/social/model";
 import { btnDanger, btnPrimary, btnSecondaryCompact } from "@/lib/ui";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Follow requests");
 
 const compactPrimary = btnPrimary.replace("min-h-10", "min-h-8").replace("px-3 py-2 text-sm", "px-2.5 py-1 text-xs");
 
 /** Requests to follow you (approve or decline), and your own waiting requests (cancel). */
-export default async function RequestsPage() {
+async function RequestsPageContent() {
   const { db, userId } = await memberData();
   const own = await getOwnSocialProfile(db, userId);
   const { incoming, outgoing } = own ? await listFollowRequests(db, userId) : { incoming: [], outgoing: [] };
@@ -129,4 +130,9 @@ export default async function RequestsPage() {
       )}
     </div>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function RequestsPage() {
+  return socialPage(() => RequestsPageContent());
 }

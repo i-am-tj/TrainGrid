@@ -66,7 +66,7 @@ export type ScheduledSessionRecord = {
 
 export class DataError extends Error {
   constructor(
-    readonly code: "invalid" | "not_found",
+    readonly code: "invalid" | "not_found" | "unavailable",
     message: string,
   ) {
     super(message);

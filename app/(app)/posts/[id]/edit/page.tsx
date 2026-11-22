@@ -5,11 +5,12 @@ import { memberData } from "@/lib/data/server";
 import { getOwnSocialProfile, getPost } from "@/lib/data/social";
 import { socialMetadata } from "@/lib/social/metadata";
 import { getRequestToday } from "@/lib/today";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Edit post");
 
 /** Edit the caption of one of your own posts. Anyone else's post is a 404. */
-export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
+async function EditPostPageContent({ params }: { params: Promise<{ id: string }> }) {
   const { db, userId } = await memberData();
   const { id } = await params;
   const post = await getPost(db, id);
@@ -36,4 +37,9 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
       </div>
     </div>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function EditPostPage(props: Parameters<typeof EditPostPageContent>[0]) {
+  return socialPage(() => EditPostPageContent(props));
 }

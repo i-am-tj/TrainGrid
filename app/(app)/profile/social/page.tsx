@@ -6,6 +6,7 @@ import { memberData } from "@/lib/data/server";
 import { getOwnSocialProfile } from "@/lib/data/social";
 import { socialMetadata } from "@/lib/social/metadata";
 import { DISPLAY_NAME_MAX, safeAvatarUrl, safeReturnPath, suggestUsername } from "@/lib/social/model";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Social profile");
 
@@ -14,7 +15,7 @@ export const metadata = socialMetadata("Social profile");
  * and who can see your posts. A new profile is prefilled from your account
  * (a suggested username and your name) and starts Private.
  */
-export default async function SocialProfilePage({
+async function SocialProfilePageContent({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -88,4 +89,9 @@ export default async function SocialProfilePage({
       </div>
     </div>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function SocialProfilePage(props: Parameters<typeof SocialProfilePageContent>[0]) {
+  return socialPage(() => SocialProfilePageContent(props));
 }

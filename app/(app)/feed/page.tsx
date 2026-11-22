@@ -9,6 +9,7 @@ import { socialMetadata } from "@/lib/social/metadata";
 import { decodeCursor } from "@/lib/social/model";
 import { btnPrimary, btnSecondary } from "@/lib/ui";
 import { FeedSkeleton } from "./FeedSkeleton";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Feed");
 
@@ -19,7 +20,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  * follow (accepted), newest first, twenty at a time. Who appears is decided
  * by the database (public.social_posts and the session_posts policies).
  */
-export default async function FeedPage({ searchParams }: { searchParams: SearchParams }) {
+async function FeedPageContent({ searchParams }: { searchParams: SearchParams }) {
   const { db, userId } = await memberData();
   const params = await searchParams;
   const before = typeof params.before === "string" && decodeCursor(params.before) ? params.before : null;
@@ -153,4 +154,9 @@ async function FeedPosts({ db, userId, before, username }: { db: Db; userId: str
       </nav>
     </>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function FeedPage(props: Parameters<typeof FeedPageContent>[0]) {
+  return socialPage(() => FeedPageContent(props));
 }

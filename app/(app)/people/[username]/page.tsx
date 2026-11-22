@@ -8,6 +8,7 @@ import { getOwnSocialProfile, getProfileCard, listPosts } from "@/lib/data/socia
 import { socialMetadata } from "@/lib/social/metadata";
 import { decodeCursor } from "@/lib/social/model";
 import { btnPrimary, btnSecondary } from "@/lib/ui";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Profile");
 
@@ -17,7 +18,7 @@ export const metadata = socialMetadata("Profile");
  * accepted follow). An unknown, revoked or malformed username is a 404, the
  * same answer in every case.
  */
-export default async function PersonPage({
+async function PersonPageContent({
   params,
   searchParams,
 }: {
@@ -108,4 +109,9 @@ export default async function PersonPage({
       </div>
     </div>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function PersonPage(props: Parameters<typeof PersonPageContent>[0]) {
+  return socialPage(() => PersonPageContent(props));
 }
