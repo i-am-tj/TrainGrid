@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   alternates: canonicalUrl("/privacy") ? { canonical: canonicalUrl("/privacy")! } : undefined,
 };
 
-const UPDATED = "20 November 2026";
+const UPDATED = "22 November 2026";
 
 /**
  * The privacy notice. Written from what the code and database actually do;
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
       }
       summary={[
         "TrainGrid stores only what it needs to plan and run your training: your sign-in details, the sessions, routines and notes you create, and the workouts you log.",
-        "Your plan is private to you. Nobody else can see it, including other members.",
+        "Your plan is private to you. Other members see only what you choose to post, and only if your social profile lets them.",
         "There are no adverts, no analytics trackers and no selling of data. Ever.",
         "You can export everything as a file at any time, and ask for it all to be deleted.",
       ]}
@@ -56,6 +56,14 @@ export default function PrivacyPage() {
                 <strong>Your training.</strong> The sessions you plan (name, date, time, duration,
                 notes and workout items), the routines you create or copy, and the workouts you log:
                 when you started and finished, the weight and reps of each set, and any note you add.
+              </p>
+              <p>
+                <strong>Your social profile, if you create one.</strong> The username, display name,
+                short bio and visibility (private or public to members) you choose, whether to show
+                your sign-in picture, who you follow and who follows you (including requests), and
+                the posts you publish: a caption and the name, type and date of the session you chose,
+                and its duration if you ticked it. Start times, notes, exercises and logged sets are
+                never part of a post.
               </p>
               <p>
                 <strong>Feedback you send.</strong> Your message, its kind (idea, problem or praise)
@@ -150,7 +158,11 @@ export default function PrivacyPage() {
               </ul>
               <p>
                 Data travels encrypted (HTTPS) and is encrypted at rest by these providers. Inside the
-                database, row-level security makes sure each member can only ever read their own plan.
+                database, row-level security makes sure each member can only ever read their own plan,
+                and decides who may see social posts: on a private profile, only followers you
+                approved; on a public one, signed-in TrainGrid members. Nothing social is visible to
+                anyone outside TrainGrid, and social pages ask search engines not to index them. Your
+                email address is never shown to other members.
               </p>
             </>
           ),
@@ -163,7 +175,12 @@ export default function PrivacyPage() {
               <ul>
                 <li>
                   <strong>Take it with you:</strong> <em>Download my data</em> on your profile downloads your
-                  routines, sessions and logged workouts as a file, whenever you like.
+                  routines, sessions, logged workouts and social posts as a file, whenever you like.
+                </li>
+                <li>
+                  <strong>Control who sees your posts:</strong> keep your social profile private,
+                  approve or decline each follower, remove followers at any time, edit or delete any
+                  post, or delete your social profile altogether. Your plan is not affected.
                 </li>
                 <li>
                   <strong>Delete it:</strong> ask through {contact} and your account and everything in

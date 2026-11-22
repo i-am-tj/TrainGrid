@@ -72,7 +72,14 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
         <Link href={`/session/${session.id}/customize`} className={btnSecondary}>
           Customize content
         </Link>
+        <Link href={`/session/${session.id}/post`} className={btnSecondary}>
+          Post update
+        </Link>
       </div>
+      <p className="mt-2 text-xs leading-5 text-stone-600">
+        Post update shares this session’s name, type and date (and its duration, if you choose) with your followers.
+        Nothing is shared unless you post it.
+      </p>
     </div>
   );
 }

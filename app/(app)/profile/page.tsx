@@ -11,6 +11,7 @@ import { displayVersion, isRecentRelease } from "@/lib/changelog";
 import { loadReleases } from "@/lib/changelog-file";
 import { getProfileSummary } from "@/lib/data/profile";
 import { memberData } from "@/lib/data/server";
+import { getOwnSocialProfile } from "@/lib/data/social";
 import { initialsFor, memberSince, plural, profileName } from "@/lib/profile/model";
 import { contactEmail } from "@/lib/site";
 import { getRequestToday } from "@/lib/today";
@@ -32,6 +33,7 @@ export default async function ProfilePage() {
   const today = await getRequestToday();
   const [latest] = await loadReleases();
   const summary = getProfileSummary(db, userId, today.date).catch(() => null);
+  const social = await getOwnSocialProfile(db, userId).catch(() => null);
   const isAdmin = isAdminViewer(member, parseAdminUserIds(process.env.TRAINGRID_ADMIN_USER_IDS));
   const name = profileName(member.displayName, member.email);
   const contact = contactEmail();
@@ -77,11 +79,22 @@ export default async function ProfilePage() {
       <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 md:grid-cols-2">
         <Card id="account" title="Account" description="Everything you plan in TrainGrid is yours.">
           <Row
+            title="Social profile"
+            detail={
+              social
+                ? `@${social.username} · ${social.visibility === "private" ? "Private: you approve followers" : "Public to TrainGrid members"}`
+                : "Not set up. Choose a username to follow people and share updates."
+            }
+            icon={<PeopleIcon />}
+            href="/profile/social"
+          />
+          <Row
             title="Download my data"
-            detail="Your sessions and routines as a JSON file, ready to keep or move."
+            detail="Your sessions, routines, workouts and posts as a JSON file, ready to keep or move."
             icon={<DownloadIcon />}
             href="/api/export"
             download
+            className="border-t border-line"
           />
           <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-3.5 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
@@ -327,6 +340,15 @@ function ExitIcon() {
   return (
     <svg {...iconProps}>
       <path d="M8 3.5H4.5v13H8M12.5 6.5L16 10l-3.5 3.5M16 10H8" />
+    </svg>
+  );
+}
+
+function PeopleIcon() {
+  return (
+    <svg {...iconProps}>
+      <circle cx="7.5" cy="7" r="2.8" />
+      <path d="M2.5 16c.6-2.8 2.6-4.2 5-4.2s4.4 1.4 5 4.2M13.5 4.6a2.4 2.4 0 0 1 0 4.6M15 11.9c1.4.5 2.3 1.8 2.6 4.1" />
     </svg>
   );
 }
