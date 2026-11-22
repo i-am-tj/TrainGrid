@@ -5,6 +5,7 @@ import { Notice } from "@/components/social/parts";
 import { memberData } from "@/lib/data/server";
 import { getPost } from "@/lib/data/social";
 import { socialMetadata } from "@/lib/social/metadata";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Post");
 
@@ -13,7 +14,7 @@ export const metadata = socialMetadata("Post");
  * post id, never a session id, and the database shows it only to members
  * who may see the author's posts. Everyone else gets a plain 404.
  */
-export default async function PostPage({
+async function PostPageContent({
   params,
   searchParams,
 }: {
@@ -43,4 +44,9 @@ export default async function PostPage({
       </div>
     </div>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function PostPage(props: Parameters<typeof PostPageContent>[0]) {
+  return socialPage(() => PostPageContent(props));
 }

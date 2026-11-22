@@ -24,7 +24,8 @@ in the app at `/whats-new`.
   time; a post keeps its summary even if you later change or delete the session.
 - **Your feed**: `/feed` shows your posts and those of the people you follow, newest first, twenty
   at a time. Your data download now includes your social profile, connections and posts. Needs
-  migration `20261122000000_social`.
+  migration `20261122000000_social`; until it is applied, social pages say they aren’t available
+  yet instead of failing, and the rest of TrainGrid (including the data download) works as usual.
 
 ### Live workouts
 

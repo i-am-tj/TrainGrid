@@ -22,6 +22,7 @@ import {
   type SocialProfileInput,
   type Visibility,
 } from "@/lib/social/model";
+import { SocialUnavailableError, socialFailure } from "@/lib/social/availability";
 import { DataError, type Db } from "./model";
 import { idSchema } from "./schemas";
 import { validate } from "./validate";
@@ -73,7 +74,7 @@ export async function getOwnSocialProfile(db: Db, userId: string): Promise<OwnSo
     .select(`${IDENTITY_COLUMNS}, bio, use_identity_avatar`)
     .eq("user_id", userId)
     .maybeSingle();
-  if (error) throw new Error("Could not load your social profile.");
+  if (error) throw socialFailure(error, "Could not load your social profile.");
   if (!data) return null;
   return { ...identityFromRow(data), bio: data.bio, useIdentityAvatar: data.use_identity_avatar };
 }
@@ -99,7 +100,7 @@ export async function saveSocialProfile(
   if (result.error) {
     if (result.error.code === "23505") throw new DataError("invalid", "That username is taken. Try another.");
     if (result.error.code === "23514") throw new DataError("invalid", "That username can’t be used. Try another.");
-    throw new Error("Could not save your social profile.");
+    throw socialFailure(result.error, "Could not save your social profile.");
   }
   if (!result.data) throw new DataError("not_found", "Social profile not found.");
   const saved = await getOwnSocialProfile(db, userId);
@@ -110,13 +111,13 @@ export async function saveSocialProfile(
 /** Deletes the member's social profile with every post and relationship. Their plan is untouched. */
 export async function deleteSocialProfile(db: Db, userId: string): Promise<void> {
   const { error } = await db.from("social_profiles").delete().eq("user_id", userId);
-  if (error) throw new Error("Could not delete your social profile.");
+  if (error) throw socialFailure(error, "Could not delete your social profile.");
 }
 
 /** Whether a username is free (true), taken (false); the member's own counts as free. */
 export async function isUsernameAvailable(db: Db, userId: string, username: string): Promise<boolean> {
   const { data, error } = await db.from("social_profiles").select("user_id").eq("username", username).maybeSingle();
-  if (error) throw new Error("Could not check that username.");
+  if (error) throw socialFailure(error, "Could not check that username.");
   return !data || data.user_id === userId;
 }
 
@@ -128,7 +129,7 @@ export async function isUsernameAvailable(db: Db, userId: string, username: stri
 export async function getProfileCard(db: Db, rawUsername: unknown): Promise<ProfileCard | null> {
   if (typeof rawUsername !== "string" || rawUsername.length > 64) return null;
   const { data, error } = await db.rpc("social_profile", { p_username: rawUsername });
-  if (error) throw new Error("Could not load that profile.");
+  if (error) throw socialFailure(error, "Could not load that profile.");
   const row = data?.[0];
   if (!row) return null;
   return {
@@ -152,7 +153,7 @@ export async function searchProfiles(db: Db, rawQuery: unknown): Promise<Profile
   const query = searchQuerySchema.safeParse(rawQuery);
   if (!query.success || query.data.replace(/^@/, "").length < SEARCH_MIN) return [];
   const { data, error } = await db.rpc("search_social_profiles", { p_query: query.data, p_limit: 20 });
-  if (error) throw new Error("Could not search members.");
+  if (error) throw socialFailure(error, "Could not search members.");
   return data.map((row) => ({ ...identityFromRow(row), bio: row.bio }));
 }
 
@@ -164,7 +165,7 @@ export async function listNewestProfiles(db: Db, userId: string, limit = 12): Pr
     .neq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
-  if (error) throw new Error("Could not load members.");
+  if (error) throw socialFailure(error, "Could not load members.");
   return data.map((row) => ({ ...identityFromRow(row), bio: row.bio }));
 }
 
@@ -202,7 +203,7 @@ export async function followMember(db: Db, userId: string, rawTargetId: unknown)
     throw new DataError("not_found", "Member not found.");
   }
   if (error.code === "23503") throw new DataError("not_found", "Member not found.");
-  throw new Error("Could not follow that member.");
+  throw socialFailure(error, "Could not follow that member.");
 }
 
 /** Unfollows, or cancels a pending request. Nothing to undo is not an error. */
@@ -210,7 +211,7 @@ export async function unfollowMember(db: Db, userId: string, rawTargetId: unknow
   const target = idSchema.safeParse(rawTargetId);
   if (!target.success) throw new DataError("not_found", "Member not found.");
   const { error } = await db.from("follows").delete().eq("follower_id", userId).eq("followee_id", target.data);
-  if (error) throw new Error("Could not unfollow that member.");
+  if (error) throw socialFailure(error, "Could not unfollow that member.");
 }
 
 /** Approves a pending request to follow the member. */
@@ -224,7 +225,7 @@ export async function acceptFollowRequest(db: Db, userId: string, rawFollowerId:
     .eq("follower_id", follower.data)
     .eq("status", "pending")
     .select("status");
-  if (error) throw new Error("Could not approve that request.");
+  if (error) throw socialFailure(error, "Could not approve that request.");
   if (data.length === 0) throw new DataError("not_found", "Request not found.");
 }
 
@@ -248,7 +249,7 @@ async function deleteIncoming(db: Db, userId: string, rawFollowerId: unknown, st
     .eq("follower_id", follower.data)
     .eq("status", status)
     .select("status");
-  if (error) throw new Error("Could not update your followers.");
+  if (error) throw socialFailure(error, "Could not update your followers.");
   if (data.length === 0) throw new DataError("not_found", missing);
 }
 
@@ -272,7 +273,7 @@ export async function listFollowRequests(db: Db, userId: string): Promise<Follow
       .order("created_at", { ascending: false })
       .limit(200),
   ]);
-  if (incoming.error || outgoing.error) throw new Error("Could not load your requests.");
+  if (incoming.error || outgoing.error) throw socialFailure(incoming.error ?? outgoing.error, "Could not load your requests.");
   const toConnection = (row: { created_at: string; profile: IdentityRow }): Connection => ({
     ...identityFromRow(row.profile),
     since: row.created_at,
@@ -287,8 +288,11 @@ export async function countIncomingRequests(db: Db, userId: string): Promise<num
     .select("follower_id", { count: "exact", head: true })
     .eq("followee_id", userId)
     .eq("status", "pending");
-  if (error) throw new Error("Could not count your requests.");
-  return count ?? 0;
+  if (error) throw socialFailure(error, "Could not count your requests.");
+  // A HEAD request has no body, so a missing table comes back as no error and
+  // no count (supabase-js reports 204); a working count is always a number.
+  if (count === null) throw new SocialUnavailableError();
+  return count;
 }
 
 export type ConnectionPage = { people: Connection[]; page: number; hasMore: boolean };
@@ -319,7 +323,7 @@ export async function listConnections(
     .order("accepted_at", { ascending: false })
     .order(kind === "followers" ? "follower_id" : "followee_id")
     .range(from, from + CONNECTIONS_PAGE_SIZE);
-  if (error) throw new Error("Could not load that list.");
+  if (error) throw socialFailure(error, "Could not load that list.");
   const rows = data as unknown as Array<{ accepted_at: string | null; profile: IdentityRow }>;
   return {
     people: rows.slice(0, CONNECTIONS_PAGE_SIZE).map((row) => ({ ...identityFromRow(row.profile), since: row.accepted_at })),
@@ -384,7 +388,7 @@ export async function listPosts(
     p_before_id: after?.id,
     p_limit: pageSize + 1,
   });
-  if (error) throw new Error("Could not load posts.");
+  if (error) throw socialFailure(error, "Could not load posts.");
   const posts = (data as PostRpcRow[]).map(postFromRpc);
   const page = posts.slice(0, pageSize);
   const last = page.at(-1);
@@ -411,7 +415,7 @@ export async function getPost(db: Db, rawId: unknown): Promise<PostView | null> 
   const id = idSchema.safeParse(rawId);
   if (!id.success) return null;
   const { data, error } = await db.from("session_posts").select(POST_COLUMNS).eq("id", id.data).maybeSingle();
-  if (error) throw new Error("Could not load that post.");
+  if (error) throw socialFailure(error, "Could not load that post.");
   if (!data) return null;
   const row = data as unknown as PostRow;
   return postFromRpc({
@@ -452,7 +456,7 @@ export async function createPost(db: Db, userId: string, input: PostInput): Prom
     const known = Object.keys(POST_ERRORS).find((key) => error.message.includes(key));
     if (known) throw new DataError(known === "post_session_not_found" ? "not_found" : "invalid", POST_ERRORS[known]!);
     if (error.code === "42501") throw new DataError("invalid", "Set up your social profile before posting.");
-    throw new Error("Could not publish your update.");
+    throw socialFailure(error, "Could not publish your update.");
   }
   if (data.author_id !== userId) throw new Error("Could not publish your update.");
   return data.id;
@@ -469,7 +473,7 @@ export async function updatePostCaption(db: Db, userId: string, rawId: unknown, 
     .eq("id", id.data)
     .eq("author_id", userId)
     .select("id");
-  if (error) throw new Error("Could not save your post.");
+  if (error) throw socialFailure(error, "Could not save your post.");
   if (data.length === 0) throw new DataError("not_found", "Post not found.");
 }
 
@@ -477,7 +481,7 @@ export async function deletePost(db: Db, userId: string, rawId: unknown): Promis
   const id = idSchema.safeParse(rawId);
   if (!id.success) throw new DataError("not_found", "Post not found.");
   const { data, error } = await db.from("session_posts").delete().eq("id", id.data).eq("author_id", userId).select("id");
-  if (error) throw new Error("Could not delete your post.");
+  if (error) throw socialFailure(error, "Could not delete your post.");
   if (data.length === 0) throw new DataError("not_found", "Post not found.");
 }
 
@@ -500,7 +504,7 @@ export async function listPostableSessions(db: Db, userId: string, todayIso: str
     .order("date", { ascending: false })
     .order("start_time", { ascending: false, nullsFirst: false })
     .limit(60);
-  if (error) throw new Error("Could not load your sessions.");
+  if (error) throw socialFailure(error, "Could not load your sessions.");
   return data.map((row) => ({
     id: row.id,
     name: row.name,
@@ -533,7 +537,9 @@ export async function exportSocialData(db: Db, userId: string) {
       .order("created_at")
       .limit(5000),
   ]);
-  if (following.error || followers.error || posts.error) throw new Error("Could not export your social data.");
+  if (following.error || followers.error || posts.error) {
+    throw socialFailure(following.error ?? followers.error ?? posts.error, "Could not export your social data.");
+  }
   type Row = { status: string; created_at: string; accepted_at: string | null; profile: { username: string } };
   const relation = (row: Row) => ({ username: row.profile.username, status: row.status, since: row.accepted_at ?? row.created_at });
   return {

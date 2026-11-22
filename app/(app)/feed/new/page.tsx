@@ -7,6 +7,7 @@ import { socialMetadata } from "@/lib/social/metadata";
 import { formatMinutes, formatSessionDate } from "@/lib/social/model";
 import { getRequestToday } from "@/lib/today";
 import { btnSecondary, TYPE_BAR, TYPE_SHORT } from "@/lib/ui";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Post an update");
 
@@ -15,7 +16,7 @@ export const metadata = socialMetadata("Post an update");
  * week ahead. Choosing one opens the composer, where you see exactly what
  * will be shared before anything is.
  */
-export default async function NewPostPage() {
+async function NewPostPageContent() {
   const { db, userId } = await memberData();
   const own = await getOwnSocialProfile(db, userId);
   if (!own) redirect("/profile/social?next=/feed/new");
@@ -75,4 +76,9 @@ export default async function NewPostPage() {
       </div>
     </div>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function NewPostPage() {
+  return socialPage(() => NewPostPageContent());
 }

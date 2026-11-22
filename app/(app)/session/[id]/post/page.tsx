@@ -6,6 +6,7 @@ import { getSession } from "@/lib/data/sessions";
 import { getOwnSocialProfile } from "@/lib/data/social";
 import { socialMetadata } from "@/lib/social/metadata";
 import { getRequestToday } from "@/lib/today";
+import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Post an update");
 
@@ -14,7 +15,7 @@ export const metadata = socialMetadata("Post an update");
  * the member (RLS), so someone else's session id is simply not found. The
  * post's summary is copied by the database from this session on publish.
  */
-export default async function PostSessionPage({ params }: { params: Promise<{ id: string }> }) {
+async function PostSessionPageContent({ params }: { params: Promise<{ id: string }> }) {
   const { db, userId } = await memberData();
   const { id } = await params;
   const session = await getSession(db, userId, id);
@@ -49,4 +50,9 @@ export default async function PostSessionPage({ params }: { params: Promise<{ id
       </div>
     </div>
   );
+}
+
+/** Shows the "not available yet" panel instead of failing if the social schema is missing. */
+export default async function PostSessionPage(props: Parameters<typeof PostSessionPageContent>[0]) {
+  return socialPage(() => PostSessionPageContent(props));
 }
