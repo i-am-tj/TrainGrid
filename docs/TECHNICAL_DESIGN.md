@@ -55,6 +55,11 @@ The secret key bypasses RLS. It is read only in `lib/supabase/admin.ts` (marked 
 used only for invitation management, after a server-side admin check. Admins are listed by user id
 in `TRAINGRID_ADMIN_USER_IDS`.
 
+The social layer (profiles, follows, posts) adds one rule: other members' rows are visible only
+while that member is active, and posts only to the people the author's visibility allows. Helpers
+that need to look past RLS for that are `SECURITY DEFINER` functions in the `private` schema, which
+the API does not expose ([ADR 002](adr/002-members-only-social-layer.md)).
+
 More: [SECURITY.md](SECURITY.md).
 
 ## Data model
@@ -74,6 +79,12 @@ invitations (email, invited_by, accepted_at, accepted_by, revoked_at)
       └── invitation_email_deliveries (one row per send attempt; service role only)
 
 member_feedback (user_id, kind, message, page_path; insert-only for members)
+
+profiles.id
+      └── social_profiles.user_id   (optional; username, display_name, bio, visibility)
+              ├── follows (follower_id, followee_id, status pending|accepted)
+              └── session_posts.author_id   (caption + snapshot of name, category, date, duration)
+                      └── session_id → scheduled_sessions (provenance; never readable by API roles)
 ```
 
 | Table | Key columns | Rules |
@@ -86,6 +97,9 @@ member_feedback (user_id, kind, message, page_path; insert-only for members)
 | `workout_logs` | `user_id` (defaults to the caller), `session_id` (unique), `status`, `started_at`, `finished_at`, `unit`, `entries` | Strictly the member's own rows, active members only. `session_id` must be the caller's session and cannot be changed; deleted with the session. |
 | `invitation_email_deliveries` | `invitation_id`, `status` (`preparing`/`accepted`/`failed`), `failure_code`, `provider_message_id` | Closed to API roles; written by admin actions with the secret key. |
 | `member_feedback` | `user_id` (defaults to the caller), `kind`, `message`, `page_path` | Members may insert their own rows only (column grant + RLS), at most 10 per 24 h; nobody reads it through the API. |
+| `social_profiles` | `user_id` (defaults to the caller), `username` (unique, lower-case), `display_name`, `bio`, `visibility` (`private` default / `public`), `use_identity_avatar`, `avatar_url` (trigger-filled) | Optional. Basic identity visible to active members; only the owner writes it. |
+| `follows` | (`follower_id`, `followee_id`) key, `status` (`pending`/`accepted`), `accepted_at` | Status set by trigger from the followed profile's visibility; only the followed member approves; either side deletes. |
+| `session_posts` | `author_id` (defaults to the caller), `caption`, `shows_duration`, `session_name`, `session_category`, `session_date`, `session_duration_minutes`, `session_id` | Snapshot filled by trigger from the author's own session and never updatable; `session_id` not granted to API roles. Visible per [ADR 002](adr/002-members-only-social-layer.md). |
 
 Ownership columns are not updatable by members, so a row can never be reassigned. Exact shapes and
 formats: [DATA_FORMAT.md](DATA_FORMAT.md).
