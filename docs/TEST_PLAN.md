@@ -58,6 +58,17 @@ against anything but a local URL.
 12. **Member features** — home sections stream and fail on their own; getting started; feedback
     (insert-only, rate limited, no native dialogs); profile (numbers, data download, appearance,
     About TrainGrid); information pages public; slow loaders retry once.
+13. **Social** — profiles (create, edit, unique and valid usernames, private by default, avatar
+    only from the sign-in picture, no emails); follow, request, approve, decline, cancel, unfollow,
+    remove; public/private visibility of posts and lists, including after switching to private and
+    after removing a follower; posts (snapshot from the author's own session only, duration only
+    when chosen, never notes or exercises, session id unreadable, snapshot kept after the session
+    is edited or deleted, author-only edit and delete); feed (own and followed posts, newest first,
+    keyset pages, empty and error states); revoked members and non-members see nothing and vanish;
+    search limits; rate limits; definer helpers unreachable; 404s for other members' sessions and
+    private posts; `noindex` headers; phone layouts and axe checks in light and dark; keyboard
+    dialogs. In `supabase/tests/database/12_social.test.sql`, `tests/integration/social.test.ts`,
+    `lib/social/model.test.ts` and `e2e/social.spec.ts`.
 
 Several suites were confirmed able to fail: with RLS disabled, with the admin check removed, and
 against a simulated exposed function, the relevant tests failed.

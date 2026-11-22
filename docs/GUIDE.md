@@ -100,17 +100,56 @@ you long-press the icon.
 few words, and send. It includes your name and the page you were on, nothing else. Every note is
 read.
 
-## 7. Your profile and your data
+## 7. Train together: people, posts and your feed
+
+Everything here is optional and members only. Nothing from your plan is shared unless you post it.
+
+**Set up your social profile.** **Profile → Social profile** (or **Feed → Set up profile**). Choose a
+username (3–30 letters, numbers or underscores; your profile lives at `/people/<username>`), the
+name people see, a short bio, and whether to show your Google or GitHub picture or your initials.
+Your email address is never shown.
+
+**Private or public.** New profiles are **private**: other members see your name, bio and counts,
+but only followers you approve see your posts and your followers and following lists. **Public to
+members** lets any signed-in member follow you and read your posts; it never means the open
+internet. Switching back to private keeps the followers you already have and hides your posts from
+everyone else straight away.
+
+**Find and follow people.** **People** lists new members and searches by username or name. On a
+profile, **Follow** (public) follows at once; **Request to follow** (private) waits for approval and
+shows **Requested** until then. Tap **Requested** to cancel, or **Following** to unfollow; both ask
+first.
+
+**Requests and followers.** The **People** link shows how many requests are waiting. **People →
+Requests** lists them: **Approve** or **Decline**, and cancel requests you sent. On your profile,
+**Followers** lets you **Remove** someone; they stop seeing your posts at once and aren’t told.
+
+**Post a session update.** On a session, **Post update** (or **Feed → Post an update** and pick a
+session). Write a caption and tick **Duration** if you want it shown. The preview is exactly what
+people will see: the session’s name, type and date, and the duration if ticked. The start time,
+your notes, the exercises and anything you logged are never shared, and posting doesn’t mark the
+session as done. **Edit** changes the caption; **Delete** removes the post (it asks first). A post
+keeps its summary even if you later change or delete the session.
+
+**Your feed.** **Feed** shows your posts and those of people you follow, newest first; **Older
+posts** goes further back.
+
+**Leave.** **Social profile → Delete social profile** removes your username, posts and connections.
+Your plan, routines and workouts stay.
+
+## 8. Your profile and your data
 
 Open your **Profile** from your initials at the top right (on a phone: menu → **Profile**).
 
 - See your plan in numbers: sessions planned, sessions coming up, and your own routines.
-- **Download my data** saves all your routines and sessions as a JSON file, any time.
+- **Social profile**: set up or edit how other members see you (section 7).
+- **Download my data** saves your routines, sessions, workouts and posts as a JSON file, any time.
 - **Appearance**: light, dark, or follow your device. The sun and moon button in the header
   switches too.
 - **Time zone**: “today” follows your device’s clock, even straight after travelling.
 - **About TrainGrid**: What’s new, the privacy notice and the terms.
 - **Sign out** of this device.
 
-Your plan is private: other members can never see it. To have your account and data deleted, ask
+Your plan is private: other members can never see it. Only what you post is shared, with the people
+your profile allows. To have your account and data deleted, ask
 through **Feedback**.

@@ -147,7 +147,7 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
 ```json
 {
   "format": "traingrid-export",
-  "version": 3,
+  "version": 4,
   "exportedAt": "2026-11-13T09:00:00.000Z",
   "routines": [
     {
@@ -178,13 +178,43 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
       ] },
       "updatedAt": "2026-11-09T08:58:40.000Z"
     }
-  ]
+  ],
+  "social": {
+    "profile": { "username": "alex_morgan", "displayName": "Alex Morgan", "bio": "",
+                 "visibility": "private", "useIdentityAvatar": false },
+    "following": [ { "username": "sam_runs", "status": "accepted", "since": "2026-11-20T07:00:00.000Z" } ],
+    "followers": [ { "username": "priya_lifts", "status": "pending", "since": "2026-11-21T18:30:00.000Z" } ],
+    "posts": [
+      { "id": "…", "caption": "Three blocks at threshold.", "createdAt": "2026-11-21T08:00:00.000Z", "editedAt": null,
+        "session": { "name": "Tempo Tuesdays", "category": "running", "date": "2026-11-17", "durationMinutes": null } }
+    ]
+  }
 }
 ```
 
-It contains only the member’s PERSONAL routines, scheduled sessions and workout logs: no GLOBAL
-routines, other members, invitations, profile or account details. There is no import. Version 3
-added `workoutLogs`; versions 1 and 2 had no logs.
+It contains only the member’s PERSONAL routines, scheduled sessions, workout logs and social data:
+no GLOBAL routines, other members' content, invitations or account details. Other members appear
+only as the usernames the member follows or is followed by, never as ids or emails. There is no
+import. Version 4 added `social` (`profile` is null without a social profile); version 3 added
+`workoutLogs`; versions 1 and 2 had no logs.
+
+## Social
+
+| Table | Column | Format |
+| --- | --- | --- |
+| `social_profiles` | `username` | 3–30 of `a-z`, `0-9`, `_`; no leading, trailing or double underscore; not reserved (`feed`, `people`, `requests`, `settings`, …); unique |
+| | `display_name` | 1–60 characters, trimmed |
+| | `bio` | 0–160 characters, one line |
+| | `visibility` | `private` (default) or `public` |
+| | `avatar_url` | `https://` URL copied from the member's sign-in picture when `use_identity_avatar`; otherwise null |
+| `follows` | `status` | `pending` (request to a private profile) or `accepted`; `accepted_at` set exactly when accepted |
+| `session_posts` | `caption` | 0–500 characters |
+| | `session_name`, `session_category`, `session_date` | Copied from the session when posted; never change |
+| | `session_duration_minutes` | Copied only when `shows_duration`; else null |
+| | `edited_at` | Set when the caption changes |
+
+Feed and timeline pages use an opaque cursor: base64url of `<created_at>|<post id>`, validated on
+the way back in.
 
 ## Seed templates (tooling input)
 

@@ -186,3 +186,39 @@ browser never talks to the database for it.
   emailed to the visitor, so the form cannot be used to send mail to third parties.
 - Requests are deleted 180 days after they are made. Creating an invitation for the address marks
   its request invited (trigger).
+
+## Social profiles, follows and posts
+
+Design and reasoning: [ADR 002](adr/002-members-only-social-layer.md). Enforced in the database by
+`supabase/migrations/20261122000000_social.sql`, tested in
+`supabase/tests/database/12_social.test.sql`, `tests/integration/social.test.ts` and
+`e2e/social.spec.ts`.
+
+- **Members only.** `anon` has no privileges on `social_profiles`, `follows` or `session_posts`;
+  every policy requires `is_member()` for the caller, and other members' rows are visible only while
+  that member is active (`private.is_active_member`). Revoked members see nothing and disappear for
+  everyone else.
+- **Posts and lists** are visible to the author, to every active member when the profile is public,
+  and otherwise only to accepted followers (`private.can_view_content`). Relationship rows are
+  visible to third parties only through the followed profile's rule. Removing a follower,
+  unfollowing or switching to private applies on the next query.
+- **Nothing is chosen by the caller that should not be.** Column grants let members insert only
+  `followee_id` (the follower defaults to the caller; the status is set by a trigger), approve only
+  their own pending requests, insert only `session_id`, `caption` and `shows_duration` for a post,
+  and update only the caption. The author defaults to the caller. The post's session summary is
+  copied by a security-invoker trigger from the caller's **own** session, so another member's
+  session cannot be posted, and the snapshot cannot be forged or rewritten.
+- **No session leaks.** `session_posts.session_id` is not granted to API roles at all; start
+  times, notes, exercises and workout logs are never copied into a post.
+- **No email or enumeration beyond the directory.** The social layer stores no email address.
+  Search needs 2–60 characters, escapes `LIKE` wildcards and returns at most 20 profiles; only
+  members who created a social profile are listed. Unknown, revoked and invisible profiles and
+  posts all answer 404.
+- **Limits.** 20 posts and 100 new follows per member per 24 hours; usernames, names, bios and
+  captions have length limits in Zod and in check constraints.
+- **Definer functions.** The helpers that look past RLS are `SECURITY DEFINER` functions in the
+  `private` schema, which the Data API does not expose; `anon` cannot use the schema. The social
+  functions in `public` are `SECURITY INVOKER`. The app never uses the secret key for social data.
+- **Caching and indexing.** Social pages are dynamic, members-only, `noindex`/`noarchive` in
+  metadata and in an `X-Robots-Tag` header, and have generic titles. Avatars are only the member's
+  own sign-in picture (copied by trigger, `https` only) and load with `referrerPolicy=no-referrer`.

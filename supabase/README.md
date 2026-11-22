@@ -87,6 +87,9 @@ Then sign in at `/login`. Later invitations are created from the admin page.
 
 - Every schema change is a new file in `migrations/`. Never edit a migration that has been merged.
 - Every new table enables Row Level Security in the migration that creates it.
+- Helpers that must look past RLS are `SECURITY DEFINER` functions in the `private` schema (not
+  exposed by the API); functions in `public` that members call are `SECURITY INVOKER`, except
+  `accept_invitation()`.
 - Migrations contain no secrets, personal emails, user ids or private schedule data.
 - Seed content for GLOBAL routines is handled separately from migrations.
 - The `npm run db:*` commands only ever touch the local database. Production changes only through

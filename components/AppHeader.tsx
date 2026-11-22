@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { PendingRequestsBadge } from "@/components/admin/PendingRequestsBadge";
+import { FollowRequestsBadge } from "@/components/social/FollowRequestsBadge";
 import { NavLink } from "@/components/ui/NavLink";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MobileMenu } from "@/components/MobileMenu";
@@ -27,6 +28,23 @@ export async function AppHeader() {
       { key: "home", render: (c) => <NavLink href="/home" className={c}>Home</NavLink> },
       { key: "planner", render: (c) => <NavLink href="/week/current" className={c}>Planner</NavLink> },
       { key: "library", render: (c) => <NavLink href="/library" className={c}>Library</NavLink> },
+      { key: "feed", render: (c) => <NavLink href="/feed" className={c}>Feed</NavLink> },
+      {
+        key: "people",
+        render: (c) => {
+          const id = `follow-requests-${c === desktopItem ? "inline" : "menu"}`;
+          return (
+            <NavLink href="/people" className={c} describedBy={id}>
+              <span className="relative">
+                People
+                <Suspense fallback={<span id={id} className="sr-only" />}>
+                  <FollowRequestsBadge descriptionId={id} />
+                </Suspense>
+              </span>
+            </NavLink>
+          );
+        },
+      },
     );
   }
   if (isAdmin) {

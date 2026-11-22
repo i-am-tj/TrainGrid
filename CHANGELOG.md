@@ -7,6 +7,25 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Train together
+
+- **Your social profile**: choose a username, a display name and a short bio, and show your Google
+  or GitHub picture or your initials. It starts **private**; switch to **public to members** when
+  you like. Public always means signed-in TrainGrid members, never the open internet, and your
+  email address is never shown. Set it up from **Profile → Social profile**.
+- **Follow people**: find members by username or name on **People**. Follow a public profile at
+  once, or send a request to a private one. Approve or decline requests (the People link shows how
+  many are waiting), cancel your own, unfollow, or remove a follower, who then loses access at
+  once. Followers and following lists respect privacy.
+- **Post a session update**: **Post update** on any of your sessions (or **Feed → Post an update**)
+  shares a caption with the session’s name, type and date, and its duration only if you tick it.
+  You see exactly what will be shared first. Start times, notes, exercises and logged sets are
+  never shared, and posting never marks a session as done. Edit the caption or delete a post any
+  time; a post keeps its summary even if you later change or delete the session.
+- **Your feed**: `/feed` shows your posts and those of the people you follow, newest first, twenty
+  at a time. Your data download now includes your social profile, connections and posts. Needs
+  migration `20261122000000_social`.
+
 ### Live workouts
 
 - **Take TrainGrid to the gym**: **Start workout** on today’s session (on Home or the session

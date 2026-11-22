@@ -1,6 +1,6 @@
 # Decisions
 
-Last updated: 2026-11-20
+Last updated: 2026-11-22
 
 The decisions that still shape TrainGrid, one line each, grouped by area. IDs are kept so older
 records and commits still resolve. The full history (every proposal, its reasoning, and the
@@ -52,6 +52,7 @@ superseded or one-off decisions left out here) is in
 | V1-07 | **Profile** (`/profile`, 2026-11-18): identity, plan numbers, data download, appearance (light, dark or device), time zone, sign out, and About TrainGrid. The header shows the member's initials; the phone menu has a Profile row. |
 | V1-08 | **First-request time zone** (2026-11-18): the server stamps the day it rendered on `<html data-today>`. When the device's day differs (no cookie yet, or a stale one after travel), the pre-paint script saves the zone and loads the page once more (`/week/current` again if it was a redirect), at most once per day and zone. The planner's today highlight comes from the server's today, never the render-time clock. |
 | V1-10 | **Invite requests** (2026-11-19): visitors can request an invite from `/login` (the landing page links to `/login?request=invite`, which opens the dialog). Stored in `invite_requests` through `request_invite()`, a security-definer function executable by the service role only, called once by the public server action with the secret key; `anon` still executes no function. Limits in the database: one pending request per address, 3 per network per hour (daily-rotating HMAC of the IP), 50 a day. The visitor's answer never reveals whether an address is invited. Only the owner is emailed; nothing is sent to the visitor. Admins invite or dismiss on Invitations; an invitation marks the request invited (trigger). Deleted after 180 days. Details: [docs/SECURITY.md](../docs/SECURITY.md#invite-requests). |
+| V1-12 | **Train together** (2026-11-22): an opt-in, members-only social layer ([ADR 002](../docs/adr/002-members-only-social-layer.md)). `social_profiles` (unique lower-case username, display name, bio, `private` by default or `public` to members, sign-in picture or initials), `follows` (status set by the database; private profiles approve), `session_posts` (caption + a snapshot of the session's name, category, date and optional duration, copied by trigger from the author's own session; `session_id` never readable). Visibility enforced by RLS with definer helpers in the unexposed `private` schema; public social functions are invoker. Feed and timelines keyset-paginated. Text only: no photos, likes, comments or performance sharing; posting never completes a session. |
 | V1-09 | Duplicate week is removed from the planner (2026-11-18): the planner offers only controls that are available on every screen. |
 
 ## Engineering

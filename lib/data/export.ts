@@ -1,20 +1,22 @@
 import type { WorkoutLog } from "@/lib/workouts/model";
 import { itemFromRow, sessionFromRow } from "./mappers";
 import type { Db, PlannedItem, ScheduledSessionRecord } from "./model";
+import { exportSocialData, type SocialExport } from "./social";
 import { logFromRow } from "./workouts";
 
 /**
  * The signed-in user's own data, for download (D-06).
  *
- * Contains their PERSONAL routines with items, their scheduled sessions and
- * their workout logs (what they did in those sessions).
+ * Contains their PERSONAL routines with items, their scheduled sessions,
+ * their workout logs (what they did in those sessions) and, since v4, their
+ * social profile, relationships (by username) and session posts.
  * It never contains GLOBAL routines, another user's data, invitations,
  * profile or auth details, or anything about the infrastructure.
  */
 
 export type UserExport = {
   format: "traingrid-export";
-  version: 3;
+  version: 4;
   exportedAt: string;
   routines: Array<{
     id: string;
@@ -25,10 +27,11 @@ export type UserExport = {
   }>;
   sessions: ScheduledSessionRecord[];
   workoutLogs: WorkoutLog[];
+  social: SocialExport;
 };
 
 export async function exportUserData(db: Db, userId: string): Promise<UserExport> {
-  const [routines, sessions, logs] = await Promise.all([
+  const [routines, sessions, logs, social] = await Promise.all([
     db
       .from("routines")
       .select(
@@ -51,12 +54,13 @@ export async function exportUserData(db: Db, userId: string): Promise<UserExport
       .select("id, session_id, status, started_at, finished_at, unit, entries, notes, updated_at")
       .eq("user_id", userId)
       .order("started_at"),
+    exportSocialData(db, userId),
   ]);
   if (routines.error || sessions.error || logs.error) throw new Error("Could not export your data.");
 
   return {
     format: "traingrid-export",
-    version: 3,
+    version: 4,
     exportedAt: new Date().toISOString(),
     routines: routines.data.map(({ workout_items: items, ...routine }) => ({
       ...routine,
@@ -64,5 +68,6 @@ export async function exportUserData(db: Db, userId: string): Promise<UserExport
     })),
     sessions: sessions.data.map(sessionFromRow),
     workoutLogs: logs.data.map(logFromRow),
+    social,
   };
 }

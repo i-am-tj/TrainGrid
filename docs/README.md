@@ -40,6 +40,9 @@
 
 ## Screenshots
 
+`images/social/` holds the social screens (feed, profiles, people, requests, composer, settings),
+captured the same way by `e2e/social.capture.ts`.
+
 `images/v1/` holds the current screenshots, in light and dark, desktop and phone. They are made
 from the app itself, never by hand: `npm run screenshots` seeds a believable member on the local
 stack and captures every screen from a production build (`e2e/docs.capture.ts`). Older,
