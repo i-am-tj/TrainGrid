@@ -30,6 +30,8 @@ export function safeNextPath(raw: unknown): string {
     return DEFAULT_NEXT_PATH;
   }
   if (parsed.origin !== "http://traingrid.invalid") return DEFAULT_NEXT_PATH;
+  // The callback resolves the returned path again. Check its normalized form too.
+  if (parsed.pathname.startsWith("//")) return DEFAULT_NEXT_PATH;
 
   // Never loop back into the sign-in flow itself.
   if (parsed.pathname === "/login" || parsed.pathname.startsWith("/auth/")) {

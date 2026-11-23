@@ -50,6 +50,11 @@ describe("safeNextPath", () => {
     expect(safeNextPath("/auth/callback?code=abc")).toBe("/home");
   });
 
+  it("returns a usable local path after URL normalization", () => {
+    expect(safeNextPath("/library/..//")).toBe("/home");
+    expect(safeNextPath("/library/../week/current?day=3")).toBe("/week/current?day=3");
+  });
+
   it("drops fragments and rejects overlong values", () => {
     expect(safeNextPath("/library#top")).toBe("/library");
     expect(safeNextPath(`/${"a".repeat(600)}`)).toBe("/home");
