@@ -12,6 +12,8 @@ export type DashboardSession = {
   /** The live workout for this session. Absent in previews; "none" until started. */
   workout?: "none" | "in_progress" | "completed";
   workoutHref?: string;
+  /** Started on the spot from Home (discarding it removes the session). */
+  quick?: boolean;
 };
 export type DashboardDay = {
   date: string;

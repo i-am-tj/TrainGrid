@@ -78,6 +78,9 @@ completely. From the finish screen, **Post about it** opens the post screen.
   TrainGrid as soon as there’s signal. Close it any time and **Resume** later.
 - **Finish workout** asks how it felt and shows your time, sets, volume and every exercise. Done
   sessions get a tick on Home, the session page and the planner.
+- **Discard workout** if you started by mistake or aren’t training after all: on Home’s session card,
+  on the session page, or in the workout’s list menu. It asks first. A planned session stays on your
+  calendar, ready to start again; a quick workout is removed.
 
 ## 4. Routines and the library
 

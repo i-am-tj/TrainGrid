@@ -142,6 +142,7 @@ export function prepareDashboardWeek(
         href: `/session/${encodeURIComponent(record.id)}`,
         workout: record.workoutStatus ?? "none",
         workoutHref: `/workout/${encodeURIComponent(record.id)}`,
+        quick: record.origin === "quick",
       }),
     );
 

@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
 import { QuickStart } from "@/components/dashboard/QuickStart";
+import { DiscardWorkoutButton } from "@/components/workout/DiscardWorkoutButton";
 import { displayVersion, isRecentRelease } from "@/lib/changelog";
 import { loadReleases } from "@/lib/changelog-file";
 import {
@@ -150,7 +151,15 @@ async function TodaySlot({ today, frame, week }: { today: MemberToday; frame: Da
   const result = await week;
   if (!result.ok) return <DashboardSectionError message={WEEK_ERROR} />;
   const { todaySessions } = prepareDashboardWeek(today, result.value);
-  return <TodaySessionList sessions={todaySessions} addSessionHref={frame.addSessionHref} />;
+  return (
+    <TodaySessionList
+      sessions={todaySessions}
+      addSessionHref={frame.addSessionHref}
+      inProgressAction={(session) => (
+        <DiscardWorkoutButton sessionId={session.id} name={session.name} quick={session.quick === true} variant="link" />
+      )}
+    />
+  );
 }
 
 async function WeekSlot({ today, week }: { today: MemberToday; week: WeekRead }) {
