@@ -59,7 +59,13 @@ like, a name and a short note.
   uses that address.
 - Limits: one pending request per address, three per network per hour, 50 a day in total (then
   requests pause until the next day). The visitor is never told whether an address is already
-  invited. Requests are deleted after 180 days.
+  invited. Requests are deleted after 180 days by a daily database job (`pg_cron`,
+  `purge-expired-invite-requests`), even when nobody new asks; check it in Supabase →
+  Integrations → Cron.
+- If the list can't be read, the page says **Requests couldn’t be loaded** with **Try again**
+  instead of “No requests waiting”, and the header badge shows no count.
+- A notice at the top asks you to set `TRAINGRID_CONTACT_EMAIL` while it is missing: without it,
+  someone whose access you revoke cannot ask for their data to be deleted.
 
 ## Read feedback
 

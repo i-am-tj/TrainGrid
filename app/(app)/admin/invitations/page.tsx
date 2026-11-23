@@ -8,6 +8,7 @@ import { InvitationEmailPreview } from "@/components/admin/InvitationEmailPrevie
 import { InvitationListView } from "@/components/admin/InvitationListView";
 import { InviteForm, RevokeForm, SendEmailForm } from "@/components/admin/InvitationForms";
 import { InviteRequestList } from "@/components/admin/InviteRequests";
+import { RequestsUnavailable } from "@/components/admin/RequestsUnavailable";
 import { listPendingInviteRequests } from "@/lib/admin/invite-requests";
 import { getAdminViewer } from "@/lib/admin/guard";
 import {
@@ -23,7 +24,7 @@ import {
   protectedUserIds,
 } from "@/lib/admin/invitations";
 import { originFromHeaders } from "@/lib/auth/redirect";
-import { trustedLoginUrl } from "@/lib/site";
+import { contactEmail, trustedLoginUrl } from "@/lib/site";
 import { isSecretKeyConfigured } from "@/lib/supabase/admin";
 import { getRequestTimeZone } from "@/lib/today";
 
@@ -73,6 +74,18 @@ export default async function InvitationsPage() {
         keeps their data; inviting the same email again restores it. Admins
         cannot be revoked.
       </p>
+
+      {contactEmail() ? null : (
+        <p
+          role="status"
+          data-testid="contact-email-missing"
+          className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900"
+        >
+          <span className="font-semibold">No public contact address.</span> Set <code>TRAINGRID_CONTACT_EMAIL</code> so
+          the privacy notice can offer it. Without it, someone whose access you revoke has no way to ask TrainGrid to
+          delete their data.
+        </p>
+      )}
 
       <section className="mt-7" aria-labelledby="requests-title">
         <h2 id="requests-title" className="text-lg font-semibold tracking-tight">
@@ -125,12 +138,13 @@ export default async function InvitationsPage() {
 
 /** Pending invite requests, streamed behind their own loader. */
 async function RequestList({ emailReady, timeZone }: { emailReady: boolean; timeZone: string }) {
-  const requests = await listPendingInviteRequests();
+  const pending = await listPendingInviteRequests();
+  if (pending.status === "unavailable") return <RequestsUnavailable />;
   const formatTime = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone });
   return (
     <InviteRequestList
       emailReady={emailReady}
-      requests={requests.map((request) => ({
+      requests={pending.requests.map((request) => ({
         id: request.id,
         email: request.email,
         name: request.name,

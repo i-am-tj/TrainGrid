@@ -169,8 +169,9 @@ Open your **Profile** from your initials at the top right (on a phone: menu → 
   switches too.
 - **Time zone**: “today” follows your device’s clock, even straight after travelling.
 - **About TrainGrid**: What’s new, the privacy notice and the terms.
+- **Delete my account**: how to have your account and everything in it deleted, including when you
+  can no longer sign in.
 - **Sign out** of this device.
 
 Your plan is private: other members can never see it. Only what you post is shared, with the people
-your profile allows. To have your account and data deleted, ask
-through **Feedback**.
+your profile allows.

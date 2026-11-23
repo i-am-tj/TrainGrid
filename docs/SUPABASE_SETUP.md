@@ -29,7 +29,7 @@ A laptop or a preview build never holds production values.
 | `RESEND_API_KEY`, `TRAINGRID_EMAIL_FROM`, `TRAINGRID_EMAIL_REPLY_TO` | Server only | Invitation email; see [EMAIL_SETUP.md](EMAIL_SETUP.md). Optional: without them no email is sent. |
 | `TRAINGRID_FEEDBACK_TO` | Server only | Optional. Address that receives a copy of member feedback (needs the email settings). |
 | `TRAINGRID_INVITE_REQUESTS_TO` | Server only | Optional. Address that receives invite requests from the sign-in page; falls back to `TRAINGRID_FEEDBACK_TO`. |
-| `TRAINGRID_CONTACT_EMAIL` | Server only | Optional. Contact address on `/privacy` and `/terms`. |
+| `TRAINGRID_CONTACT_EMAIL` | Server only | Strongly recommended in production. Contact address on `/privacy` and `/terms`, and the only way a former member (who can no longer sign in to send Feedback) can ask for their data to be deleted. The admin Invitations page warns while it is missing. |
 | `TRAINGRID_ALERT_WEBHOOK_URL` | Server only, secret | Optional. Slack/Discord webhook for server error alerts; see [SECURITY.md](SECURITY.md#error-reports-and-alerts). |
 
 The two public values are sent to the browser on purpose. Data is protected by Supabase Auth and
