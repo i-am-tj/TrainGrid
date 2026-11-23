@@ -158,6 +158,12 @@ in the app at `/whats-new`.
 - On phones, home puts today’s sessions first and keeps the header compact.
 - Duplicate week is gone from the planner, keeping it to what you can do on every screen.
 
+### Library
+
+- **Routines first on phones**: search stays at the top of the Library, and the equipment and type
+  filters fold behind a **Filters** button that shows how many are on, so the first routine is
+  higher on the screen. Tablets and computers still show every filter.
+
 ### For maintainers
 
 - `agents/` trimmed to the roadmap and the decisions in force; finished epic records moved to
