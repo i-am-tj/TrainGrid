@@ -5,22 +5,23 @@ import Link from "next/link";
 import { ActionSubmit } from "@/components/ui/ActionSubmit";
 import type { ScheduledSessionRecord } from "@/lib/data/model";
 import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
-import {
-  deleteScheduledSessionAction,
-  updateScheduledSession,
-} from "@/lib/actions";
+import { updateScheduledSession } from "@/lib/actions";
+import type { SessionDeletion } from "@/lib/workouts/deletion";
+import { DeleteSessionButton } from "./DeleteSessionButton";
 import {
   datesOfWeek,
   formatLongDay,
   isValidWeekId,
   TIME_OPTIONS,
 } from "@/lib/week";
-import { btnDanger, btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
+import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
 
 export function EditSessionForm({
   session,
+  deletion,
 }: {
   session: ScheduledSessionRecord;
+  deletion: SessionDeletion;
 }) {
   const [weekId, setWeekId] = useState(session.weekId);
   const [untimed, setUntimed] = useState(session.startTime === null);
@@ -142,21 +143,7 @@ export function EditSessionForm({
         </div>
       </form>
 
-      <form
-        action={deleteScheduledSessionAction}
-        onSubmit={(e) => {
-          if (
-            !confirm("Remove this session from the week? Its routine is kept.")
-          ) {
-            e.preventDefault();
-          }
-        }}
-      >
-        <input type="hidden" name="id" value={session.id} />
-        <input type="hidden" name="weekId" value={session.weekId} />
-        <input type="hidden" name="day" value={session.day} />
-        <ActionSubmit label="Delete" busy="Deleting…" className={btnDanger} />
-      </form>
+      <DeleteSessionButton session={session} deletion={deletion} />
     </div>
   );
 }

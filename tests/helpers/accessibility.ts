@@ -8,6 +8,17 @@ const resolve = createRequire(path.resolve("package.json")).resolve;
 export async function accessibilityResults(page: Page, email = false) {
   await page.addScriptTag({ path: resolve("axe-core/axe.min.js") });
   await page.evaluate(() => document.fonts.ready);
+  // A dialog fading in is translucent until its transition ends, and axe would
+  // measure that half-faded contrast. Transitions are finite; animations such
+  // as loaders may loop forever and are left alone.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation instanceof CSSTransition)
+        .map((animation) => animation.finished.catch(() => undefined)),
+    ),
+  );
   return page.evaluate(async (isEmail) => {
     const axe = (window as typeof window & { axe: typeof import("axe-core") })
       .axe;
