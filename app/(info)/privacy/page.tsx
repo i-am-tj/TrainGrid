@@ -177,9 +177,11 @@ export default function PrivacyPage() {
             <>
               <ul>
                 <li>
-                  <strong>Take it with you:</strong> <em>Download my data</em> on your profile downloads your
-                  routines, sessions, logged workouts, social posts, comments and likes as a file,
-                  whenever you like.
+                  <strong>Take it with you:</strong> <em>Download my data</em> on your profile downloads all
+                  of your routines, planned and quick sessions, logged workouts, social profile,
+                  connections (by username), posts as posted, comments and likes as one file, whenever
+                  you like. It does not include TrainGrid’s shared routines or other members’ posts. If a
+                  part could not be read, the file says so instead of leaving it out silently.
                 </li>
                 <li>
                   <strong>Control who sees your posts:</strong> keep your social profile private,
