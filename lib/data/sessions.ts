@@ -9,6 +9,7 @@ import {
   snapshotFromRoutineItems,
 } from "./mappers";
 import { DataError, type Db, type ScheduledSessionRecord } from "./model";
+import { readAllPages } from "./paging";
 import { getRoutine } from "./routines";
 import {
   adhocSessionInputSchema,
@@ -42,23 +43,29 @@ const SESSION_COLUMNS =
 
 const NOT_FOUND = () => new DataError("not_found", "Session not found.");
 
+async function readWeek(db: Db, userId: string, weekId: string) {
+  const { start, end } = weekDateRange(weekId);
+  return readAllPages((from, to) =>
+    db.from("scheduled_sessions")
+      .select(SESSION_COLUMNS)
+      .eq("user_id", userId)
+      .gte("date", start)
+      .lte("date", end)
+      .order("date")
+      .order("start_time", { nullsFirst: true })
+      .order("created_at")
+      .order("id")
+      .range(from, to),
+  ).catch(() => { throw new Error("Could not load the week."); });
+}
+
 export async function listSessionsForWeek(
   db: Db,
   userId: string,
   rawWeekId: unknown,
 ): Promise<ScheduledSessionRecord[]> {
   const weekId = validate(weekIdSchema, rawWeekId);
-  const { start, end } = weekDateRange(weekId);
-  const { data, error } = await db
-    .from("scheduled_sessions")
-    .select(SESSION_COLUMNS)
-    .eq("user_id", userId)
-    .gte("date", start)
-    .lte("date", end)
-    .order("date")
-    .order("start_time", { nullsFirst: true })
-    .order("created_at");
-  if (error) throw new Error("Could not load the week.");
+  const data = await readWeek(db, userId, weekId);
   return data.map(sessionFromRow);
 }
 
@@ -74,13 +81,16 @@ export async function countSessionsByWeek(
   const start = ranges.map((range) => range.start).sort()[0]!;
   const end = ranges.map((range) => range.end).sort().at(-1)!;
 
-  const { data, error } = await db
-    .from("scheduled_sessions")
-    .select("date")
-    .eq("user_id", userId)
-    .gte("date", start)
-    .lte("date", end);
-  if (error) throw new Error("Could not load the calendar.");
+  const data = await readAllPages((from, to) =>
+    db.from("scheduled_sessions")
+      .select("date")
+      .eq("user_id", userId)
+      .gte("date", start)
+      .lte("date", end)
+      .order("date")
+      .order("id")
+      .range(from, to),
+  ).catch(() => { throw new Error("Could not load the calendar."); });
 
   const counts: Record<string, number> = Object.fromEntries(weekIds.map((weekId) => [weekId, 0]));
   for (const row of data) {
@@ -237,16 +247,9 @@ export async function duplicateWeek(
   input: DuplicateWeekInput,
 ): Promise<number> {
   const { sourceWeekId, destWeekId } = validate(duplicateWeekInputSchema, input);
-  const { start, end } = weekDateRange(sourceWeekId);
   const shift = weeksBetween(sourceWeekId, destWeekId) * 7;
 
-  const { data, error } = await db
-    .from("scheduled_sessions")
-    .select(SESSION_COLUMNS)
-    .eq("user_id", userId)
-    .gte("date", start)
-    .lte("date", end);
-  if (error) throw new Error("Could not load the week.");
+  const data = await readWeek(db, userId, sourceWeekId);
   if (data.length === 0) return 0;
 
   const copies = data.map((row) => ({
