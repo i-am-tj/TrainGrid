@@ -141,8 +141,8 @@ in the app at `/whats-new`.
 ### Landing page
 
 - **Four calm screens**: the opening, the essentials, the product up close, and a closing screen
-  that pairs the note from the founder with how to get in. Each fills the screen as you page
-  through.
+  that pairs the note from the founder with how to get in. Each fills the screen, and the page
+  scrolls the way every other page does.
 - **A cleaner header**: What’s new, Privacy and Terms sit in the navigation, and **Log in** is a
   compact button that stays in view on phones. The footer is a single, quiet row.
 - **Log in buttons that belong**: the label and arrow sit together, at one height and shape, and

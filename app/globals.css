@@ -203,10 +203,9 @@ body {
   to { transform: none; }
 }
 
-/* Each section after the hero fills the screen, so section paging lands on whole sections. */
+/* Each section after the hero fills the screen, so a section link shows one whole section. */
 .landing > :is(#features, #preview, #workout, #access) { min-height: 100svh; display: grid; align-content: center; }
 .landing > section[id] { scroll-margin-top: 2rem; }
-html.lenis .landing > section[id] { scroll-margin-top: 0; }
 /* One gutter for every landing section: 1rem a side on phones, growing to 3rem on tablets and small laptops. */
 .landing-container { width: min(100% - clamp(2rem, 8vw, 6rem), 76rem); margin-inline: auto; }
 .landing-section { padding-block: clamp(4rem, 8vw, 7rem); }

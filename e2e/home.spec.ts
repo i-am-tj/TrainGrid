@@ -63,7 +63,7 @@ test.describe("public landing page", () => {
     { name: "mobile", viewport: { width: 390, height: 844 }, reducedMotion: "no-preference" },
     { name: "reduced motion", viewport: { width: 390, height: 844 }, reducedMotion: "reduce" },
   ] as const) {
-    test("landing section navigation works with " + name, async ({ page }) => {
+    test("the landing page scrolls natively and its section links work, " + name, async ({ page }) => {
       await page.setViewportSize(viewport);
       await page.emulateMedia({ reducedMotion });
       await page.goto("/");
@@ -73,45 +73,22 @@ test.describe("public landing page", () => {
       );
 
       const main = page.getByRole("main");
-      async function expectAtSection(id: string) {
-        await expect.poll(() => main.locator(id).evaluate(el => Math.abs(el.getBoundingClientRect().top)))
-          .toBeLessThan(1);
-      }
-      if (reducedMotion === "reduce") {
-        await expect(page.locator("html")).not.toHaveClass(/\blenis\b/);
-      } else {
-        await expect(page.locator("html")).toHaveClass(/\blenis\b/);
-        if (name === "desktop") {
-          const intermediate = page.waitForFunction(() => scrollY > 0 && scrollY < 200);
-          await page.mouse.wheel(0, 40);
-          await intermediate;
-          // Simulate the decaying wheel events from the same trackpad gesture.
-          for (const delta of [20, 12, 5, 1]) await page.mouse.wheel(0, delta);
-          await expectAtSection("#features");
-          await page.mouse.wheel(0, 40);
-          await expectAtSection("#preview");
-          await page.mouse.wheel(0, -40);
-          await expectAtSection("#features");
-        } else {
-          const session = await page.context().newCDPSession(page);
-          await session.send("Input.dispatchTouchEvent", {
-            type: "touchStart", touchPoints: [{ x: 180, y: 700 }],
-          });
-          for (const y of [640, 570, 500, 430, 360]) {
-            await session.send("Input.dispatchTouchEvent", {
-              type: "touchMove", touchPoints: [{ x: 180, y }],
-            });
-            await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
-          }
-          const beforeRelease = await page.evaluate(() => scrollY);
-          expect(beforeRelease).toBeGreaterThan(0);
-          await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-          await expectAtSection("#features");
-          await session.detach();
-        }
-      }
+      // Native scrolling (PRODUCT_AUDIT F17): a wheel scrolls by its own amount
+      // and stays there, instead of paging to the next section.
+      await expect(page.locator("html")).not.toHaveClass(/\blenis\b/);
+      await page.mouse.move(viewport.width / 2, viewport.height / 2);
+      await page.mouse.wheel(0, 120);
+      await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(0);
+      await page.waitForTimeout(1500);
+      const featuresTop = await main.locator("#features").evaluate(el => el.getBoundingClientRect().top);
+      expect(featuresTop).toBeGreaterThan(100);
+      await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+
       await main.getByRole("link", { name: "Explore features" }).click();
       await expect(main.locator("#features")).toBeFocused();
+      // The link lands on the section, below its 2rem scroll margin.
+      await expect.poll(() => main.locator("#features").evaluate(el => Math.round(el.getBoundingClientRect().top)))
+        .toBe(32);
 
       await main.getByRole("link", { name: "Back to top" }).click();
       await expect(page).toHaveURL(/\/#top$/);
