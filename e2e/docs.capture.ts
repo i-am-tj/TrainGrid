@@ -1,5 +1,4 @@
 import { mkdir } from "node:fs/promises";
-import { createClient } from "@supabase/supabase-js";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { addDays, mondayOfIsoWeek } from "../lib/calendar-date";
 import { todayIn } from "../lib/time-zone";
@@ -9,7 +8,7 @@ import {
   makeLocalMember,
   signInAsLocalAdmin,
   signInAsNewLocalUser,
-  supabaseUrl,
+  serviceClient as admin,
 } from "./local-supabase";
 
 /**
@@ -22,11 +21,6 @@ const OUT = "docs/images/v1";
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
 
-function admin() {
-  const key = process.env.SUPABASE_SECRET_KEY;
-  if (!key) throw new Error("SUPABASE_SECRET_KEY is not set");
-  return createClient(supabaseUrl, key, { auth: { persistSession: false } });
-}
 
 type Item = { name: string; target?: string; rest?: string; instruction?: string; equipment?: string[] };
 

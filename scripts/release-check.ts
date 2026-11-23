@@ -13,6 +13,7 @@
  * Read-only: it fetches the Data API's OpenAPI document and nothing else.
  * Exits 1 when the project is behind, so a release can be gated on it.
  */
+import { isLocalSupabaseOrigin } from "../lib/supabase/local-origin";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { describeGap, fetchSchemaShape, isBehind, sameShape, schemaGap, type SchemaShape } from "../lib/release/schema";
@@ -28,19 +29,19 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL && existsSync(path.join(root, ".env.lo
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
 const secretKey = process.env.SUPABASE_SECRET_KEY?.trim();
 const args = new Set(process.argv.slice(2));
-const isLocal = (value: string) => /^http:\/\/(127\.0\.0\.1|localhost):/.test(value);
+
 
 async function main() {
   if (!url || !secretKey) {
     fail("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (the project's secret key).");
   }
-  const target = isLocal(url) ? "the local stack" : new URL(url).host;
+  if (args.has("--write") && !isLocalSupabaseOrigin(url)) fail("--write requires the local stack.");
+  const target = isLocalSupabaseOrigin(url) ? "the local stack" : new URL(url).host;
   const actual = await fetchSchemaShape(url, secretKey, { timeoutMs: 15_000 }).catch((error: Error) =>
     fail(`Could not read the schema of ${target}: ${error.message}`),
   );
 
   if (args.has("--write")) {
-    if (!isLocal(url)) fail("--write reads the local stack only. Apply the migrations locally first.");
     writeFileSync(manifestPath, `${JSON.stringify(actual, null, 2)}\n`);
     console.log(`Wrote ${path.relative(root, manifestPath)}: ${Object.keys(actual.tables).length} tables, ${actual.functions.length} functions.`);
     return;

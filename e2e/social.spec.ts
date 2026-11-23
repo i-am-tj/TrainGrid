@@ -7,7 +7,9 @@ import {
   createLocalPostFor,
   createLocalSessionFor,
   createLocalSocialProfile,
+  requireEmptyCaptureDirectory,
   revokeLocalMember,
+  serviceClient,
   signInAsNewLocalMember,
 } from "./local-supabase";
 
@@ -19,6 +21,22 @@ import {
  */
 
 const uniq = () => crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+
+test("social capture preserves a pre-existing local profile", async ({ context, baseURL }) => {
+  const { userId } = await signInAsNewLocalMember(context, baseURL!);
+  const username = `capture_guard_${uniq()}`;
+  const admin = serviceClient();
+  try {
+    await createLocalSocialProfile(userId, { username, displayName: "Capture guard" });
+    await expect(requireEmptyCaptureDirectory()).rejects.toThrow("empty local social directory");
+    const { data, error } = await admin.from("social_profiles").select("username").eq("user_id", userId).single();
+    expect(error).toBeNull();
+    expect(data?.username).toBe(username);
+  } finally {
+    const { error } = await admin.auth.admin.deleteUser(userId);
+    expect(error).toBeNull();
+  }
+});
 
 async function hydrated(page: Page) {
   await page.waitForFunction(() => {

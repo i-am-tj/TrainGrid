@@ -1,3 +1,4 @@
+import { isLocalSupabaseOrigin } from "../../lib/supabase/local-origin";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import type { Db } from "@/lib/data/model";
@@ -13,7 +14,7 @@ const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const secretKey = process.env.SUPABASE_SECRET_KEY ?? "";
 
 export const integrationReady =
-  /^http:\/\/(127\.0\.0\.1|localhost):/.test(url) && publishableKey !== "" && secretKey !== "";
+  isLocalSupabaseOrigin(url) && publishableKey !== "" && secretKey !== "";
 
 export function service(): Db {
   if (!integrationReady) throw new Error("Integration tests need the local Supabase stack");

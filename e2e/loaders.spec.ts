@@ -1,8 +1,9 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { docImage } from "../tests/helpers/doc-images";
 import { todayIn } from "../lib/time-zone";
-import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState } from "./local-supabase";
+import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState, supabaseUrl } from "./local-supabase";
 
 /**
  * Loaders: the TrainGrid logo turning clockwise, as a page loader for client
@@ -252,8 +253,18 @@ test("a slow page says so after five seconds and asks the server again", async (
  * page and keeps that section waiting. Resolves once the lock is held.
  */
 async function lockRoutinesTable(ms: number): Promise<{ released: Promise<void> } | null> {
+  // Only hold a lock in the same local CLI project the app is actually using.
+  const config = readFileSync("supabase/config.toml", "utf8");
+  const project = /^project_id\s*=\s*"([a-zA-Z0-9_-]+)"/m.exec(config)?.[1];
+  if (!project) throw new Error("Cannot identify the local Supabase project.");
+  const gateway = spawnSync("docker", ["port", `supabase_kong_${project}`, "8000/tcp"], { encoding: "utf8" });
+  if (gateway.status !== 0) return null;
+  const apiPort = new URL(supabaseUrl).port;
+  if (!gateway.stdout.trim().split(/\s+/).some((binding) => binding.endsWith(`:${apiPort}`))) {
+    throw new Error("The configured Supabase API and the Docker project do not match.");
+  }
   // Statements go one by one over stdin, so "locked" is printed while the lock is held.
-  const child = spawn("docker", ["exec", "-i", "supabase_db_traingrid", "psql", "-U", "postgres", "-At", "-f", "-"]);
+  const child = spawn("docker", ["exec", "-i", `supabase_db_${project}`, "psql", "-U", "postgres", "-At", "-f", "-"]);
   child.stdin.end(
     `begin;\nlock table public.routines in access exclusive mode;\nselect 'locked';\nselect pg_sleep(${ms / 1000});\ncommit;\n`,
   );
