@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { LandingScroll } from "@/components/marketing/LandingScroll";
 import { LandingPage } from "@/components/marketing/LandingPage";
 import { landingMetadata } from "@/components/marketing/metadata";
 import { canonicalUrl } from "@/lib/site";
@@ -16,10 +15,7 @@ export function generateMetadata(): Metadata {
 }
 
 export default function HomePage() {
-  return (
-    <>
-      <LandingScroll />
-      <LandingPage />
-    </>
-  );
+  // Native scrolling only: the page no longer pages section by section on a
+  // wheel or swipe (PRODUCT_AUDIT F17); the section links still jump.
+  return <LandingPage />;
 }
