@@ -618,6 +618,16 @@ export function WorkoutPlayer({
               <Icon name="plus" className="size-4" />
               Add exercise
             </button>
+            <p className="mt-6 text-sm text-stone-600">
+              Started by mistake?{" "}
+              <button
+                type="button"
+                onClick={() => setDiscardOpen(true)}
+                className="ui-control min-h-10 rounded-sm font-medium text-red-800 underline underline-offset-4 hover:text-red-900"
+              >
+                Discard workout
+              </button>
+            </p>
           </div>
         ) : (
           <p className="mt-10 text-center text-sm text-stone-600">This session has no exercises.</p>

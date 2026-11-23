@@ -14,6 +14,9 @@ in the app at `/whats-new`.
   set, with an optional rest timer), log your sets as usual, then **name it** when you finish. It’s
   saved as today’s session, so it shows on Home and in the planner. Discarding it leaves nothing
   behind.
+- **Discard a started workout from anywhere**: a workout in progress now has **Discard workout** on
+  Home’s session card and on the session page (and an empty quick workout offers it on its own
+  screen), always with a confirmation. A planned session stays, ready to start again.
 - **Post about it**: the finish screen takes you straight to the post screen. If the session has a
   finished workout you can also share the **time trained**, **sets done** and **volume lifted**,
   each only if you tick it. Exercises and individual sets are never shared, and nothing is posted

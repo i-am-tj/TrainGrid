@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { WorkoutItemsView } from "@/components/session/WorkoutItemsView";
+import { DiscardWorkoutButton } from "@/components/workout/DiscardWorkoutButton";
 import { getRoutine } from "@/lib/data/routines";
 import { memberData } from "@/lib/data/server";
 import { getSession } from "@/lib/data/sessions";
@@ -38,6 +39,12 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
       </p>
 
       <WorkoutCallout sessionId={session.id} log={log} hasItems={session.items.length > 0} />
+      {log?.status === "in_progress" ? (
+        <p className="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-stone-600">
+          Started by mistake, or not training today?
+          <DiscardWorkoutButton sessionId={session.id} name={session.name} quick={session.origin === "quick"} variant="link" />
+        </p>
+      ) : null}
 
       <p className="mt-3 rounded-md bg-stone-100 px-3 py-2 text-sm text-stone-700">
         {source ? (

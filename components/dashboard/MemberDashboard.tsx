@@ -202,9 +202,12 @@ export function DashboardSectionError({ message, retryHref = "/home" }: { messag
 export function TodaySessionList({
   sessions,
   addSessionHref,
+  inProgressAction,
 }: {
   sessions: DashboardData["todaySessions"];
   addSessionHref: string;
+  /** An extra action for a session whose workout is in progress (Discard workout). */
+  inProgressAction?: (session: DashboardData["todaySessions"][number]) => ReactNode;
 }) {
   if (!sessions.length)
     return (
@@ -292,6 +295,7 @@ export function TodaySessionList({
               >
                 Details
               </Link>
+              {session.workout === "in_progress" && inProgressAction ? inProgressAction(session) : null}
             </div>
           ) : (
             <Link
