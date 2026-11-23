@@ -1,5 +1,5 @@
-import { mkdir } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { docImage } from "../tests/helpers/doc-images";
 import { accessibilityResults } from "../tests/helpers/accessibility";
 import { todayIn } from "../lib/time-zone";
 import {
@@ -16,12 +16,8 @@ async function theme(page: Page, value: "light" | "dark") {
   });
   if (await toggle.count()) await toggle.click();
 }
-/** Screenshots only on request (UI_SHOTS=1), so a test run never rewrites docs/images. */
 async function capture(page: Page, name: string) {
-  if (!process.env.UI_SHOTS) return;
-  await mkdir(folder, { recursive: true });
-  await page.screenshot({
-    path: `${folder}/${name}.png`,
+  await docImage(page, `${folder}/${name}.png`, {
     animations: "disabled",
     style: "nextjs-portal { display: none !important; }",
   });

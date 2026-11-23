@@ -1,5 +1,5 @@
-import { mkdir } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { docImage } from "../tests/helpers/doc-images";
 import { accessibilityResults } from "../tests/helpers/accessibility";
 import {
   createAcceptedInvitation,
@@ -84,9 +84,7 @@ for (const kind of ["invitation", "access"] as const) {
           const bounds = (await dialog.boundingBox())!;
           expect(bounds.x).toBeGreaterThanOrEqual(0);
           expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
-          await mkdir("docs/images/epic-3/revoke-modal", { recursive: true });
-          await dialog.screenshot({
-            path: `docs/images/epic-3/revoke-modal/${kind}-${width}-${theme}.png`,
+          await docImage(dialog, `docs/images/epic-3/revoke-modal/${kind}-${width}-${theme}.png`, {
             animations: "disabled",
           });
           await page.keyboard.press("Escape");

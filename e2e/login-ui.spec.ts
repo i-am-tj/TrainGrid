@@ -1,5 +1,5 @@
-import { mkdir } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { docImage } from "../tests/helpers/doc-images";
 import { supabaseState } from "./local-supabase";
 
 for (const scheme of ["light", "dark"] as const) {
@@ -32,9 +32,7 @@ for (const scheme of ["light", "dark"] as const) {
           page.getByRole("button", { name: /^Switch to/ }),
         ).toBeVisible();
         await page.evaluate(() => document.fonts.ready);
-        await mkdir("docs/images/epic-3/ui-02", { recursive: true });
-        await page.screenshot({
-          path: `docs/images/epic-3/ui-02/login-live-${width}-${scheme}.png`,
+        await docImage(page, `docs/images/epic-3/ui-02/login-live-${width}-${scheme}.png`, {
           fullPage: true,
           style: "nextjs-portal { display: none !important; }",
         });

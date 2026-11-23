@@ -1,5 +1,5 @@
-import { mkdir } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { docImage } from "../tests/helpers/doc-images";
 import { accessibilityResults } from "../tests/helpers/accessibility";
 import { createRoutine } from "./planner-helpers";
 import { signInAsNewLocalMember } from "./local-supabase";
@@ -49,9 +49,7 @@ test("routine deletion modal is accessible, responsive and safely dismissible", 
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.x + box.width).toBeLessThanOrEqual(width);
       expect((await accessibilityResults(page)).violations).toEqual([]);
-      await mkdir("docs/images/epic-3/enhancements", { recursive: true });
-      await page.screenshot({
-        path: `docs/images/epic-3/enhancements/delete-routine-${width}-${scheme}.png`,
+      await docImage(page, `docs/images/epic-3/enhancements/delete-routine-${width}-${scheme}.png`, {
         style: "nextjs-portal { display: none !important; }",
       });
       await page.keyboard.press("Escape");

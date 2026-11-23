@@ -1,6 +1,7 @@
-import { readFile, mkdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
+import { docImage } from "../helpers/doc-images";
 
 const root = path.resolve(".next/ui-preview");
 test.beforeEach(async ({ page }) => {
@@ -81,9 +82,7 @@ for (const theme of ["light", "dark"] as const) {
           (image as HTMLImageElement).decode(),
         );
         await page.evaluate(() => window.scrollTo(0, 0));
-        await mkdir("docs/images/epic-3", { recursive: true });
-        await page.screenshot({
-          path: `docs/images/epic-3/landing-${width}-${theme}.png`,
+        await docImage(page, `docs/images/epic-3/landing-${width}-${theme}.png`, {
           fullPage: true,
         });
       }
@@ -156,9 +155,7 @@ test("the workout section shows the live workout screen as a labelled example", 
     for (const width of [320, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       await section.scrollIntoViewIfNeeded();
-      await mkdir("docs/images/live-workouts", { recursive: true });
-      await section.screenshot({
-        path: `docs/images/live-workouts/landing-workout-${width}-${theme}.png`,
+      await docImage(section, `docs/images/live-workouts/landing-workout-${width}-${theme}.png`, {
         animations: "disabled",
       });
     }
@@ -232,9 +229,7 @@ test("the founder note uses one card with aligned portrait and details in both t
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
-      await mkdir("docs/images/epic-3/loaders-creator", { recursive: true });
-      await card.screenshot({
-        path: `docs/images/epic-3/loaders-creator/creator-${width}-${theme}.png`,
+      await docImage(card, `docs/images/epic-3/loaders-creator/creator-${width}-${theme}.png`, {
         animations: "disabled",
       });
     }

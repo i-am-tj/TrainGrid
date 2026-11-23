@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
-import { mkdir } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { docImage } from "../tests/helpers/doc-images";
 import { todayIn } from "../lib/time-zone";
 import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState } from "./local-supabase";
 
@@ -363,9 +363,7 @@ for (const theme of ["light", "dark"] as const) {
         page.getByRole("button", { name: "Signing you out...", exact: true }),
       ).toBeDisabled();
       await expect(loader.locator("svg")).toHaveCSS("animation-name", "none");
-      await mkdir("docs/images/epic-3/loaders-creator", { recursive: true });
-      await page.screenshot({
-        path: `docs/images/epic-3/loaders-creator/signout-${width}-${theme}.png`,
+      await docImage(page, `docs/images/epic-3/loaders-creator/signout-${width}-${theme}.png`, {
         animations: "disabled",
         style: "nextjs-portal { display: none !important; }",
       });

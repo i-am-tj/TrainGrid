@@ -1,6 +1,7 @@
-import { readFile, mkdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
+import { docImage } from "../helpers/doc-images";
 
 test.beforeEach(async ({ page }) => {
   await page.route("http://ui-preview.test/**", async (route) => {
@@ -67,9 +68,7 @@ for (const width of [320, 360, 768, 1024, 1440]) {
             page.getByRole("link", { name: "Open TrainGrid" }),
           ).toHaveAttribute("href", "http://ui-preview.test/login");
           if (!dark && [360, 1440].includes(width)) {
-            await mkdir("docs/images/epic-3/ui-03", { recursive: true });
-            await page.screenshot({
-              path: `docs/images/epic-3/ui-03/email-${width}.png`,
+            await docImage(page, `docs/images/epic-3/ui-03/email-${width}.png`, {
               fullPage: true,
             });
           }
