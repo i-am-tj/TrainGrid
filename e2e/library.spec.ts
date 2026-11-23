@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { accessibilityResults } from "../tests/helpers/accessibility";
 import {
   createLocalRoutineFor,
   hasLocalSecretKey,
@@ -293,4 +294,52 @@ test("the search controls fit a phone screen", async ({ page }) => {
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 4,
   );
   expect(overflow).toBe(false);
+});
+
+test("on a phone, equipment and type fold behind Filters so the first routine is higher", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/library");
+  const toggle = page.getByRole("button", { name: /^Filters/ });
+  const equipment = page.getByLabel("Equipment");
+  const categories = page.getByRole("navigation", { name: "Category" });
+  await expect(page.getByRole("searchbox", { name: "Search routines" })).toBeVisible();
+  await expect(toggle).toHaveAccessibleName("Filters");
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(equipment).toBeHidden();
+  await expect(categories).toBeHidden();
+  // The first result starts in the top half of the screen.
+  const first = await cards(page).first().boundingBox();
+  expect(first!.y).toBeLessThan(844 / 2 + 100);
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(equipment).toBeVisible();
+  await expect(categories).toBeVisible();
+  expect((await accessibilityResults(page)).violations).toEqual([]);
+
+  // Choosing a type keeps the panel open and counts the active filter.
+  await categories.getByRole("link", { name: "Strength" }).click();
+  await page.waitForURL(/type=strength/);
+  await expect(toggle).toHaveAccessibleName("Filters 1 active");
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await equipment.selectOption("barbell");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.waitForURL(/equipment=barbell/);
+  await expect(toggle).toHaveAccessibleName("Filters 2 active");
+
+  // A fresh visit starts folded, still showing the count, with Clear filters in the toolbar.
+  await page.reload();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(toggle).toHaveAccessibleName("Filters 2 active");
+  await expect(categories).toBeHidden();
+  await page.getByRole("link", { name: "Clear filters" }).click();
+  await expect(toggle).toHaveAccessibleName("Filters");
+});
+
+test("from a tablet up, the filters are always shown and there is no Filters button", async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.goto("/library");
+  await expect(page.getByRole("button", { name: /^Filters/ })).toBeHidden();
+  await expect(page.getByLabel("Equipment")).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Category" })).toBeVisible();
 });

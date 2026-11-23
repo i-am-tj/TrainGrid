@@ -146,6 +146,8 @@ test("heading, filters, toolbar and results share the same left edge", async ({ 
   for (const width of [1280, 360]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/library");
+    // On a phone the type filters are folded behind Filters (PRODUCT_AUDIT F15).
+    if (width < 640) await page.getByRole("button", { name: /^Filters/ }).click();
     const left = [
       await box(page.getByRole("heading", { name: "Library", level: 1 })),
       await box(page.getByRole("search", { name: "Search the library" })),

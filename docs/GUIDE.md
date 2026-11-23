@@ -87,8 +87,8 @@ post screen.
 ## 4. Routines and the library
 
 - **Library** has three views: **All**, **TrainGrid** (the shared routines) and **Mine** (yours).
-- **Search** by name, description or exercise, and filter by type and equipment. Every search is a
-  link you can bookmark.
+- **Search** by name, description or exercise, and filter by type and equipment (on a phone, tap
+  **Filters**). Every search is a link you can bookmark.
 - **Copy to My Library** makes an editable copy of a TrainGrid routine. The original never changes.
 - **Create routine** builds your own, with workout items: instruction, sets or target, rest, notes,
   equipment and an optional YouTube demo link.

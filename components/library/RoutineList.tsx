@@ -20,6 +20,7 @@ import {
 } from "@/lib/library/query";
 import { routineAtAGlance } from "@/lib/library/summary";
 import { btnPrimary, btnSecondary, fieldClass, TYPE_SHORT } from "@/lib/ui";
+import { FiltersDisclosure, FiltersToggle } from "./FiltersDisclosure";
 import { SourceLabel } from "./SourceLabel";
 
 const CATEGORY_FILTERS: Array<{ id: "all" | SessionType; label: string }> = [
@@ -49,74 +50,92 @@ function describeFilters(query: LibraryQuery): string {
  * so they stay on screen while a new search or filter loads. Next's <Form>
  * makes the GET search an in-app navigation; without JavaScript it is still a
  * plain GET form. Keyed by the query so the fields follow back and forward.
+ *
+ * On phones, equipment and type sit behind a Filters button that shows how
+ * many are active; Clear filters is in the results toolbar (PRODUCT_AUDIT F15).
  */
 export function LibraryFilters({ query }: { query: LibraryQuery }) {
+  const activeFilters = (query.type !== "all" ? 1 : 0) + (query.equipment !== "all" ? 1 : 0);
   return (
-    <div key={libraryHref(query)}>
-      <Form
-        action="/library"
-        role="search"
-        aria-label="Search the library"
-        className="flex flex-col gap-2 sm:flex-row sm:items-end"
-      >
-        {query.scope !== "all" ? (
-          <input type="hidden" name="scope" value={query.scope} />
-        ) : null}
-        {query.type !== "all" ? (
-          <input type="hidden" name="type" value={query.type} />
-        ) : null}
-        <label className="block text-sm font-medium sm:flex-1">
-          Search routines
-          <input
-            type="search"
-            name="q"
-            defaultValue={query.q}
-            maxLength={MAX_SEARCH_LENGTH}
-            placeholder="Name, description or exercise"
-            className={fieldClass}
-          />
-        </label>
-        <label className="block text-sm font-medium sm:w-48">
-          Equipment
-          <select
-            name="equipment"
-            defaultValue={query.equipment === "all" ? "" : query.equipment}
-            className={fieldClass}
+    <FiltersDisclosure>
+      <div key={libraryHref(query)}>
+        <Form
+          action="/library"
+          role="search"
+          aria-label="Search the library"
+          className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 sm:flex sm:items-end"
+        >
+          {query.scope !== "all" ? (
+            <input type="hidden" name="scope" value={query.scope} />
+          ) : null}
+          {query.type !== "all" ? (
+            <input type="hidden" name="type" value={query.type} />
+          ) : null}
+          <label className="block text-sm font-medium sm:flex-1">
+            Search routines
+            <input
+              type="search"
+              name="q"
+              defaultValue={query.q}
+              maxLength={MAX_SEARCH_LENGTH}
+              placeholder="Name, description or exercise"
+              className={fieldClass}
+            />
+          </label>
+          <label
+            id="library-equipment-filter"
+            className="col-span-2 row-start-3 hidden text-sm font-medium group-data-[filters-open]/filters:block sm:block sm:w-48"
           >
-            <option value="">Any equipment</option>
-            {EQUIPMENT_TYPES.map((tag) => (
-              <option key={tag} value={tag}>
-                {EQUIPMENT_LABELS[tag]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" className={btnPrimary}>
-          Search
-        </button>
-      </Form>
+            Equipment
+            <select
+              name="equipment"
+              defaultValue={query.equipment === "all" ? "" : query.equipment}
+              className={fieldClass}
+            >
+              <option value="">Any equipment</option>
+              {EQUIPMENT_TYPES.map((tag) => (
+                <option key={tag} value={tag}>
+                  {EQUIPMENT_LABELS[tag]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" className={btnPrimary}>
+            Search
+          </button>
+          <FiltersToggle
+            active={activeFilters}
+            controls="library-equipment-filter library-category-filter"
+            className="col-span-2 row-start-2 justify-self-start"
+          />
+        </Form>
 
-      <nav aria-label="Category" className="mt-3">
-        <ul className="flex flex-wrap gap-2">
-          {CATEGORY_FILTERS.map((f) => {
-            const active = query.type === f.id;
-            return (
-              <li key={f.id}>
-                <Link
-                  prefetch={false}
-                  href={libraryHref(query, { type: f.id })}
-                  scroll={false}
-                  className={active ? btnPrimary : btnSecondary}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {f.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </div>
+        <nav
+          id="library-category-filter"
+          aria-label="Category"
+          className="mt-3 hidden group-data-[filters-open]/filters:block sm:block"
+        >
+          <ul className="flex flex-wrap gap-2">
+            {CATEGORY_FILTERS.map((f) => {
+              const active = query.type === f.id;
+              return (
+                <li key={f.id}>
+                  <Link
+                    prefetch={false}
+                    href={libraryHref(query, { type: f.id })}
+                    scroll={false}
+                    className={active ? btnPrimary : btnSecondary}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {f.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+    </FiltersDisclosure>
   );
 }
 
