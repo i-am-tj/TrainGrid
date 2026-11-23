@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 import Link from "next/link";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
+import { QuickStart } from "@/components/dashboard/QuickStart";
 import { displayVersion, isRecentRelease } from "@/lib/changelog";
 import { loadReleases } from "@/lib/changelog-file";
 import {
@@ -86,6 +87,7 @@ export default async function MemberHomePage() {
   return (
     <DashboardShell
       frame={frame}
+      headerAction={<QuickStart />}
       notice={
         latest && isRecentRelease(latest, today.date) ? (
           <Link

@@ -15,6 +15,15 @@ import {
   workoutProgressSchema,
   type PlannedExercise,
   type WorkoutEntries,
+  alignFreeForm,
+  defaultSetMode,
+  emptySet,
+  formatRestChoice,
+  newFreeFormExercise,
+  QUICK_WORKOUT_NAMES,
+  REST_CHOICES,
+  trainedMinutes,
+  workoutEntriesSchema,
 } from "./model";
 
 const ID = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -243,5 +252,64 @@ describe("history", () => {
     expect(formatVolume(612.5)).toBe("612.5");
     expect(formatVolume(6240)).toBe("6,240");
     expect(formatVolume(12_430)).toBe("12.4k");
+  });
+});
+
+describe("free-form workouts", () => {
+  const id = "6f1c3c55-9a5e-4c1b-9b7e-2f1a7d3e8c40";
+
+  it("adds an exercise with three open sets, or one for a tick", () => {
+    const lift = newFreeFormExercise({ name: "  Back squat ", mode: "load", restSeconds: 90 }, id);
+    expect(lift.entry).toEqual({
+      item_id: id,
+      name: "Back squat",
+      sets: [emptySet(), emptySet(), emptySet()],
+      mode: "load",
+      rest_seconds: 90,
+    });
+    expect(lift.plan).toMatchObject({ itemId: id, name: "Back squat", mode: "load", restSeconds: 90, rest: "90 s", sets: 3 });
+    const run = newFreeFormExercise({ name: "400 m", mode: "done", restSeconds: null }, id);
+    expect(run.entry.sets).toHaveLength(1);
+    expect(run.plan).toMatchObject({ mode: "done", restSeconds: null, rest: "" });
+    expect(() => newFreeFormExercise({ name: "  ", mode: "reps", restSeconds: null }, id)).toThrow();
+  });
+
+  it("reads exercises back from the log, inferring the mode of older entries", () => {
+    const stored: WorkoutEntries = {
+      version: 1,
+      items: [
+        { item_id: id, name: "Plank", sets: [{ weight: null, reps: null, done: true }], mode: "done", rest_seconds: null },
+        { item_id: id, name: "Curl", sets: [{ weight: 12, reps: 10, done: true }] },
+        { item_id: id, name: "Dips", sets: [{ weight: null, reps: 8, done: false }] },
+      ],
+    };
+    const { exercises, entries } = alignFreeForm(stored);
+    expect(entries).toBe(stored);
+    expect(exercises.map((exercise) => exercise.mode)).toEqual(["done", "load", "reps"]);
+  });
+
+  it("stores the mode and rest with the log, and validates them", () => {
+    const ok = workoutEntriesSchema.safeParse({
+      version: 1,
+      items: [{ item_id: id, name: "Row", sets: [], mode: "load", rest_seconds: 120 }],
+    });
+    expect(ok.success).toBe(true);
+    expect(workoutEntriesSchema.safeParse({ version: 1, items: [{ item_id: id, name: "Row", sets: [], mode: "fly" }] }).success).toBe(false);
+    expect(workoutEntriesSchema.safeParse({ version: 1, items: [{ item_id: id, name: "Row", sets: [], rest_seconds: 2 }] }).success).toBe(false);
+  });
+
+  it("picks a sensible default and labels rest choices", () => {
+    expect(defaultSetMode("strength")).toBe("load");
+    expect(defaultSetMode("running")).toBe("done");
+    expect(defaultSetMode("plyometrics")).toBe("reps");
+    expect(REST_CHOICES.map(formatRestChoice)).toEqual(["No timer", "1 min", "90 s", "2 min", "3 min"]);
+    expect(QUICK_WORKOUT_NAMES.strength).toBe("Quick lift");
+  });
+
+  it("counts minutes trained, within 1 and 1440", () => {
+    expect(trainedMinutes("2026-11-23T06:00:00Z", "2026-11-23T06:47:20Z")).toBe(47);
+    expect(trainedMinutes("2026-11-23T06:00:00Z", "2026-11-23T06:00:05Z")).toBe(1);
+    expect(trainedMinutes("2026-11-23T06:00:00Z", "2026-11-25T06:00:00Z")).toBe(1440);
+    expect(trainedMinutes("bad", "worse")).toBe(1);
   });
 });

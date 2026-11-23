@@ -410,7 +410,7 @@ describe.skipIf(!integrationReady)("social (local Supabase)", () => {
       await followMember(user.db, user.id, pub.id);
 
       const data = await exportUserData(user.db, user.id);
-      expect(data.version).toBe(4);
+      expect(data.version).toBe(5);
       expect(data.social.profile).toMatchObject({ username: p.username, visibility: "private" });
       expect(data.social.following).toEqual([expect.objectContaining({ username: pubName, status: "accepted" })]);
       expect(data.social.posts.map((post) => post.caption)).toEqual(["Exported"]);

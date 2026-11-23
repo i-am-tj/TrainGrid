@@ -4,12 +4,15 @@ import Link from "next/link";
 import { useActionState, useId, useState } from "react";
 import { createPostAction, updatePostAction } from "@/lib/social/actions";
 import { IDLE } from "@/lib/social/form-state";
-import { CAPTION_MAX, type SessionSummary, type Visibility } from "@/lib/social/model";
+import { CAPTION_MAX, formatMinutes, type SessionSummary, type Visibility, type WorkoutShare } from "@/lib/social/model";
 import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
 import { SessionSummaryBlock, VisibilityBadge } from "./parts";
 import { SocialAvatar } from "./SocialAvatar";
 
 type Author = { username: string; displayName: string; avatarUrl: string | null; visibility: Visibility };
+
+/** The session's finished workout, as the database will summarise it when posting. */
+export type FinishedWorkout = { minutes: number; sets: number; volume: number; unit: "kg" | "lb" };
 
 /**
  * Writes a session update. The preview on the right (below, on phones) is
@@ -27,6 +30,8 @@ export function PostComposer({
   postId,
   initialCaption = "",
   initialShowsDuration = false,
+  workout = null,
+  postedWorkout,
   cancelHref,
   currentYear,
 }: {
@@ -37,19 +42,37 @@ export function PostComposer({
   postId?: string;
   initialCaption?: string;
   initialShowsDuration?: boolean;
+  /** When posting: the session's finished workout, if any. */
+  workout?: FinishedWorkout | null;
+  /** When editing: what the post already shares from its workout. */
+  postedWorkout?: WorkoutShare;
   cancelHref: string;
   currentYear: number;
 }) {
   const editing = postId !== undefined;
   const [state, action, pending] = useActionState(editing ? updatePostAction : createPostAction, IDLE);
   const [caption, setCaption] = useState(initialCaption);
-  const [showsDuration, setShowsDuration] = useState(initialShowsDuration);
+  const [showsDuration, setShowsDuration] = useState(initialShowsDuration || workout !== null);
+  const [showsSets, setShowsSets] = useState(workout !== null && workout.sets > 0);
+  const [showsVolume, setShowsVolume] = useState(false);
   const captionId = useId();
   const counterId = useId();
   const errorId = useId();
-  const hasDuration = session.durationMinutes != null;
+  // A finished workout's real time beats the planned duration (as the database does).
+  const durationToShare = workout ? workout.minutes : session.durationMinutes;
+  const hasDuration = durationToShare != null;
   // When editing, `session` is the post's own snapshot, already as shared.
-  const shared: SessionSummary = editing ? session : { ...session, durationMinutes: showsDuration ? session.durationMinutes : null };
+  const shared: SessionSummary = editing ? session : { ...session, durationMinutes: showsDuration ? durationToShare : null };
+  const sharedWorkout: WorkoutShare | undefined = editing
+    ? postedWorkout
+    : workout
+      ? {
+          completed: true,
+          sets: showsSets && workout.sets > 0 ? workout.sets : null,
+          volume: showsVolume && workout.volume > 0 ? workout.volume : null,
+          unit: showsVolume && workout.volume > 0 ? workout.unit : null,
+        }
+      : undefined;
   const over = caption.length > CAPTION_MAX;
 
   return (
@@ -100,12 +123,46 @@ export function PostComposer({
                     onChange={(event) => setShowsDuration(event.target.checked)}
                     className="size-4 accent-[var(--accent)]"
                   />
-                  {hasDuration ? "Duration" : "Duration (this session has none)"}
+                  {workout
+                    ? `Time trained (${formatMinutes(workout.minutes)})`
+                    : hasDuration
+                      ? "Duration"
+                      : "Duration (this session has none)"}
                 </label>
               </li>
+              {workout && workout.sets > 0 ? (
+                <li>
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="showsSets"
+                      checked={showsSets}
+                      onChange={(event) => setShowsSets(event.target.checked)}
+                      className="size-4 accent-[var(--accent)]"
+                    />
+                    Sets done ({workout.sets})
+                  </label>
+                </li>
+              ) : null}
+              {workout && workout.volume > 0 ? (
+                <li>
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="showsVolume"
+                      checked={showsVolume}
+                      onChange={(event) => setShowsVolume(event.target.checked)}
+                      className="size-4 accent-[var(--accent)]"
+                    />
+                    Volume lifted ({workout.volume.toLocaleString("en-AU")} {workout.unit})
+                  </label>
+                </li>
+              ) : null}
             </ul>
             <p className="mt-3 text-xs leading-5 text-stone-600">
-              Never shared: the start time, your notes, the exercises and anything you logged. Posting doesn’t mark the session as done.
+              {workout
+                ? "Never shared: the start time, your notes, the exercises and the weight or reps of any set."
+                : "Never shared: the start time, your notes, the exercises and anything you logged. Posting doesn’t mark the session as done."}
             </p>
           </fieldset>
         )}
@@ -147,7 +204,7 @@ export function PostComposer({
             <p className="mt-3 text-sm italic text-stone-500">Your caption appears here.</p>
           )}
           <div className="mt-3">
-            <SessionSummaryBlock session={shared} currentYear={currentYear} />
+            <SessionSummaryBlock session={shared} workout={sharedWorkout} currentYear={currentYear} />
           </div>
         </div>
         <p className="mt-2 text-xs leading-5 text-stone-600">

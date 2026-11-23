@@ -34,6 +34,8 @@ type SessionRow = Pick<
   | "source_routine_id"
   | "snapshot"
 > & {
+  /** Read by the planner and session queries; absent in older selects (then "planned"). */
+  origin?: string;
   /** Embedded when the query asks for it (one log per session). */
   workout_logs?: { status: string } | Array<{ status: string }> | null;
 };
@@ -99,6 +101,7 @@ export function sessionFromRow(row: SessionRow): ScheduledSessionRecord {
     durationMinutes: row.duration_minutes,
     notes: row.notes,
     sourceRoutineId: row.source_routine_id,
+    origin: row.origin === "quick" ? "quick" : "planned",
     ...(row.workout_logs !== undefined ? { workoutStatus: workoutStatus(row.workout_logs) } : {}),
     items: parseSnapshot(row.snapshot).items.map(
       (item): SnapshotItem => ({

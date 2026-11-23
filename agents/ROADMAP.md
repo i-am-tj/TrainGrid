@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated: 2026-11-22
+Last updated: 2026-11-23
 
 TrainGrid is in invite-only early access. Releases follow SemVer ([docs/RELEASING.md](../docs/RELEASING.md));
 member-facing notes are in [CHANGELOG.md](../CHANGELOG.md) and at `/whats-new`.
@@ -9,7 +9,7 @@ member-facing notes are in [CHANGELOG.md](../CHANGELOG.md) and at `/whats-new`.
 
 | Version | Date | Highlights |
 | --- | --- | --- |
-| Unreleased | — | **Train together**: social profiles (private by default), following with approvals, session update posts and a feed. **Live workouts**: start a session on your phone, log sets with a rest timer, finish with a summary; “last time” for each exercise. Request an invite from the sign-in page, reviewed on Invitations. Profile page (What's new, privacy and terms move there for members), planner and home use the member's day even on the first request, simpler planner and home on phones. |
+| Unreleased | — | **Start a workout from Home** (add exercises as you go, name it, post it), **likes and comments**, opt-in workout totals on posts. **Train together**: social profiles (private by default), following with approvals, session update posts and a feed. **Live workouts**: start a session on your phone, log sets with a rest timer, finish with a summary; “last time” for each exercise. Request an invite from the sign-in page, reviewed on Invitations. Profile page (What's new, privacy and terms move there for members), planner and home use the member's day even on the first request, simpler planner and home on phones. |
 | `v1.0.0` | 2026-11-18 | First release for early-access members: landing page, member home, invitation emails, getting started, feedback, privacy/terms/What's new, installable app, error alerts, CI on every PR. |
 | `v0.2.1-beta` | 2026-11-14 | Loaders and faster navigation. |
 | `v0.2.0-beta` | 2026-11-13 | Invite-only multi-user foundation and the shared routine library (Epics 1 and 2). |
@@ -22,10 +22,10 @@ member-facing notes are in [CHANGELOG.md](../CHANGELOG.md) and at `/whats-new`.
 | Home | Today's sessions, the week's planned counts, quick actions and the member's routines, each streaming on its own; first-visit welcome; getting started; release note. |
 | Planner | Monday–Sunday grid on desktop, day view on phones; timed and untimed sessions; today follows the member's time zone. |
 | Sessions | Add from scratch or from a routine (a snapshot copy), edit, customise the workout, delete. |
-| Workouts | Start a session from home or the session page; one exercise at a time with weight/reps steppers, suggestions from the plan and last time, an automatic rest timer, screen kept on, saved offline-first; finish with a summary; done marks on home, the session and the planner. |
+| Workouts | Start a workout straight from Home with nothing planned (add exercises as you go, name it at the finish); start a planned session from home or the session page; one exercise at a time with weight/reps steppers, suggestions from the plan and last time, an automatic rest timer, screen kept on, saved offline-first; finish with a summary; done marks on home, the session and the planner. |
 | Library | Shared TrainGrid routines and the member's own; search by name, exercise, type and equipment; copy to My Library; create and edit routines with sets, targets, rest, notes, equipment and video links. |
 | Profile | Name, plan numbers, social profile, data download (JSON), appearance, time zone, sign out, What's new, privacy notice, terms. |
-| Social | Optional members-only profiles (username, bio, private by default), discovery and search, follow / request / approve / decline / cancel / remove, followers and following lists, text session posts with a chosen session summary, a paginated feed. |
+| Social | Optional members-only profiles (username, bio, private by default), discovery and search, follow / request / approve / decline / cancel / remove, followers and following lists, session posts with a chosen session summary and opt-in workout totals, likes and comments, a paginated feed. |
 | Everywhere | Light and dark themes, phone layouts, installable app, feedback dialog, slow-loading notices with one retry, themed dialogs (no browser pop-ups), accessible to WCAG 2.2 AA in automated checks. |
 | Operations | CI (lint, types, unit, database, integration, E2E) on every PR; tagged releases from CHANGELOG; structured error logs and optional alerts; `/api/health`. |
 

@@ -9,8 +9,10 @@ import {
   encodeCursor,
   postInputSchema,
   captionSchema,
+  commentBodySchema,
   searchQuerySchema,
   socialProfileInputSchema,
+  type CommentView,
   type Connection,
   type FollowStatus,
   type OwnSocialProfile,
@@ -40,8 +42,6 @@ import { validate } from "./validate";
  */
 
 const IDENTITY_COLUMNS = "user_id, username, display_name, avatar_url, visibility";
-const POST_COLUMNS =
-  "id, caption, session_name, session_category, session_date, session_duration_minutes, created_at, edited_at, author:social_profiles!inner(user_id, username, display_name, avatar_url)";
 
 type IdentityRow = {
   user_id: string;
@@ -347,6 +347,13 @@ type PostRpcRow = {
   session_category: string;
   session_date: string;
   session_duration_minutes: number | null;
+  workout_completed: boolean;
+  workout_sets: number | null;
+  workout_volume: number | null;
+  workout_unit: string | null;
+  like_count: number;
+  comment_count: number;
+  viewer_liked: boolean;
   created_at: string;
   edited_at: string | null;
 };
@@ -367,6 +374,15 @@ function postFromRpc(row: PostRpcRow): PostView {
       date: row.session_date,
       durationMinutes: row.session_duration_minutes,
     },
+    workout: {
+      completed: row.workout_completed,
+      sets: row.workout_sets,
+      volume: row.workout_volume === null ? null : Number(row.workout_volume),
+      unit: row.workout_unit === "kg" || row.workout_unit === "lb" ? row.workout_unit : null,
+    },
+    likeCount: row.like_count,
+    commentCount: row.comment_count,
+    viewerLiked: row.viewer_liked,
     createdAt: row.created_at,
     editedAt: row.edited_at,
   };
@@ -398,33 +414,14 @@ export async function listPosts(
   };
 }
 
-type PostRow = {
-  id: string;
-  caption: string;
-  session_name: string;
-  session_category: string;
-  session_date: string;
-  session_duration_minutes: number | null;
-  created_at: string;
-  edited_at: string | null;
-  author: { user_id: string; username: string; display_name: string; avatar_url: string | null };
-};
-
 /** One post, if the member may see it. */
 export async function getPost(db: Db, rawId: unknown): Promise<PostView | null> {
   const id = idSchema.safeParse(rawId);
   if (!id.success) return null;
-  const { data, error } = await db.from("session_posts").select(POST_COLUMNS).eq("id", id.data).maybeSingle();
+  const { data, error } = await db.rpc("social_posts", { p_post: id.data, p_limit: 1 });
   if (error) throw socialFailure(error, "Could not load that post.");
-  if (!data) return null;
-  const row = data as unknown as PostRow;
-  return postFromRpc({
-    ...row,
-    author_id: row.author.user_id,
-    author_username: row.author.username,
-    author_display_name: row.author.display_name,
-    author_avatar_url: row.author.avatar_url,
-  });
+  const row = (data as PostRpcRow[])[0];
+  return row ? postFromRpc(row) : null;
 }
 
 const POST_ERRORS: Record<string, string> = {
@@ -436,7 +433,8 @@ const POST_ERRORS: Record<string, string> = {
 /**
  * Posts about one of the member's own sessions. The database copies the
  * summary (name, category, date and, only when chosen, the duration) from
- * the session itself; nothing else of it is shared.
+ * the session itself, and, when the session has a finished workout, only the
+ * totals the member ticked (sets done, volume). Nothing else is shared.
  */
 export async function createPost(db: Db, userId: string, input: PostInput): Promise<string> {
   const parsed = validate(postInputSchema, input);
@@ -449,6 +447,8 @@ export async function createPost(db: Db, userId: string, input: PostInput): Prom
       session_id: parsed.sessionId,
       caption: parsed.caption,
       shows_duration: parsed.showsDuration,
+      shows_sets: parsed.showsSets,
+      shows_volume: parsed.showsVolume,
     } as TablesInsert<"session_posts">)
     .select("id, author_id")
     .single();
@@ -485,6 +485,88 @@ export async function deletePost(db: Db, userId: string, rawId: unknown): Promis
   if (data.length === 0) throw new DataError("not_found", "Post not found.");
 }
 
+// ---------------------------------------------------------------------------
+// Likes and comments
+// ---------------------------------------------------------------------------
+
+/** Likes a post the member can see. Liking twice is not an error. */
+export async function likePost(db: Db, rawPostId: unknown): Promise<void> {
+  const postId = idSchema.safeParse(rawPostId);
+  if (!postId.success) throw new DataError("not_found", "Post not found.");
+  const { error } = await db.from("post_likes").insert({ post_id: postId.data });
+  if (!error || error.code === "23505") return;
+  if (error.code === "23503") throw new DataError("invalid", "Set up your social profile to like posts.");
+  if (error.code === "42501") throw new DataError("not_found", "Post not found.");
+  throw socialFailure(error, "Could not like that post.");
+}
+
+/** Takes back the member's own like. Nothing to undo is not an error. */
+export async function unlikePost(db: Db, userId: string, rawPostId: unknown): Promise<void> {
+  const postId = idSchema.safeParse(rawPostId);
+  if (!postId.success) throw new DataError("not_found", "Post not found.");
+  const { error } = await db.from("post_likes").delete().eq("post_id", postId.data).eq("user_id", userId);
+  if (error) throw socialFailure(error, "Could not update your like.");
+}
+
+const COMMENT_LIMIT = 200;
+
+/** A post's comments, oldest first (a conversation reads top to bottom). */
+export async function listComments(db: Db, rawPostId: unknown): Promise<CommentView[]> {
+  const postId = idSchema.safeParse(rawPostId);
+  if (!postId.success) return [];
+  const { data, error } = await db
+    .from("post_comments")
+    .select("id, post_id, body, created_at, author:social_profiles!post_comments_author_id_fkey!inner(user_id, username, display_name, avatar_url)")
+    .eq("post_id", postId.data)
+    .order("created_at")
+    .order("id")
+    .limit(COMMENT_LIMIT);
+  if (error) throw socialFailure(error, "Could not load comments.");
+  type Row = {
+    id: string;
+    post_id: string;
+    body: string;
+    created_at: string;
+    author: { user_id: string; username: string; display_name: string; avatar_url: string | null };
+  };
+  return (data as unknown as Row[]).map((row) => ({
+    id: row.id,
+    postId: row.post_id,
+    body: row.body,
+    createdAt: row.created_at,
+    author: {
+      userId: row.author.user_id,
+      username: row.author.username,
+      displayName: row.author.display_name,
+      avatarUrl: row.author.avatar_url,
+    },
+  }));
+}
+
+/** Comments on a post the member can see. */
+export async function addComment(db: Db, rawPostId: unknown, rawBody: unknown): Promise<string> {
+  const postId = idSchema.safeParse(rawPostId);
+  if (!postId.success) throw new DataError("not_found", "Post not found.");
+  const body = validate(commentBodySchema, rawBody);
+  const { data, error } = await db.from("post_comments").insert({ post_id: postId.data, body }).select("id").single();
+  if (!error) return data.id;
+  if (error.message.includes("comment_rate_limited")) {
+    throw new DataError("invalid", "That’s a lot of comments today. Try again tomorrow.");
+  }
+  if (error.code === "23503") throw new DataError("invalid", "Set up your social profile to comment.");
+  if (error.code === "42501") throw new DataError("not_found", "Post not found.");
+  throw socialFailure(error, "Could not post your comment.");
+}
+
+/** Deletes a comment the member wrote, or any comment on the member's own post. */
+export async function deleteComment(db: Db, rawCommentId: unknown): Promise<void> {
+  const id = idSchema.safeParse(rawCommentId);
+  if (!id.success) throw new DataError("not_found", "Comment not found.");
+  const { data, error } = await db.from("post_comments").delete().eq("id", id.data).select("id");
+  if (error) throw socialFailure(error, "Could not delete that comment.");
+  if (data.length === 0) throw new DataError("not_found", "Comment not found.");
+}
+
 export type PostableSession = {
   id: string;
   name: string;
@@ -516,7 +598,7 @@ export async function listPostableSessions(db: Db, userId: string, todayIso: str
 
 /** The member's own social data, for the data download: usernames, never user ids or emails. */
 export async function exportSocialData(db: Db, userId: string) {
-  const [profile, following, followers, posts] = await Promise.all([
+  const [profile, following, followers, posts, comments, likes] = await Promise.all([
     getOwnSocialProfile(db, userId),
     db
       .from("follows")
@@ -536,10 +618,11 @@ export async function exportSocialData(db: Db, userId: string) {
       .eq("author_id", userId)
       .order("created_at")
       .limit(5000),
+    db.from("post_comments").select("id, post_id, body, created_at").eq("author_id", userId).order("created_at").limit(5000),
+    db.from("post_likes").select("post_id, created_at").eq("user_id", userId).order("created_at").limit(5000),
   ]);
-  if (following.error || followers.error || posts.error) {
-    throw socialFailure(following.error ?? followers.error ?? posts.error, "Could not export your social data.");
-  }
+  const failed = following.error ?? followers.error ?? posts.error ?? comments.error ?? likes.error;
+  if (failed) throw socialFailure(failed, "Could not export your social data.");
   type Row = { status: string; created_at: string; accepted_at: string | null; profile: { username: string } };
   const relation = (row: Row) => ({ username: row.profile.username, status: row.status, since: row.accepted_at ?? row.created_at });
   return {
@@ -552,9 +635,9 @@ export async function exportSocialData(db: Db, userId: string) {
           useIdentityAvatar: profile.useIdentityAvatar,
         }
       : null,
-    following: (following.data as unknown as Row[]).map(relation),
-    followers: (followers.data as unknown as Row[]).map(relation),
-    posts: posts.data.map((row) => ({
+    following: ((following.data ?? []) as unknown as Row[]).map(relation),
+    followers: ((followers.data ?? []) as unknown as Row[]).map(relation),
+    posts: (posts.data ?? []).map((row) => ({
       id: row.id,
       caption: row.caption,
       session: {
@@ -566,6 +649,10 @@ export async function exportSocialData(db: Db, userId: string) {
       createdAt: row.created_at,
       editedAt: row.edited_at,
     })),
+    /** Comments the member wrote (on their own or others' posts). */
+    comments: (comments.data ?? []).map((row) => ({ id: row.id, postId: row.post_id, body: row.body, createdAt: row.created_at })),
+    /** Posts the member liked. */
+    likes: (likes.data ?? []).map((row) => ({ postId: row.post_id, createdAt: row.created_at })),
   };
 }
 

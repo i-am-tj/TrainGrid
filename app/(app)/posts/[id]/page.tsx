@@ -1,18 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Comments } from "@/components/social/Comments";
 import { PostCard } from "@/components/social/PostCard";
 import { Notice } from "@/components/social/parts";
 import { memberData } from "@/lib/data/server";
-import { getPost } from "@/lib/data/social";
+import { getOwnSocialProfile, getPost, listComments } from "@/lib/data/social";
 import { socialMetadata } from "@/lib/social/metadata";
 import { socialPage } from "@/components/social/SocialUnavailable";
 
 export const metadata = socialMetadata("Post");
 
 /**
- * One post. The link is safe to pass around between members: it carries a
- * post id, never a session id, and the database shows it only to members
- * who may see the author's posts. Everyone else gets a plain 404.
+ * One post with its likes and comments. The link is safe to pass around
+ * between members: it carries a post id, never a session id, and the
+ * database shows the post, its likes and its comments only to members who
+ * may see the author's posts. Everyone else gets a plain 404.
  */
 async function PostPageContent({
   params,
@@ -26,6 +28,7 @@ async function PostPageContent({
   const saved = (await searchParams).saved === "1";
   const post = await getPost(db, id);
   if (!post) notFound();
+  const [comments, own] = await Promise.all([listComments(db, post.id), getOwnSocialProfile(db, userId)]);
 
   return (
     <div className="mx-auto w-[min(100%-1.5rem,44rem)] py-5 sm:py-10">
@@ -35,7 +38,20 @@ async function PostPageContent({
       <h1 className="sr-only">Post by {post.author.displayName}</h1>
       <div className="mt-4 space-y-4">
         {saved ? <Notice>Saved.</Notice> : null}
-        <PostCard post={post} isOwn={post.author.userId === userId} returnTo={`/people/${post.author.username}`} />
+        <PostCard
+          post={post}
+          isOwn={post.author.userId === userId}
+          returnTo={`/people/${post.author.username}`}
+          canReact={own !== null}
+          showCommentsLink={false}
+        />
+        <Comments
+          postId={post.id}
+          comments={comments}
+          viewerId={userId}
+          postAuthorId={post.author.userId}
+          canComment={own !== null}
+        />
         <p className="text-center text-sm">
           <Link href={`/people/${post.author.username}`} className="text-accent underline underline-offset-4">
             More from @{post.author.username}

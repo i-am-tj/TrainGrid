@@ -397,11 +397,14 @@ export function Segmented<T extends string>({
   value,
   options,
   onChange,
+  compact = false,
 }: {
   label: string;
   value: T;
   options: ReadonlyArray<{ value: T; label: string }>;
   onChange: (value: T) => void;
+  /** Tighter options, for five or more choices on a phone. */
+  compact?: boolean;
 }) {
   return (
     <div role="radiogroup" aria-label={label} className="inline-grid auto-cols-fr grid-flow-col rounded-full border border-line bg-background p-1">
@@ -412,7 +415,7 @@ export function Segmented<T extends string>({
           role="radio"
           aria-checked={value === option.value}
           onClick={() => onChange(option.value)}
-          className={`ui-control min-h-9 rounded-full px-4 text-sm font-medium ${
+          className={`ui-control min-h-9 whitespace-nowrap rounded-full text-sm font-medium ${compact ? "px-2.5" : "px-4"} ${
             value === option.value ? "bg-stone-900 text-white" : "text-stone-700 hover:bg-stone-100"
           }`}
         >

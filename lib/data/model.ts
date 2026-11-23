@@ -59,6 +59,8 @@ export type ScheduledSessionRecord = {
   notes: string;
   /** Provenance only; never determines the content. */
   sourceRoutineId: string | null;
+  /** "quick": started on the spot from Home, with exercises added during the workout. */
+  origin?: "planned" | "quick";
   items: SnapshotItem[];
   /** The live workout for this session: started, finished, or not yet (null). */
   workoutStatus?: WorkoutStatus | null;

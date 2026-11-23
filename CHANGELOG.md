@@ -7,6 +7,22 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Start now, share it, cheer each other on
+
+- **Start a workout from Home**: no planning needed. Pick Lift, Run, Plyo or Other and you’re
+  straight into the workout screen. **Add exercise** as you go (weight and reps, reps, or a tick per
+  set, with an optional rest timer), log your sets as usual, then **name it** when you finish. It’s
+  saved as today’s session, so it shows on Home and in the planner. Discarding it leaves nothing
+  behind.
+- **Post about it**: the finish screen takes you straight to the post screen. If the session has a
+  finished workout you can also share the **time trained**, **sets done** and **volume lifted**,
+  each only if you tick it. Exercises and individual sets are never shared, and nothing is posted
+  unless you post it.
+- **Likes and comments**: like any post you can see and join the conversation on its page. Delete
+  your own comments, and any comment on your own posts. Only people who can see a post can see or
+  add its likes and comments. Your data download now includes the comments you wrote and the posts
+  you liked. Needs migration `20261123000000_quick_workouts_likes_comments`.
+
 ### Train together
 
 - **Your social profile**: choose a username, a display name and a short bio, and show your Google

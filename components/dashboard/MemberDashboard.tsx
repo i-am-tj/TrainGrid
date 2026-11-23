@@ -83,6 +83,7 @@ export function DashboardShell({
   routines,
   intro,
   notice,
+  headerAction,
 }: {
   frame: DashboardFrameData;
   today: ReactNode;
@@ -92,6 +93,8 @@ export function DashboardShell({
   intro?: ReactNode;
   /** A small note above the greeting (what's new). */
   notice?: ReactNode;
+  /** The main action beside the greeting (Start a workout); the planner link follows it. */
+  headerAction?: ReactNode;
 }) {
   return (
     <div className="dashboard-container">
@@ -107,12 +110,23 @@ export function DashboardShell({
             A clear look at today, with the rest of the week in view.
           </p>
         </div>
-        <Link
-          href={frame.plannerHref}
-          className={`${btnPrimary} shrink-0 gap-5`}
-        >
-          Open weekly planner <span aria-hidden="true">↗</span>
-        </Link>
+        {headerAction ? (
+          // On phones only the main action shows, so today's sessions stay above the fold;
+          // the planner is in the menu (and the week card links to it).
+          <div className="flex shrink-0 flex-wrap gap-2">
+            {headerAction}
+            <Link href={frame.plannerHref} className={`${btnSecondary} shrink-0 gap-5 max-sm:hidden`}>
+              Open weekly planner <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href={frame.plannerHref}
+            className={`${btnPrimary} shrink-0 gap-5`}
+          >
+            Open weekly planner <span aria-hidden="true">↗</span>
+          </Link>
+        )}
       </header>
       <div className="mt-4 grid min-w-0 gap-4 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
         <section aria-labelledby="today-title" className="min-w-0">

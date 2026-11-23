@@ -99,6 +99,58 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"post_comments": {
+                  Row: {
+                    "author_id": string,"body": string,"created_at": string,"id": string,"post_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_id"?: string,"body": string,"created_at"?: string,"id"?: string,"post_id": string
+                  }
+                  Update: {
+                    "author_id"?: string,"body"?: string,"created_at"?: string,"id"?: string,"post_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "post_comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "social_profiles"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "post_comments_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "session_posts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"post_likes": {
+                  Row: {
+                    "created_at": string,"post_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"post_id": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"post_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "post_likes_post_id_fkey"
+      columns: ["post_id"]
+isOneToOne: false
+      referencedRelation: "session_posts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "post_likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "social_profiles"
+      referencedColumns: ["user_id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "avatar_url": string | null,"created_at": string,"display_name": string | null,"id": string,"revoked_at": string | null,"updated_at": string
@@ -135,14 +187,14 @@ isOneToOne: false
                   ]
                 },"scheduled_sessions": {
                   Row: {
-                    "category": string,"created_at": string,"date": string,"duration_minutes": number | null,"id": string,"name": string,"notes": string,"snapshot": NonNullable<Json>,"source_routine_id": string | null,"start_time": string | null,"updated_at": string,"user_id": string
+                    "category": string,"created_at": string,"date": string,"duration_minutes": number | null,"id": string,"name": string,"notes": string,"origin": string,"snapshot": NonNullable<Json>,"source_routine_id": string | null,"start_time": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "category": string,"created_at"?: string,"date": string,"duration_minutes"?: number | null,"id"?: string,"name": string,"notes"?: string,"snapshot"?: NonNullable<Json>,"source_routine_id"?: string | null,"start_time"?: string | null,"updated_at"?: string,"user_id": string
+                    "category": string,"created_at"?: string,"date": string,"duration_minutes"?: number | null,"id"?: string,"name": string,"notes"?: string,"origin"?: string,"snapshot"?: NonNullable<Json>,"source_routine_id"?: string | null,"start_time"?: string | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "category"?: string,"created_at"?: string,"date"?: string,"duration_minutes"?: number | null,"id"?: string,"name"?: string,"notes"?: string,"snapshot"?: NonNullable<Json>,"source_routine_id"?: string | null,"start_time"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "category"?: string,"created_at"?: string,"date"?: string,"duration_minutes"?: number | null,"id"?: string,"name"?: string,"notes"?: string,"origin"?: string,"snapshot"?: NonNullable<Json>,"source_routine_id"?: string | null,"start_time"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -161,14 +213,14 @@ isOneToOne: false
                   ]
                 },"session_posts": {
                   Row: {
-                    "author_id": string,"caption": string,"created_at": string,"edited_at": string | null,"id": string,"session_category": string,"session_date": string,"session_duration_minutes": number | null,"session_id": string | null,"session_name": string,"shows_duration": boolean,"updated_at": string
+                    "author_id": string,"caption": string,"created_at": string,"edited_at": string | null,"id": string,"session_category": string,"session_date": string,"session_duration_minutes": number | null,"session_id": string | null,"session_name": string,"shows_duration": boolean,"shows_sets": boolean,"shows_volume": boolean,"updated_at": string,"workout_completed": boolean,"workout_sets": number | null,"workout_unit": string | null,"workout_volume": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "author_id"?: string,"caption"?: string,"created_at"?: string,"edited_at"?: string | null,"id"?: string,"session_category": string,"session_date": string,"session_duration_minutes"?: number | null,"session_id"?: string | null,"session_name": string,"shows_duration"?: boolean,"updated_at"?: string
+                    "author_id"?: string,"caption"?: string,"created_at"?: string,"edited_at"?: string | null,"id"?: string,"session_category": string,"session_date": string,"session_duration_minutes"?: number | null,"session_id"?: string | null,"session_name": string,"shows_duration"?: boolean,"shows_sets"?: boolean,"shows_volume"?: boolean,"updated_at"?: string,"workout_completed"?: boolean,"workout_sets"?: number | null,"workout_unit"?: string | null,"workout_volume"?: number | null
                   }
                   Update: {
-                    "author_id"?: string,"caption"?: string,"created_at"?: string,"edited_at"?: string | null,"id"?: string,"session_category"?: string,"session_date"?: string,"session_duration_minutes"?: number | null,"session_id"?: string | null,"session_name"?: string,"shows_duration"?: boolean,"updated_at"?: string
+                    "author_id"?: string,"caption"?: string,"created_at"?: string,"edited_at"?: string | null,"id"?: string,"session_category"?: string,"session_date"?: string,"session_duration_minutes"?: number | null,"session_id"?: string | null,"session_name"?: string,"shows_duration"?: boolean,"shows_sets"?: boolean,"shows_volume"?: boolean,"updated_at"?: string,"workout_completed"?: boolean,"workout_sets"?: number | null,"workout_unit"?: string | null,"workout_volume"?: number | null
                   }
                   Relationships: [
                     {
@@ -286,8 +338,8 @@ isOneToOne: false
             }[]
                            },
 "social_posts":
-{ Args: { "p_author"?: string,"p_before_created_at"?: string,"p_before_id"?: string,"p_limit"?: number }; Returns: {
-              "author_avatar_url": string,"author_display_name": string,"author_id": string,"author_username": string,"caption": string,"created_at": string,"edited_at": string,"id": string,"session_category": string,"session_date": string,"session_duration_minutes": number,"session_name": string,"shows_duration": boolean
+{ Args: { "p_author"?: string,"p_before_created_at"?: string,"p_before_id"?: string,"p_limit"?: number,"p_post"?: string }; Returns: {
+              "author_avatar_url": string,"author_display_name": string,"author_id": string,"author_username": string,"caption": string,"comment_count": number,"created_at": string,"edited_at": string,"id": string,"like_count": number,"session_category": string,"session_date": string,"session_duration_minutes": number,"session_name": string,"shows_duration": boolean,"viewer_liked": boolean,"workout_completed": boolean,"workout_sets": number,"workout_unit": string,"workout_volume": number
             }[]
                            },
 "social_profile":

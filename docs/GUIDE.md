@@ -60,6 +60,12 @@ done. You can also hide it with **×**.
 
 Open the gym, open TrainGrid: **Start workout** on today’s session (on Home or the session page).
 
+**Nothing planned?** Tap **Start a workout** at the top of Home and choose Lift, Run, Plyo or Other.
+The workout starts at once: tap **Add exercise**, name it, choose how you log it (weight and reps,
+reps, or a tick) and the rest between sets, and add more as you go. When you finish, give the
+workout a name. It becomes today’s session on Home and in the planner; **Discard** removes it
+completely. From the finish screen, **Post about it** opens the post screen.
+
 - One exercise at a time, with what you planned (“4 × 5–6”, the target, the rest) and what you did
   **last time**.
 - Set the weight and reps with **−** and **+** (or tap the number), then **Log set**. The next set
@@ -131,8 +137,17 @@ your notes, the exercises and anything you logged are never shared, and posting 
 session as done. **Edit** changes the caption; **Delete** removes the post (it asks first). A post
 keeps its summary even if you later change or delete the session.
 
+**Share a workout.** When the session has a finished workout, the post screen also offers **Time
+trained**, **Sets done** and **Volume lifted**. Each is shared only if ticked; your exercises and
+the weight or reps of any set are never shared.
+
 **Your feed.** **Feed** shows your posts and those of people you follow, newest first; **Older
 posts** goes further back.
+
+**Likes and comments.** Tap the heart on any post you can see to like it (tap again to take it
+back). Open a post (its time, or **Comment**) to read and add comments. You can delete your own
+comments, and any comment on your own posts; comments can’t be edited. Only people who can see a
+post can see its likes and comments.
 
 **Leave.** **Social profile → Delete social profile** removes your username, posts and connections.
 Your plan, routines and workouts stay.

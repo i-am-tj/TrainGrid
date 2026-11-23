@@ -87,7 +87,14 @@ async function PersonPageContent({
               <ol className="space-y-4" aria-label={`Posts by ${card.displayName}, newest first`}>
                 {page.posts.map((post) => (
                   <li key={post.id}>
-                    <PostCard post={post} isOwn={card.isSelf} returnTo={base} now={now} headingLevel="h3" />
+                    <PostCard
+                      post={post}
+                      isOwn={card.isSelf}
+                      returnTo={base}
+                      now={now}
+                      headingLevel="h3"
+                      canReact={card.isSelf || own !== null}
+                    />
                   </li>
                 ))}
               </ol>

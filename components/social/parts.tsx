@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { SessionType } from "@/lib/domain";
-import { summaryParts, type SessionSummary, type Visibility } from "@/lib/social/model";
+import { summaryParts, workoutParts, type SessionSummary, type Visibility, type WorkoutShare } from "@/lib/social/model";
 import { TYPE_BAR, TYPE_TINT } from "@/lib/ui";
 
 /** Small shared pieces of the social pages. */
@@ -40,22 +40,36 @@ export function VisibilityBadge({ visibility }: { visibility: Visibility }) {
  */
 export function SessionSummaryBlock({
   session,
+  workout,
   currentYear,
   label = "Session",
 }: {
   session: SessionSummary;
+  /** What the post shares from a finished workout, if anything. */
+  workout?: WorkoutShare;
   currentYear?: number;
   label?: string;
 }) {
   const category = session.category as SessionType;
+  const parts = [...summaryParts(session, currentYear), ...(workout ? workoutParts(workout) : [])];
   return (
     <div
       className={`rounded-xl border border-line border-l-4 px-3.5 py-3 ${TYPE_BAR[category] ?? TYPE_BAR.other} ${TYPE_TINT[category] ?? TYPE_TINT.other}`}
     >
-      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-stone-600">{label}</p>
+      <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.08em] text-stone-600">
+        {workout?.completed ? "Workout" : label}
+        {workout?.completed ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-px text-[10px] font-semibold normal-case tracking-normal text-emerald-800">
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="size-3" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4.5 10.5l3.5 3.5 7.5-8" />
+            </svg>
+            Done
+          </span>
+        ) : null}
+      </p>
       <p className="mt-0.5 text-base font-semibold leading-snug tracking-tight [overflow-wrap:anywhere]">{session.name}</p>
       <p className="mt-1 text-sm text-stone-700">
-        {summaryParts(session, currentYear).map((part, index) => (
+        {parts.map((part, index) => (
           <span key={part}>
             {index > 0 ? <span aria-hidden="true" className="px-1.5 text-stone-400">·</span> : null}
             {part}

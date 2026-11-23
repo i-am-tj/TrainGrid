@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { PostComposer } from "@/components/social/PostComposer";
+import { PostComposer, type FinishedWorkout } from "@/components/social/PostComposer";
 import { memberData } from "@/lib/data/server";
 import { getSession } from "@/lib/data/sessions";
 import { getOwnSocialProfile } from "@/lib/data/social";
+import { getWorkoutLog } from "@/lib/data/workouts";
+import { summarize, trainedMinutes } from "@/lib/workouts/model";
 import { socialMetadata } from "@/lib/social/metadata";
 import { getRequestToday } from "@/lib/today";
 import { socialPage } from "@/components/social/SocialUnavailable";
@@ -23,6 +25,14 @@ async function PostSessionPageContent({ params }: { params: Promise<{ id: string
   const own = await getOwnSocialProfile(db, userId);
   if (!own) redirect(`/profile/social?next=${encodeURIComponent(`/session/${session.id}/post`)}`);
   const today = await getRequestToday();
+  const log = await getWorkoutLog(db, userId, session.id);
+  const workout: FinishedWorkout | null =
+    log?.status === "completed" && log.finishedAt
+      ? (() => {
+          const totals = summarize(log.entries);
+          return { minutes: trainedMinutes(log.startedAt, log.finishedAt), sets: totals.setsDone, volume: totals.volume, unit: log.unit };
+        })()
+      : null;
 
   return (
     <div className="mx-auto w-[min(100%-1.5rem,64rem)] py-5 sm:py-10">
@@ -44,6 +54,7 @@ async function PostSessionPageContent({ params }: { params: Promise<{ id: string
             date: session.date,
             durationMinutes: session.durationMinutes,
           }}
+          workout={workout}
           cancelHref={`/session/${session.id}`}
           currentYear={Number(today.date.slice(0, 4))}
         />

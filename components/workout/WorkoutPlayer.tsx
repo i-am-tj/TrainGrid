@@ -7,20 +7,27 @@ import { Modal } from "@/components/ui/Modal";
 import { discardWorkoutAction, finishWorkoutAction, startWorkoutAction } from "@/lib/workouts/actions";
 import {
   alignEntries,
+  alignFreeForm,
+  defaultSetMode,
   emptySet,
+  exerciseKey,
   formatClock,
   formatPerformance,
   initialEntries,
+  newFreeFormExercise,
+  REST_CHOICES,
   summarize,
   weightStep,
   WEIGHT_UNITS,
   type LoggedSet,
   type PlannedExercise,
+  type SetMode,
   type PreviousPerformance,
   type WeightUnit,
   type WorkoutEntries,
   type WorkoutLog,
 } from "@/lib/workouts/model";
+import type { SessionType } from "@/lib/domain";
 import { parseYouTubeUrl } from "@/lib/youtube";
 import {
   clearLocalWorkout,
@@ -42,8 +49,14 @@ export type WorkoutSessionInfo = {
   id: string;
   name: string;
   categoryLabel: string;
+  /** The session type, which picks how a new exercise is logged by default. */
+  category: SessionType;
   dateLabel: string;
   backHref: string;
+  /** Started on the spot from Home: named at the finish, removed if discarded. */
+  quick: boolean;
+  /** No planned exercises: exercises are added during the workout. */
+  freeForm: boolean;
 };
 
 type Phase = "ready" | "active" | "summary";
@@ -109,15 +122,21 @@ export function WorkoutPlayer({
   exercises,
   log,
   previous,
+  previousByName = {},
 }: {
   session: WorkoutSessionInfo;
   exercises: PlannedExercise[];
   log: WorkoutLog | null;
   previous: Record<string, PreviousPerformance>;
+  /** "Last time" by exercise name, for exercises added during a free-form workout. */
+  previousByName?: Record<string, PreviousPerformance>;
 }) {
   const router = useRouter();
+  // A free-form workout's exercises are whatever its log holds; a planned one
+  // lines the log up against the plan.
+  const align = (stored: WorkoutEntries) => (session.freeForm ? alignFreeForm(stored) : alignEntries(exercises, stored));
   const initial = useMemo(
-    () => alignEntries(exercises, log?.entries ?? initialEntries(exercises)),
+    () => align(log?.entries ?? initialEntries(exercises)),
     // The plan and log are read once; the screen owns them from here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -142,6 +161,8 @@ export function WorkoutPlayer({
   const [finishOpen, setFinishOpen] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
   const [busy, setBusy] = useState<"start" | "finish" | "discard" | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [name, setName] = useState(session.name);
   const [problem, setProblem] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const advanceTimer = useRef<number | undefined>(undefined);
@@ -165,7 +186,7 @@ export function WorkoutPlayer({
     const local = readLocalWorkout(session.id);
     if (!local) return;
     if (log.status === "in_progress" && local.savedAt > Date.parse(log.updatedAt)) {
-      const restored = alignEntries(exercises, local.entries);
+      const restored = align(local.entries);
       setPlans(restored.exercises);
       setEntries(restored.entries);
       setUnit(local.unit);
@@ -226,7 +247,7 @@ export function WorkoutPlayer({
 
   const exercise = plans[current];
   const entry = entries.items[current];
-  const prev = exercise ? previous[exercise.itemId] : undefined;
+  const prev = exercise ? (previous[exercise.itemId] ?? previousByName[exerciseKey(exercise.name)]) : undefined;
   const elapsed = startedAt && now !== null ? (now - Date.parse(startedAt)) / 1000 : null;
   const allDone = summary.setsTotal > 0 && summary.setsDone === summary.setsTotal;
 
@@ -314,6 +335,20 @@ export function WorkoutPlayer({
     setFocused(firstOpen(entry.sets.filter((_, i) => i !== index)));
   }
 
+  /** Adds an exercise to a free-form workout and goes to it. */
+  function addExercise(input: { name: string; mode: SetMode; restSeconds: number | null }) {
+    const { plan, entry: added } = newFreeFormExercise(input, crypto.randomUUID());
+    const index = plans.length;
+    setPlans((state) => [...state, plan]);
+    setEntries((state) => ({ ...state, items: [...state.items, added] }));
+    window.clearTimeout(advanceTimer.current);
+    setDirection(1);
+    setCurrent(index);
+    setFocused(0);
+    setAddOpen(false);
+    setAnnouncement(`${plan.name} added.`);
+  }
+
   function changeUnit(next: WeightUnit) {
     setUnit(next);
     writePreference("weight-unit", next);
@@ -337,7 +372,7 @@ export function WorkoutPlayer({
       );
       return;
     }
-    const aligned = alignEntries(exercises, result.value.entries);
+    const aligned = align(result.value.entries);
     setPlans(aligned.exercises);
     setEntries(aligned.entries);
     setUnit(result.value.unit);
@@ -353,7 +388,14 @@ export function WorkoutPlayer({
     setBusy("finish");
     setProblem(null);
     const at = finishedAt ?? new Date().toISOString();
-    const result = await finishWorkoutAction(session.id, { unit, entries, notes }, at).catch(() => null);
+    if (session.quick && !name.trim()) {
+      setBusy(null);
+      setProblem("Give your workout a name.");
+      return;
+    }
+    const result = await finishWorkoutAction(session.id, { unit, entries, notes }, at, session.quick ? name.trim() : undefined).catch(
+      () => null,
+    );
     setBusy(null);
     if (!result?.ok) {
       setProblem("Couldn’t finish just now — no connection? Your sets are saved on this phone. Try again in a moment.");
@@ -427,7 +469,8 @@ export function WorkoutPlayer({
   if (phase === "summary") {
     return (
       <WorkoutSummaryView
-        session={session}
+        session={{ ...session, name }}
+        postHref={`/session/${session.id}/post`}
         plans={plans}
         entries={entries}
         unit={unit}
@@ -444,7 +487,7 @@ export function WorkoutPlayer({
     );
   }
 
-  const isLast = current === plans.length - 1;
+  const isLast = current >= plans.length - 1;
   const exerciseComplete = entry ? firstOpen(entry.sets) === -1 : false;
   const nextName = plans[current + 1]?.name;
   const showRest = rest !== null || restOverAt !== null;
@@ -561,9 +604,34 @@ export function WorkoutPlayer({
               </p>
             ) : null}
           </section>
+        ) : session.freeForm ? (
+          <div className="mt-8 text-center">
+            <p className="ui-eyebrow">{session.categoryLabel} · {session.dateLabel}</p>
+            <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight tracking-tight">Your workout is running</h1>
+            <p className="mt-2 text-sm leading-6 text-stone-600">Add your first exercise, then log each set as you go.</p>
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              data-testid="add-first-exercise"
+              className="workout-log-button ui-control mt-6 inline-flex h-14 items-center justify-center gap-2 rounded-2xl px-6 text-base font-semibold"
+            >
+              <Icon name="plus" className="size-4" />
+              Add exercise
+            </button>
+          </div>
         ) : (
           <p className="mt-10 text-center text-sm text-stone-600">This session has no exercises.</p>
         )}
+        {session.freeForm && exercise ? (
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="ui-control mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-stone-300 px-3 text-sm font-medium text-stone-700 hover:bg-stone-100"
+          >
+            <Icon name="plus" className="size-4" />
+            Add exercise
+          </button>
+        ) : null}
       </div>
 
       {/* Thumb zone: the rest timer floats above the step controls. */}
@@ -659,6 +727,19 @@ export function WorkoutPlayer({
             </li>
           ))}
         </ol>
+        {session.freeForm ? (
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen(false);
+              setAddOpen(true);
+            }}
+            className="ui-control mt-2 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 text-sm font-medium text-stone-700 hover:bg-stone-100"
+          >
+            <Icon name="plus" className="size-4" />
+            Add exercise
+          </button>
+        ) : null}
         <div className="mt-5 space-y-3 border-t border-line pt-4">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-stone-700">Weights in</span>
@@ -716,6 +797,22 @@ export function WorkoutPlayer({
         }
         className="max-w-md"
       >
+        {session.quick ? (
+          <div className="mb-4">
+            <label htmlFor="workout-name" className="text-sm font-medium text-stone-800">
+              Name this workout
+            </label>
+            <input
+              id="workout-name"
+              value={name}
+              maxLength={200}
+              required
+              onChange={(event) => setName(event.target.value)}
+              onFocus={(event) => event.currentTarget.select()}
+              className="ui-control mt-1.5 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-3 text-base text-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+            />
+          </div>
+        ) : null}
         <label htmlFor="workout-notes" className="text-sm font-medium text-stone-800">
           How did it feel? <span className="font-normal text-stone-500">(optional)</span>
         </label>
@@ -745,7 +842,7 @@ export function WorkoutPlayer({
           <button
             type="button"
             onClick={() => void finish()}
-            disabled={busy === "finish"}
+            disabled={busy === "finish" || (session.freeForm && summary.setsDone === 0)}
             className="workout-log-button ui-control inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold"
           >
             <Icon name="flag" className="size-4" />
@@ -754,12 +851,23 @@ export function WorkoutPlayer({
         </div>
       </Modal>
 
+      <AddExerciseDialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        defaultMode={defaultSetMode(session.category)}
+        onAdd={addExercise}
+      />
+
       <Modal
         open={discardOpen}
         onClose={() => setDiscardOpen(false)}
         dismissible={busy !== "discard"}
         title="Discard this workout?"
-        description="Every set you logged in this workout is deleted. The planned session stays on your calendar."
+        description={
+          session.quick
+            ? "This quick workout and every set in it are deleted."
+            : "Every set you logged in this workout is deleted. The planned session stays on your calendar."
+        }
         className="max-w-md"
       >
         {problem ? (
@@ -882,11 +990,7 @@ function ReadyScreen({
           </ol>
         ) : (
           <p className="ui-panel mt-6 p-5 text-sm text-stone-700">
-            This session has no exercises yet.{" "}
-            <Link href={`${session.backHref}/customize`} className="text-accent underline underline-offset-4">
-              Add some
-            </Link>{" "}
-            before you start.
+            No exercises planned. Start, then add each exercise as you go.
           </p>
         )}
 
@@ -921,7 +1025,7 @@ function ReadyScreen({
           <button
             type="button"
             onClick={onStart}
-            disabled={starting || plans.length === 0}
+            disabled={starting || (plans.length === 0 && !session.freeForm)}
             className="workout-log-button workout-start ui-control inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-base font-semibold"
           >
             <Icon name="play" className="size-4" />
@@ -930,5 +1034,122 @@ function ReadyScreen({
         </div>
       </div>
     </div>
+  );
+}
+
+const MODE_OPTIONS: ReadonlyArray<{ value: SetMode; label: string }> = [
+  { value: "load", label: "Weight" },
+  { value: "reps", label: "Reps" },
+  { value: "done", label: "Tick" },
+];
+
+const MODE_HELP: Record<SetMode, string> = {
+  load: "Log weight and reps for each set.",
+  reps: "Log reps for each set (bodyweight).",
+  done: "Tick each set or rep off (runs, carries, holds).",
+};
+
+const restKey = (seconds: number | null) => (seconds === null ? "off" : String(seconds));
+
+/**
+ * Adds an exercise to a free-form workout: a name, how its sets are logged,
+ * and the rest between them. Opens with the name field focused; Enter adds.
+ */
+function AddExerciseDialog({
+  open,
+  onClose,
+  defaultMode,
+  onAdd,
+}: {
+  open: boolean;
+  onClose: () => void;
+  defaultMode: SetMode;
+  onAdd: (input: { name: string; mode: SetMode; restSeconds: number | null }) => void;
+}) {
+  const [name, setName] = useState("");
+  const [mode, setMode] = useState<SetMode>(defaultMode);
+  const [rest, setRest] = useState<string>(restKey(defaultMode === "load" ? 90 : null));
+  const [touched, setTouched] = useState(false);
+  const problem = touched && !name.trim() ? "Name the exercise." : null;
+
+  function close() {
+    setName("");
+    setTouched(false);
+    onClose();
+  }
+
+  return (
+    <Modal open={open} onClose={close} title="Add exercise" initialFocus="#new-exercise-name" className="max-w-md">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          setTouched(true);
+          if (!name.trim()) return;
+          onAdd({ name: name.trim().slice(0, 200), mode, restSeconds: rest === "off" ? null : Number(rest) });
+          setName("");
+          setTouched(false);
+        }}
+        className="space-y-5"
+      >
+        <div>
+          <label htmlFor="new-exercise-name" className="text-sm font-medium text-stone-800">
+            Exercise
+          </label>
+          <input
+            id="new-exercise-name"
+            value={name}
+            maxLength={200}
+            autoComplete="off"
+            enterKeyHint="done"
+            placeholder="Back squat, 400 m repeat, plank…"
+            aria-invalid={problem ? true : undefined}
+            aria-describedby={problem ? "new-exercise-problem" : undefined}
+            onChange={(event) => setName(event.target.value)}
+            className="ui-control mt-1.5 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-3 text-base text-stone-900 placeholder:text-stone-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+          />
+          {problem ? (
+            <p id="new-exercise-problem" role="alert" className="mt-1 text-sm text-red-800">
+              {problem}
+            </p>
+          ) : null}
+        </div>
+        <div>
+          <p className="text-sm font-medium text-stone-800">Log each set by</p>
+          <div className="mt-1.5">
+            <Segmented label="Log each set by" value={mode} options={MODE_OPTIONS} onChange={setMode} />
+          </div>
+          <p className="mt-1.5 text-xs text-stone-600">{MODE_HELP[mode]}</p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-stone-800">Rest between sets</p>
+          <div className="mt-1.5 overflow-x-auto">
+            <Segmented
+              compact
+              label="Rest between sets"
+              value={rest}
+              // Clock labels ("1:30") stay on one line on a phone.
+              options={REST_CHOICES.map((seconds) => ({ value: restKey(seconds), label: seconds === null ? "Off" : formatClock(seconds) }))}
+              onChange={setRest}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={close}
+            className="ui-control inline-flex min-h-12 items-center justify-center rounded-xl border border-stone-300 px-4 text-sm font-medium text-stone-800 hover:bg-stone-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="workout-log-button ui-control inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold"
+          >
+            <Icon name="plus" className="size-4" />
+            Add exercise
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

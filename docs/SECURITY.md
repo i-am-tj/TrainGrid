@@ -222,3 +222,22 @@ Design and reasoning: [ADR 002](adr/002-members-only-social-layer.md). Enforced 
 - **Caching and indexing.** Social pages are dynamic, members-only, `noindex`/`noarchive` in
   metadata and in an `X-Robots-Tag` header, and have generic titles. Avatars are only the member's
   own sign-in picture (copied by trigger, `https` only) and load with `referrerPolicy=no-referrer`.
+
+## Likes, comments and workout totals
+
+[ADR 003](adr/003-quick-workouts-likes-comments.md); migration
+`20261123000000_quick_workouts_likes_comments`; tests in
+`supabase/tests/database/13_reactions_and_quick_workouts.test.sql`,
+`tests/integration/reactions-and-quick-workouts.test.ts` and `e2e/quick-workout-social.spec.ts`.
+
+- `post_likes` and `post_comments` are readable only where the post is (`private.can_view_post`,
+  a definer helper in the unexposed `private` schema) and only from active members; members also
+  see their own rows so they can remove them after losing access. `anon` has no privileges.
+- Members insert only `post_id` (likes) or `post_id` and `body` (comments); the author column
+  defaults to the caller and the policy checks it. Comments are deleted by their author or the
+  post's author and cannot be updated. 100 comments per member per day (trigger, run as the caller).
+- A post's workout totals are copied by the database from the author's own completed workout log
+  and cannot be supplied or changed through the API; only the totals the author ticked are copied,
+  never exercises, sets or notes.
+- Quick sessions are ordinary `scheduled_sessions` rows (`origin = 'quick'`), under the existing
+  owner-only policies.

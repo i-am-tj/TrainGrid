@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { timeAgo, type PostView } from "@/lib/social/model";
+import { countLabel, timeAgo, type PostView } from "@/lib/social/model";
+import { LikeButton } from "./LikeButton";
 import { PostActions } from "./PostActions";
 import { SessionSummaryBlock } from "./parts";
 import { SocialAvatar } from "./SocialAvatar";
@@ -15,12 +16,18 @@ export function PostCard({
   returnTo,
   now = new Date(),
   headingLevel = "h2",
+  canReact = true,
+  showCommentsLink = true,
 }: {
   post: PostView;
   isOwn: boolean;
   returnTo: string;
   now?: Date;
   headingLevel?: "h2" | "h3";
+  /** Whether the viewer has a social profile, needed to like. */
+  canReact?: boolean;
+  /** Off on the post's own page, where the comments are listed below. */
+  showCommentsLink?: boolean;
 }) {
   const Heading = headingLevel;
   const profileHref = `/people/${post.author.username}`;
@@ -66,8 +73,26 @@ export function PostCard({
       ) : null}
 
       <div className="mt-3">
-        <SessionSummaryBlock session={post.session} currentYear={now.getUTCFullYear()} />
+        <SessionSummaryBlock session={post.session} workout={post.workout} currentYear={now.getUTCFullYear()} />
       </div>
+
+      <footer className="-mb-1 mt-3 flex items-center gap-1 border-t border-line pt-2">
+        <LikeButton postId={post.id} liked={post.viewerLiked} count={post.likeCount} canLike={canReact} />
+        {showCommentsLink ? (
+          <Link
+            href={`/posts/${post.id}#comments`}
+            data-testid="comments-link"
+            className="ui-control inline-flex min-h-9 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium text-stone-700 hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">
+              <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h9A1.5 1.5 0 0 1 16 5.5v6a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3v-3h0A1.5 1.5 0 0 1 4 11.5z" />
+            </svg>
+            {post.commentCount > 0 ? countLabel(post.commentCount, "comment") : "Comment"}
+          </Link>
+        ) : (
+          <span className="px-2.5 text-sm text-stone-600">{countLabel(post.commentCount, "comment")}</span>
+        )}
+      </footer>
     </article>
   );
 }

@@ -6,14 +6,18 @@ import { DataError } from "@/lib/data/model";
 import { memberData } from "@/lib/data/server";
 import {
   acceptFollowRequest,
+  addComment,
   createPost,
+  deleteComment,
   deletePost,
   deleteSocialProfile,
   followMember,
+  likePost,
   rejectFollowRequest,
   removeFollower,
   saveSocialProfile,
   unfollowMember,
+  unlikePost,
   updatePostCaption,
 } from "@/lib/data/social";
 import { safeReturnPath } from "./model";
@@ -139,6 +143,8 @@ export async function createPostAction(_previous: FormState, form: FormData): Pr
       sessionId: text(form, "sessionId"),
       caption: text(form, "caption"),
       showsDuration: checked(form, "showsDuration"),
+      showsSets: checked(form, "showsSets"),
+      showsVolume: checked(form, "showsVolume"),
     });
   } catch (error) {
     if (error instanceof DataError) return { status: "error", message: error.message };
@@ -163,4 +169,32 @@ export async function deletePostAction(_previous: FormState, form: FormData): Pr
   if (state.status === "error") return state;
   revalidateSocial();
   redirect(safeReturnPath(text(form, "returnTo"), "/feed"));
+}
+
+// ---------------------------------------------------------------------------
+// Likes and comments
+// ---------------------------------------------------------------------------
+
+/** Likes or unlikes a post (`liked` is the state the member wants). */
+export async function setLikeAction(postId: string, liked: boolean): Promise<FormState> {
+  const { db, userId } = await memberData();
+  const state = await run(() => (liked ? likePost(db, postId) : unlikePost(db, userId, postId)));
+  revalidateSocial();
+  return state;
+}
+
+export async function addCommentAction(_previous: FormState, form: FormData): Promise<FormState> {
+  const { db } = await memberData();
+  const state = await run(async () => {
+    await addComment(db, text(form, "postId"), text(form, "body"));
+  });
+  revalidateSocial();
+  return state;
+}
+
+export async function deleteCommentAction(_previous: FormState, form: FormData): Promise<FormState> {
+  const { db } = await memberData();
+  const state = await run(() => deleteComment(db, text(form, "id")));
+  revalidateSocial();
+  return state;
 }
