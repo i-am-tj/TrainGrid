@@ -267,7 +267,7 @@ test("routine and session screens retain structured controls and fit both themes
   await page.getByRole("dialog").getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${routinePath}/edit$`));
   await page.goto(`${sessionPath}/edit`);
-  page.once("dialog", (dialog) => dialog.dismiss());
-  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("button", { name: "Delete session", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Keep session", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${sessionPath}/edit$`));
 });

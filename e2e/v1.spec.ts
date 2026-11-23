@@ -88,7 +88,8 @@ test.describe("signed out", () => {
   test("the health check answers without signing in", async ({ request }) => {
     const response = await request.get("/api/health");
     expect(response.status()).toBe(200);
-    expect(await response.json()).toEqual({ supabase: "ok" });
+    // The local stack has every migration, so its schema matches this build.
+    expect(await response.json()).toEqual({ supabase: "ok", schema: "ok" });
   });
 });
 

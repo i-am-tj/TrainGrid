@@ -124,10 +124,11 @@ test.describe("member A against member B's data", () => {
   });
 
   test("I4: a forged session id in the delete form cannot delete B's session", async ({ page }) => {
-    page.on("dialog", (dialog) => dialog.accept());
     await openOwnSession(page, "/edit");
+    // Forged once the confirmation is open: opening it re-renders the form.
+    await page.getByRole("button", { name: "Delete session" }).click();
     await forge(page, "id", bSession);
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Delete session", exact: true }).click();
     await expect(page.getByRole("heading", { name: ERROR_HEADING })).toBeVisible();
 
     expect(await bSessionRow()).toBeDefined();

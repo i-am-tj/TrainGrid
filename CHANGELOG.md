@@ -7,18 +7,23 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Safer workout history
+
+- **Resume from the session page**: a workout you started and left, including a quick workout
+  from Home, now always shows **Resume workout** on its session page, with the sets you logged.
+  A session with nothing planned can be started there too, and you add exercises as you go.
+- **Deleting a session says what goes with it**: TrainGrid’s own dialog (no more browser pop-up)
+  names the workout you logged in it, which is deleted with the session, says that posts about it
+  stay up, and suggests changing the date if it is only on the wrong day.
+- **Who sees a post**: the session page no longer says a post goes only to your followers; the
+  post screen shows exactly who can read it before you post.
+
 ### Your data, your call
 
 - **Delete my account** on your profile explains how to have your account and everything in it
   deleted, including when you can no longer sign in.
 - Invite requests are now deleted on schedule, 180 days after they are made, even when nobody
   else asks for an invite. Needs migration `20261124000000_invite_request_retention`.
-
-### For admins
-
-- If invite requests can’t be loaded, the Invitations page says so, with **Try again**, instead
-  of showing “No requests waiting”; the header badge shows no count rather than zero.
-- The Invitations page warns while `TRAINGRID_CONTACT_EMAIL` is not set.
 
 ### Start now, share it, cheer each other on
 
@@ -92,6 +97,9 @@ in the app at `/whats-new`.
   and in the phone menu.
 - **History at a glance**: a request from someone whose access or invitation was revoked is
   marked as such; inviting them restores their data.
+- If invite requests can’t be loaded, the Invitations page says so, with **Try again**, instead
+  of showing “No requests waiting”; the header badge shows no count rather than zero.
+- The Invitations page warns while `TRAINGRID_CONTACT_EMAIL` is not set.
 
 ### Profile
 
@@ -126,6 +134,13 @@ in the app at `/whats-new`.
   `agents/archive/`, Epic 2-era requirements and UX spec to `docs/archive/`.
 - `e2e/secondary-actions.spec.ts` saves screenshots only with `UI_SHOTS=1`, so test runs no longer
   rewrite `docs/images`.
+- **Schema gate**: `npm run release:check` reads a Supabase project's Data API schema (secret key)
+  and fails, listing what is missing, when a migration this build needs has not been applied.
+  `/api/health` now reports `"schema":"ok" | "behind" | "unknown"` and answers `503` when the
+  schema is behind, so a healthy Auth service no longer hides a broken planner. The expected
+  schema is `lib/release/schema-manifest.json`; CI fails if it does not match the migrations.
+  The release journey (schedule a routine across weeks, reload, start, resume, finish, quick
+  workout, export) runs as an integration test. See docs/RELEASING.md.
 
 ## [1.0.0] — 2026-11-18
 
