@@ -18,6 +18,7 @@ export const USERNAME_MAX = 30;
 export const DISPLAY_NAME_MAX = 60;
 export const BIO_MAX = 160;
 export const CAPTION_MAX = 500;
+export const COMMENT_MAX = 500;
 export const POST_PAGE_SIZE = 20;
 export const CONNECTIONS_PAGE_SIZE = 50;
 export const SEARCH_MIN = 2;
@@ -103,7 +104,21 @@ export const postInputSchema = z.object({
   sessionId: z.uuid({ message: "Choose one of your sessions." }),
   caption: captionSchema,
   showsDuration: z.boolean(),
+  /** Sets done in the finished workout; only used when there is one. */
+  showsSets: z.boolean().default(false),
+  /** Volume lifted in the finished workout; only used when there is one. */
+  showsVolume: z.boolean().default(false),
 });
+
+export const commentBodySchema = z
+  .string()
+  .transform((value) => value.replace(/\r\n?/g, "\n").replace(/\n{3,}/g, "\n\n").trim())
+  .pipe(
+    z
+      .string()
+      .min(1, "Write a comment first.")
+      .max(COMMENT_MAX, `Keep your comment to ${COMMENT_MAX} characters.`),
+  );
 
 export type PostInput = z.input<typeof postInputSchema>;
 
@@ -149,13 +164,36 @@ export type SessionSummary = {
   durationMinutes: number | null;
 };
 
+/** What a post shares from a finished workout, fixed when it was posted. */
+export type WorkoutShare = {
+  /** The session had a finished workout when it was posted. */
+  completed: boolean;
+  /** Sets done, if the author chose to share it. */
+  sets: number | null;
+  /** Weight × reps over done sets, if the author chose to share it. */
+  volume: number | null;
+  unit: "kg" | "lb" | null;
+};
+
 export type PostView = {
   id: string;
   author: Pick<SocialIdentity, "userId" | "username" | "displayName" | "avatarUrl">;
   caption: string;
   session: SessionSummary;
+  workout: WorkoutShare;
+  likeCount: number;
+  commentCount: number;
+  viewerLiked: boolean;
   createdAt: string;
   editedAt: string | null;
+};
+
+export type CommentView = {
+  id: string;
+  postId: string;
+  author: Pick<SocialIdentity, "userId" | "username" | "displayName" | "avatarUrl">;
+  body: string;
+  createdAt: string;
 };
 
 export type PostPage = { posts: PostView[]; nextCursor: string | null };
@@ -186,6 +224,24 @@ export function decodeCursor(raw: unknown): Cursor | null {
   if (!z.uuid().safeParse(id).success) return null;
   if (!z.iso.datetime({ offset: true }).safeParse(createdAt).success) return null;
   return { createdAt, id };
+}
+
+/** "Lift · 47 min · 12 sets · 4,250 kg": the workout facts a post shares, after the session's. */
+export function workoutParts(workout: WorkoutShare): string[] {
+  const parts: string[] = [];
+  if (workout.sets !== null) parts.push(`${workout.sets.toLocaleString("en-AU")} ${workout.sets === 1 ? "set" : "sets"}`);
+  if (workout.volume !== null && workout.unit) parts.push(`${formatVolumeShort(workout.volume)} ${workout.unit} lifted`);
+  return parts;
+}
+
+function formatVolumeShort(volume: number): string {
+  if (volume >= 10000) return `${(Math.round(volume / 100) / 10).toLocaleString("en-AU")}k`;
+  return (Math.round(volume * 10) / 10).toLocaleString("en-AU");
+}
+
+/** "1 like", "3 likes". */
+export function countLabel(count: number, one: string, many = `${one}s`): string {
+  return `${count.toLocaleString("en-AU")} ${count === 1 ? one : many}`;
 }
 
 /** "1".."n" from the URL; anything else is the first page. */

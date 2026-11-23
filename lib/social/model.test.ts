@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   RESERVED_USERNAMES,
   captionSchema,
+  commentBodySchema,
+  countLabel,
   decodeCursor,
   encodeCursor,
   followLabel,
@@ -18,6 +20,7 @@ import {
   summaryParts,
   timeAgo,
   usernameProblem,
+  workoutParts,
 } from "./model";
 
 describe("usernames", () => {
@@ -181,5 +184,33 @@ describe("safety helpers", () => {
     expect(safeReturnPath("https://evil.test", "/x")).toBe("/x");
     expect(safeReturnPath("/\\evil.test", "/x")).toBe("/x");
     expect(safeReturnPath(undefined, "/x")).toBe("/x");
+  });
+});
+
+describe("workout summaries, counts and comments", () => {
+  it("lists only the workout totals that were shared", () => {
+    expect(workoutParts({ completed: true, sets: 12, volume: 4250, unit: "kg" })).toEqual(["12 sets", "4,250 kg lifted"]);
+    expect(workoutParts({ completed: true, sets: 1, volume: 18500.5, unit: "lb" })).toEqual(["1 set", "18.5k lb lifted"]);
+    expect(workoutParts({ completed: true, sets: null, volume: null, unit: null })).toEqual([]);
+  });
+
+  it("counts in words", () => {
+    expect(countLabel(0, "like")).toBe("0 likes");
+    expect(countLabel(1, "comment")).toBe("1 comment");
+    expect(countLabel(1200, "like")).toBe("1,200 likes");
+  });
+
+  it("cleans and limits comments", () => {
+    expect(commentBodySchema.parse("  Nice\r\n\r\n\r\nwork  ")).toBe("Nice\n\nwork");
+    expect(commentBodySchema.safeParse("   ").success).toBe(false);
+    expect(commentBodySchema.safeParse("x".repeat(500)).success).toBe(true);
+    expect(commentBodySchema.safeParse("x".repeat(501)).success).toBe(false);
+  });
+
+  it("shares no workout totals unless asked", () => {
+    expect(postInputSchema.parse({ sessionId: "6f1c3c55-9a5e-4c1b-9b7e-2f1a7d3e8c40", caption: "", showsDuration: false })).toMatchObject({
+      showsSets: false,
+      showsVolume: false,
+    });
   });
 });

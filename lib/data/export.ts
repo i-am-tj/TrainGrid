@@ -10,14 +10,15 @@ import { logFromRow } from "./workouts";
  *
  * Contains their PERSONAL routines with items, their scheduled sessions,
  * their workout logs (what they did in those sessions) and, since v4, their
- * social profile, relationships (by username) and session posts.
+ * social profile, relationships (by username) and session posts, and since
+ * v5 the comments they wrote and the posts they liked.
  * It never contains GLOBAL routines, another user's data, invitations,
  * profile or auth details, or anything about the infrastructure.
  */
 
 export type UserExport = {
   format: "traingrid-export";
-  version: 4;
+  version: 5;
   exportedAt: string;
   routines: Array<{
     id: string;
@@ -57,7 +58,7 @@ export async function exportUserData(db: Db, userId: string): Promise<UserExport
       .order("started_at"),
     // Before the social migration exists, the download still works, with no social data.
     exportSocialData(db, userId).catch((error: unknown): SocialExport => {
-      if (error instanceof SocialUnavailableError) return { profile: null, following: [], followers: [], posts: [] };
+      if (error instanceof SocialUnavailableError) return { profile: null, following: [], followers: [], posts: [], comments: [], likes: [] };
       throw error;
     }),
   ]);
@@ -65,7 +66,7 @@ export async function exportUserData(db: Db, userId: string): Promise<UserExport
 
   return {
     format: "traingrid-export",
-    version: 4,
+    version: 5,
     exportedAt: new Date().toISOString(),
     routines: routines.data.map(({ workout_items: items, ...routine }) => ({
       ...routine,

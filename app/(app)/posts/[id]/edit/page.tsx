@@ -30,6 +30,7 @@ async function EditPostPageContent({ params }: { params: Promise<{ id: string }>
           author={own}
           postId={post.id}
           session={post.session}
+          postedWorkout={post.workout}
           initialCaption={post.caption}
           cancelHref={`/posts/${post.id}`}
           currentYear={Number(today.date.slice(0, 4))}
