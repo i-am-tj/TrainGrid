@@ -15,14 +15,12 @@ First 10 min very easy. Shuffle if needed.
 
 Intensity: RPE 3–5 / 10
 
-## Recovery
-
 Walk water stops as needed. Do not turn this into a workout.
+
+Next time: add 10 min every 1–2 weeks, then take a shorter long run.
 
 ## Cooldown
 
 Walk 5 min.
 
-## Progression
-
-Add 10 min every 1–2 weeks, then take a shorter long run.
+Key: 3

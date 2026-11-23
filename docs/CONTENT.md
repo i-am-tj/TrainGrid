@@ -39,6 +39,12 @@ Within a section: the first paragraph is the **instruction**, and later paragrap
 fields. `Key:` controls the item's id (below). Only add a video or equipment you have checked;
 do not invent sets, reps or claims.
 
+**Every section is a step you do.** The workout screen asks for each item to be ticked off (or
+logged set by set), and its totals count them. Advice is not a step: write it as notes on the step
+it belongs to. In the running plans, advice for the run goes in **Main**'s notes, advice for later
+runs as a note starting `Next time:`, and the recovery between repetitions as **Main**'s `Rest:`
+(PRODUCT_AUDIT F9). A unit test holds the running plans to Warm-up, Main and Cooldown.
+
 ## Item ids never move (E2-D11)
 
 Every item has a fixed id. Scheduled sessions record the id of the item they were copied from, so

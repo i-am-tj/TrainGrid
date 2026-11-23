@@ -15,14 +15,12 @@ description: Short and truly easy. Shake-out, not training stress.
 
 Intensity: RPE 2–3 / 10
 
-## Recovery
-
 If it stops feeling easy, walk.
+
+Next time: keep this short. Fitness comes from the other days.
 
 ## Cooldown
 
 Walk 2–3 min. Easy breathing.
 
-## Progression
-
-Keep this short. Fitness comes from the other days.
+Key: 3

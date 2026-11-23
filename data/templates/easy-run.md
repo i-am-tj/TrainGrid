@@ -15,14 +15,12 @@ Easy jog 3–5 min until breathing settles.
 
 Intensity: RPE 3–4 / 10
 
-## Recovery
+Stay easy the whole way: if you surge, slow down.
 
-None beyond staying easy. If you surge, slow down.
+Next time: add 5–10 min when the run feels genuinely easy, not when the calendar says so.
 
 ## Cooldown
 
 Walk 2–3 min.
 
-## Progression
-
-Add 5–10 min when the run feels genuinely easy, not when the calendar says so.
+Key: 3

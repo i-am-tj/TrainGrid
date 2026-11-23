@@ -16,16 +16,13 @@ Dynamic drills
 6 × 200m hard
 Even effort. Leave a little for the last two.
 
+Rest: 200m walk/jog
 Intensity: RPE 8 / 10
 
-## Recovery
-
-200m walk/jog between repetitions
+Next time: 200m → 300m → 400m → 600m over future sessions, same recovery idea.
 
 ## Cooldown
 
 1 km easy jog
 
-## Progression
-
-200m → 300m → 400m → 600m over future sessions, same recovery idea.
+Key: 3

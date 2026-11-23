@@ -99,9 +99,9 @@ describe("the committed id lock", () => {
     expect(readFileSync(ID_LOCK_FILE, "utf8")).toBe(serializeIdLock(buildIdLock(routines)));
   });
 
-  it("records every one of the 96 seeded items, none moved", () => {
+  it("records every one of the 84 seeded items, none moved", () => {
     const result = compareWithIdLock(readIdLock(), routines);
-    expect(Object.keys(readIdLock())).toHaveLength(96);
+    expect(Object.keys(readIdLock())).toHaveLength(84);
     expect(result).toEqual({ moved: [], renamed: [], removed: [], added: [] });
   });
 });

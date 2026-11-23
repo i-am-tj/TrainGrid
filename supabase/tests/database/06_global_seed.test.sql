@@ -3,7 +3,7 @@
 
 begin;
 
-select plan(12);
+select plan(14);
 
 select is(
   (select count(*)::int from public.routines where scope = 'GLOBAL' and slug is not null),
@@ -13,7 +13,7 @@ select is(
   (select count(*)::int from public.workout_items wi
      join public.routines r on r.id = wi.routine_id
     where r.scope = 'GLOBAL' and r.slug is not null),
-  96, 'with all 96 workout items'
+  84, 'with all 84 workout items'
 );
 select is(
   (select count(*)::int from public.routines where slug is not null and owner_user_id is not null),
@@ -44,8 +44,19 @@ select results_eq(
   $$select string_agg(wi.name, ' > ' order by wi.sort_order)
       from public.workout_items wi join public.routines r on r.id = wi.routine_id
      where r.slug = 'tempo-run'$$,
-  $$values ('Warm-up > Main > Recovery > Cooldown > Progression')$$,
+  $$values ('Warm-up > Main > Cooldown')$$,
   'item order is preserved'
+);
+select is(
+  (select count(*)::int from public.workout_items wi join public.routines r on r.id = wi.routine_id
+    where r.scope = 'GLOBAL' and r.category = 'running' and wi.name in ('Recovery', 'Progression')),
+  0, 'running plans hold only steps you do; advice is in the notes (PRODUCT_AUDIT F9)'
+);
+select results_eq(
+  $$select wi.rest from public.workout_items wi join public.routines r on r.id = wi.routine_id
+     where r.slug = 'vo2-run' and wi.name = 'Main'$$,
+  $$values ('200m walk/jog')$$,
+  'the recovery between repetitions is the main set''s rest'
 );
 select is(
   (select count(*)::int from public.workout_items wi
