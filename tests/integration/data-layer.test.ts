@@ -1,3 +1,4 @@
+import { addDays } from "@/lib/calendar-date";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { exportUserData } from "@/lib/data/export";
 import { DataError } from "@/lib/data/model";
@@ -622,7 +623,7 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
   describe("export", () => {
     it("D10: contains only the caller's own routines and sessions", async () => {
       const data = await exportUserData(a.db, a.id);
-      expect(data).toMatchObject({ format: "traingrid-export", version: 5 });
+      expect(data).toMatchObject({ format: "traingrid-export", version: 6, complete: true });
 
       const allA = await service().from("scheduled_sessions").select("id").eq("user_id", a.id);
       expect(data.sessions.map((s) => s.id).sort()).toEqual(allA.data!.map((r) => r.id).sort());
@@ -640,6 +641,28 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
       expect(text).not.toContain(b.email);
       expect(text).not.toContain(a.email);
       expect(text).not.toContain("invitation");
+    });
+
+    it("is complete beyond the Data API's 1000-row cap, in a stable order", async () => {
+      const heavy = await createTestUser("export-heavy");
+      const rows = Array.from({ length: 1050 }, (_, index) => ({
+        user_id: heavy.id,
+        date: addDays("2026-01-05", index % 700),
+        start_time: null,
+        name: `Bulk ${index}`,
+        category: "other",
+        snapshot: { version: 1, items: [] },
+      }));
+      const inserted = await service().from("scheduled_sessions").insert(rows).select("id");
+      expect(inserted.error).toBeNull();
+
+      const data = await exportUserData(heavy.db, heavy.id);
+      expect(data.sessions).toHaveLength(1050);
+      expect(new Set(data.sessions.map((session) => session.id)).size).toBe(1050);
+      // A small page size reads the same rows in the same order.
+      const paged = await exportUserData(heavy.db, heavy.id, { pageSize: 97 });
+      expect(paged.sessions.map((session) => session.id)).toEqual(data.sessions.map((session) => session.id));
+      expect(data.sessions.every((session) => session.origin === "planned")).toBe(true);
     });
   });
 });

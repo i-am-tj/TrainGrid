@@ -90,7 +90,7 @@ export default async function ProfilePage() {
           />
           <Row
             title="Download my data"
-            detail="Your sessions, routines, workouts and posts as a JSON file, ready to keep or move."
+            detail="Everything you’ve added, as one JSON file: routines, sessions, workouts and your social activity."
             icon={<DownloadIcon />}
             href="/api/export"
             download

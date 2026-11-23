@@ -18,6 +18,16 @@ in the app at `/whats-new`.
 - **Who sees a post**: the session page no longer says a post goes only to your followers; the
   post screen shows exactly who can read it before you post.
 
+### A complete data download
+
+- **Nothing left out**: **Download my data** now includes every session, workout, routine, post,
+  comment and like however many you have, instead of stopping at the first thousand of a kind.
+- **Quick workouts stay quick**: workouts you started from Home are marked as quick in the file
+  (they used to look planned), and each post includes the workout totals it showed.
+- **Honest about gaps**: if a part of your data can’t be read (for example social, before it is
+  available), the file says so (`complete: false`) instead of listing it as empty. The export
+  format is now version 6 (docs/DATA_FORMAT.md).
+
 ### Start now, share it, cheer each other on
 
 - **Start a workout from Home**: no planning needed. Pick Lift, Run, Plyo or Other and you’re

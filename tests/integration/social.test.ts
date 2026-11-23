@@ -410,10 +410,10 @@ describe.skipIf(!integrationReady)("social (local Supabase)", () => {
       await followMember(user.db, user.id, pub.id);
 
       const data = await exportUserData(user.db, user.id);
-      expect(data.version).toBe(5);
-      expect(data.social.profile).toMatchObject({ username: p.username, visibility: "private" });
-      expect(data.social.following).toEqual([expect.objectContaining({ username: pubName, status: "accepted" })]);
-      expect(data.social.posts.map((post) => post.caption)).toEqual(["Exported"]);
+      expect(data).toMatchObject({ version: 6, complete: true, sections: { social: "included" } });
+      expect(data.social!.profile).toMatchObject({ username: p.username, visibility: "private" });
+      expect(data.social!.following).toEqual([expect.objectContaining({ username: pubName, status: "accepted" })]);
+      expect(data.social!.posts.map((post) => post.caption)).toEqual(["Exported"]);
       expect(JSON.stringify(data.social)).not.toMatch(/@example\.test|session_id/);
 
       await deleteSocialProfile(user.db, user.id);
@@ -462,6 +462,19 @@ describe.skipIf(!integrationReady)("social before its migration (local Supabase)
     await unavailable(listPosts(missing, {}));
     await unavailable(countIncomingRequests(missing, user.id));
     await unavailable(exportSocialData(missing, user.id));
+  });
+
+  it("marks the social section unavailable in a download instead of exporting it as empty", async () => {
+    // Only the social tables are hidden; the plan is readable as usual.
+    const socialOnly = await user.clientWithFetch((input, init) => {
+      const headers = new Headers(init?.headers);
+      if (/\/rest\/v1\/(social_profiles|follows|session_posts|post_likes|post_comments)\b/.test(String(input))) {
+        headers.set("Accept-Profile", "graphql_public");
+      }
+      return fetch(input, { ...init, headers });
+    });
+    const data = await exportUserData(socialOnly, user.id);
+    expect(data).toMatchObject({ complete: false, sections: { sessions: "included", social: "unavailable" }, social: null });
   });
 
   it("reports writes as unavailable, with a message for the form", async () => {

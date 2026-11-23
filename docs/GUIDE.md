@@ -161,7 +161,9 @@ Open your **Profile** from your initials at the top right (on a phone: menu → 
 
 - See your plan in numbers: sessions planned, sessions coming up, and your own routines.
 - **Social profile**: set up or edit how other members see you (section 7).
-- **Download my data** saves your routines, sessions, workouts and posts as a JSON file, any time.
+- **Download my data** saves all your routines, sessions (planned and quick), workouts, social profile,
+  connections, posts, comments and likes as one JSON file, any time. If a part can’t be read, the file
+  says so (`complete: false`).
 - **Appearance**: light, dark, or follow your device. The sun and moon button in the header
   switches too.
 - **Time zone**: “today” follows your device’s clock, even straight after travelling.

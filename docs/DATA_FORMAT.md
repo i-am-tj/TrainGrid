@@ -147,8 +147,10 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
 ```json
 {
   "format": "traingrid-export",
-  "version": 5,
+  "version": 6,
   "exportedAt": "2026-11-13T09:00:00.000Z",
+  "complete": true,
+  "sections": { "routines": "included", "sessions": "included", "workoutLogs": "included", "social": "included" },
   "routines": [
     {
       "id": "…",
@@ -165,7 +167,7 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
     {
       "id": "…", "date": "2026-11-09", "weekId": "2026-W46", "day": 1, "startTime": "18:00",
       "name": "Lower A", "category": "strength", "durationMinutes": null, "notes": "",
-      "sourceRoutineId": "…", "items": [ { "id": "…", "sourceItemId": "…", "name": "Back Squat", "…": "…" } ]
+      "sourceRoutineId": "…", "origin": "planned", "items": [ { "id": "…", "sourceItemId": "…", "name": "Back Squat", "…": "…" } ]
     }
   ],
   "workoutLogs": [
@@ -186,7 +188,8 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
     "followers": [ { "username": "priya_lifts", "status": "pending", "since": "2026-11-21T18:30:00.000Z" } ],
     "posts": [
       { "id": "…", "caption": "Three blocks at threshold.", "createdAt": "2026-11-21T08:00:00.000Z", "editedAt": null,
-        "session": { "name": "Tempo Tuesdays", "category": "running", "date": "2026-11-17", "durationMinutes": null } }
+        "session": { "name": "Tempo Tuesdays", "category": "running", "date": "2026-11-17", "durationMinutes": null },
+        "workout": { "completed": true, "sets": 12, "volume": null, "unit": "kg" } }
     ],
     "comments": [ { "id": "…", "postId": "…", "body": "Huge!", "createdAt": "2026-11-22T09:10:00.000Z" } ],
     "likes": [ { "postId": "…", "createdAt": "2026-11-22T09:09:00.000Z" } ]
@@ -194,10 +197,21 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
 }
 ```
 
-It contains only the member’s PERSONAL routines, scheduled sessions, workout logs and social data:
+It contains all of the member’s PERSONAL routines, scheduled sessions, workout logs and social data:
 no GLOBAL routines, other members' content, invitations or account details. Other members appear
 only as the usernames the member follows or is followed by, never as ids or emails. There is no
-import. Version 5 added `social.comments` (written by the member) and `social.likes` (posts they
+import.
+
+Every list is complete: each collection is read page by page in a stable order (`lib/data/paging.ts`),
+so the Data API's per-request row cap (`max_rows`) cannot shorten it. `sections` says which parts
+are in the file. A part that could not be read is `"unavailable"`, its key is `null` (today only
+`social`, before the social migration is applied), and `complete` is `false`; a valid file with
+empty lists therefore always means there was nothing to export.
+
+Version 6 added `complete`, `sections`, each session's `origin` (`planned`, or `quick` for a workout
+started from Home; earlier versions exported every session as if planned) and each post's `workout`
+totals as posted (`sets` and `volume` are null unless the author chose to show them), and `social`
+became null when unavailable instead of empty lists. Version 5 added `social.comments` (written by the member) and `social.likes` (posts they
 liked); version 4 added `social` (`profile` is null without a social profile); version 3 added
 `workoutLogs`; versions 1 and 2 had no logs.
 
