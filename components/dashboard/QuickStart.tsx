@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Modal } from "@/components/ui/Modal";
-import { readPreference } from "@/components/workout/hooks";
+import { quickStartRequestId, readPreference } from "@/components/workout/hooks";
 import { SESSION_TYPES, type SessionType } from "@/lib/domain";
 import { btnPrimary } from "@/lib/ui";
 import { startQuickWorkoutAction } from "@/lib/workouts/actions";
@@ -21,15 +21,23 @@ const CHOICES: Record<SessionType, { label: string; detail: string }> = {
  * with nothing planned. Exercises are added during the workout; it is named
  * at the finish, and can then be posted. A plain form, so it works before
  * JavaScript has loaded too (the dialog then simply opens on the next tap).
+ *
+ * The form carries a request id, kept for this tab until the workout opens.
+ * It becomes the new session's id, so a form sent twice (a double tap, a
+ * retry after a dropped response) opens the same workout instead of starting
+ * a second one.
  */
 export function QuickStart() {
   const [open, setOpen] = useState(false);
   const [unit, setUnit] = useState<WeightUnit>("kg");
+  const [requestId, setRequestId] = useState("");
 
-  // The weight unit this phone last used in a workout.
+  // The weight unit this phone last used in a workout, and the request id
+  // (read here, not while rendering, so server and browser agree).
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setUnit(readPreference("weight-unit", WEIGHT_UNITS, "kg"));
+    setRequestId(quickStartRequestId());
   }, []);
 
   return (
@@ -49,6 +57,7 @@ export function QuickStart() {
       >
         <form action={startQuickWorkoutAction}>
           <input type="hidden" name="unit" value={unit} />
+          <input type="hidden" name="request" value={requestId} />
           <fieldset>
             <legend className="sr-only">Workout type</legend>
             <div className="grid grid-cols-2 gap-2">

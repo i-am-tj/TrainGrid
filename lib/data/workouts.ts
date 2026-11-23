@@ -21,7 +21,9 @@ import { validate } from "./validate";
  * The signed-in member's workout logs: one per scheduled session.
  *
  * Every query is narrowed to `user_id = userId` here AND restricted by Row
- * Level Security (own rows, active membership). `userId` comes from the
+ * Level Security (own rows, active membership). The two database functions
+ * (start_quick_workout, finish_workout) run as the caller under the same
+ * policies and act only on the caller's rows. `userId` comes from the
  * verified session only. The owner is never written from here: the column
  * defaults to the caller in the database.
  */
@@ -138,11 +140,17 @@ export async function saveWorkout(
   return data.updated_at;
 }
 
+const quickNameSchema = z.string().trim().min(1, "Name your workout.").max(200, "Keep the name to 200 characters.");
+
 /**
- * Saves the final state and marks the workout completed. `finishedAt` is the
- * moment the member tapped Finish (it may reach the server later, after a
- * dropped connection); it is kept within [started, now]. Finishing again
- * after editing keeps the first finish time.
+ * Saves the final state and marks the workout completed, in one call to the
+ * database. `finishedAt` is the moment the member tapped Finish (it may reach
+ * the server later, after a dropped connection); the database keeps it within
+ * (started, now]. Finishing again after editing keeps the first finish time.
+ *
+ * For a quick workout, `name` is the name given at the finish: the session
+ * takes it and the time actually trained in the same transaction, so a
+ * workout is never left finished under its placeholder name (F18).
  */
 export async function finishWorkout(
   db: Db,
@@ -150,87 +158,67 @@ export async function finishWorkout(
   rawSessionId: unknown,
   input: WorkoutProgress,
   rawFinishedAt: unknown,
+  rawName?: unknown,
 ): Promise<WorkoutLog> {
   const id = sessionId(rawSessionId);
   const parsed = validate(workoutProgressSchema, input);
-  const current = await getWorkoutLog(db, userId, id);
-  if (!current) throw NOT_FOUND();
-
-  const now = Date.now();
-  // The database keeps microseconds; a millisecond on is never before the start.
-  const earliest = Date.parse(current.startedAt) + 1;
+  const name = rawName === undefined ? undefined : validate(quickNameSchema, rawName);
   const requested = typeof rawFinishedAt === "string" ? Date.parse(rawFinishedAt) : Number.NaN;
-  const finished = Math.max(earliest, Number.isFinite(requested) ? Math.min(requested, now) : now);
 
   const { data, error } = await db
-    .from("workout_logs")
-    .update({
-      unit: parsed.unit,
-      entries: entriesToJson(parsed.entries),
-      notes: parsed.notes,
-      status: "completed",
-      finished_at: current.finishedAt ?? new Date(finished).toISOString(),
+    .rpc("finish_workout", {
+      p_session_id: id,
+      p_unit: parsed.unit,
+      p_entries: entriesToJson(parsed.entries),
+      p_notes: parsed.notes,
+      // Unreadable: now. The database keeps it within (started, now] either way.
+      p_finished_at: new Date(Number.isFinite(requested) ? requested : Date.now()).toISOString(),
+      ...(name === undefined ? {} : { p_name: name }),
     })
-    .eq("session_id", id)
-    .eq("user_id", userId)
-    .select(LOG_COLUMNS)
     .maybeSingle();
-  if (error) throw new Error("Could not finish the workout.");
+  if (error) {
+    if (error.code === "P0002") throw NOT_FOUND();
+    throw new Error("Could not finish the workout.");
+  }
   if (!data) throw NOT_FOUND();
   return logFromRow(data);
 }
 
 /**
  * Starts a quick workout: a session for `date` (the member's today) with no
- * plan, marked quick, and its workout already under way. Returns the session
- * id. Exercises are added during the workout; it is named at the finish.
+ * plan, marked quick, and its workout already under way, created together in
+ * one transaction. Returns the session id. Exercises are added during the
+ * workout; it is named at the finish.
+ *
+ * `requestId` becomes the session id. Sending the same request again (a
+ * double submit, a retry after the response was lost) returns that same
+ * workout rather than starting a second one (F18). Without one, a new id is
+ * made here.
  */
 export async function startQuickWorkout(
   db: Db,
   userId: string,
-  input: { category: unknown; date: unknown; unit: unknown },
+  input: { category: unknown; date: unknown; unit: unknown; requestId?: unknown },
 ): Promise<string> {
   const category = validate(categorySchema, input.category);
   const date = validate(isoDateSchema, input.date);
   const unit = WEIGHT_UNITS.includes(input.unit as WeightUnit) ? (input.unit as WeightUnit) : "kg";
-  const { data, error } = await db
-    .from("scheduled_sessions")
-    .insert({
-      user_id: userId,
-      date,
-      name: QUICK_WORKOUT_NAMES[category],
-      category,
-      origin: "quick",
-      snapshot: { version: 1, items: [] },
-    })
-    .select("id")
-    .single();
-  if (error) throw new Error("Could not start the workout.");
-  await startWorkout(db, userId, data.id, { unit, entries: EMPTY_ENTRIES, notes: "" });
-  return data.id;
-}
-
-/**
- * Names a finished quick workout and records how long it took, so the
- * planner, Home and any post show what was actually done. Only quick sessions
- * are renamed this way; planned ones keep their name and planned duration.
- */
-export async function nameQuickWorkout(
-  db: Db,
-  userId: string,
-  rawSessionId: unknown,
-  rawName: unknown,
-  durationMinutes: number,
-): Promise<void> {
-  const id = sessionId(rawSessionId);
-  const name = validate(z.string().trim().min(1, "Name your workout.").max(200, "Keep the name to 200 characters."), rawName);
-  const { error } = await db
-    .from("scheduled_sessions")
-    .update({ name, duration_minutes: Math.min(1440, Math.max(1, Math.round(durationMinutes))) })
-    .eq("id", id)
-    .eq("user_id", userId)
-    .eq("origin", "quick");
-  if (error) throw new Error("Could not name the workout.");
+  const requested = idSchema.safeParse(input.requestId);
+  const id = requested.success ? requested.data : crypto.randomUUID();
+  const { data, error } = await db.rpc("start_quick_workout", {
+    p_session_id: id,
+    p_date: date,
+    p_category: category,
+    p_name: QUICK_WORKOUT_NAMES[category],
+    p_unit: unit,
+    p_entries: entriesToJson(EMPTY_ENTRIES),
+  });
+  if (error) {
+    // The id belongs to something that is not this member's quick session.
+    if (error.code === "P0002") throw NOT_FOUND();
+    throw new Error("Could not start the workout.");
+  }
+  return data;
 }
 
 /** Discards the workout log. The planned session is untouched. */

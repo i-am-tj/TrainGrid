@@ -247,4 +247,7 @@ Design and reasoning: [ADR 002](adr/002-members-only-social-layer.md). Enforced 
   and cannot be supplied or changed through the API; only the totals the author ticked are copied,
   never exercises, sets or notes.
 - Quick sessions are ordinary `scheduled_sessions` rows (`origin = 'quick'`), under the existing
-  owner-only policies.
+  owner-only policies. `start_quick_workout()` and `finish_workout()` are security invoker and
+  executable by `authenticated` only, so they add atomicity, not rights. The session id a member
+  supplies to start one is checked against their own quick sessions: another member's id, or a
+  planned session's, reads as not found and is never adopted.
