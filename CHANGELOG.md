@@ -7,6 +7,19 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Your data, your call
+
+- **Delete my account** on your profile explains how to have your account and everything in it
+  deleted, including when you can no longer sign in.
+- Invite requests are now deleted on schedule, 180 days after they are made, even when nobody
+  else asks for an invite. Needs migration `20261124000000_invite_request_retention`.
+
+### For admins
+
+- If invite requests can’t be loaded, the Invitations page says so, with **Try again**, instead
+  of showing “No requests waiting”; the header badge shows no count rather than zero.
+- The Invitations page warns while `TRAINGRID_CONTACT_EMAIL` is not set.
+
 ### Start now, share it, cheer each other on
 
 - **Start a workout from Home**: no planning needed. Pick Lift, Run, Plyo or Other and you’re

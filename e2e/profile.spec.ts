@@ -49,6 +49,7 @@ test("a member's profile shows who they are, their numbers, their data and About
   await expect(stats.getByRole("link", { name: "Routines: 1 routine" })).toHaveAttribute("href", "/library?scope=mine");
 
   await expect(page.getByRole("link", { name: /Download my data/ })).toHaveAttribute("href", "/api/export");
+  await expect(page.getByRole("link", { name: /Delete my account/ })).toHaveAttribute("href", "/privacy#delete-account");
   const about = page.getByRole("region", { name: "About TrainGrid" });
   await expect(about.getByRole("link", { name: /What’s new/ })).toHaveAttribute("href", "/whats-new");
   await expect(about.getByRole("link", { name: /Privacy notice/ })).toHaveAttribute("href", "/privacy");

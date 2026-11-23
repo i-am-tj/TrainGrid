@@ -184,7 +184,10 @@ browser never talks to the database for it.
 - Only new requests email the owner (`TRAINGRID_INVITE_REQUESTS_TO`, else
   `TRAINGRID_FEEDBACK_TO`); the visitor's text is escaped in the HTML email, and nothing is ever
   emailed to the visitor, so the form cannot be used to send mail to third parties.
-- Requests are deleted 180 days after they are made. Creating an invitation for the address marks
+- Requests are deleted 180 days after they are made, by a daily `pg_cron` job
+  (`private.purge_expired_invite_requests()`, migration `20261124000000_invite_request_retention`;
+  test `14_invite_request_retention.test.sql`), and again whenever a request arrives. Creating an
+  invitation for the address marks
   its request invited (trigger).
 
 ## Social profiles, follows and posts

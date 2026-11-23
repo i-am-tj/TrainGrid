@@ -115,7 +115,7 @@ export default function PrivacyPage() {
               </p>
               <p>
                 Nothing is sent to you unless you are invited. Requests are deleted 180 days after
-                they are made, or sooner if you ask.
+                they are made (a daily job removes them), or sooner if you ask.
               </p>
             </>
           ),
@@ -187,9 +187,22 @@ export default function PrivacyPage() {
                   post, take back a like, delete your comments (and any comment on your posts), or
                   delete your social profile altogether. Your plan is not affected.
                 </li>
-                <li>
-                  <strong>Delete it:</strong> ask through {contact} and your account and everything in
-                  it will be deleted.
+                <li id="delete-account" className="scroll-mt-24">
+                  <strong>Delete it:</strong>{" "}
+                  {email ? (
+                    <>
+                      email <a href={`mailto:${email}`}>{email}</a> from the address you sign in with, or
+                      use the Feedback button while you are signed in, and your account and everything in
+                      it will be deleted. Email works even if you can no longer sign in, for example after
+                      your access has been withdrawn.
+                    </>
+                  ) : (
+                    <>
+                      while you are signed in, ask through the Feedback button and your account and
+                      everything in it will be deleted. If you can no longer sign in, ask the person who
+                      invited you.
+                    </>
+                  )}
                 </li>
                 <li>
                   <strong>Ask about it:</strong> you can ask what TrainGrid holds about you, or for a
