@@ -74,10 +74,15 @@ against anything but a local URL.
     ticked workout totals from the author's own completed log and never change; likes (once, own
     only, counts, viewer state) and comments (validation, visibility, author and post-author
     delete, no edits, 100 a day) follow the post's visibility, including after removal and
-    revocation; export v5; phone layout and axe checks. In
+    revocation; export v6; phone layout and axe checks. Starting and finishing are each one
+    transaction: a start or finish that fails part-way leaves nothing half-done, the same start
+    sent again (in the browser: a lost response retried from the error page) returns the same
+    workout, and another member's or a planned session's id is never adopted. In
     `supabase/tests/database/13_reactions_and_quick_workouts.test.sql`,
+    `supabase/tests/database/15_atomic_quick_workouts.test.sql`,
     `tests/integration/reactions-and-quick-workouts.test.ts`, `lib/workouts/model.test.ts`,
-    `lib/social/model.test.ts` and `e2e/quick-workout-social.spec.ts`.
+    `lib/social/model.test.ts`, `e2e/quick-workout-social.spec.ts` and
+    `e2e/quick-start-retry.spec.ts`.
 
 Several suites were confirmed able to fail: with RLS disabled, with the admin check removed, and
 against a simulated exposed function, the relevant tests failed.

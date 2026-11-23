@@ -34,6 +34,7 @@ import {
   haptic,
   readLocalWorkout,
   readPreference,
+  settleQuickStartRequest,
   useAutosave,
   useChime,
   useNow,
@@ -173,6 +174,11 @@ export function WorkoutPlayer({
   useWakeLock(active);
   const { prime, chime } = useChime();
   const now = useNow(active, rest ? 250 : 1000);
+
+  // This quick workout has opened: Home's next Start a workout is a new one.
+  useEffect(() => {
+    if (session.quick) settleQuickStartRequest(session.id);
+  }, [session.id, session.quick]);
 
   // Restore what this phone has that TrainGrid does not (a set logged with no signal),
   // and the device preferences. Storage is only readable in the browser.

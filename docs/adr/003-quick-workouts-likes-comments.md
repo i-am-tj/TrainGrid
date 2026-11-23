@@ -31,6 +31,11 @@ workout rules (RLS, one log per session) apply unchanged.
   so older logs stay valid. Any session without planned exercises runs this way ("free-form").
 - At the finish the member **names** it; the session records that name and the minutes trained
   (quick sessions only; planned sessions keep their name and planned duration).
+- *Amended 2026-11-25 (PRODUCT_AUDIT F18):* starting and finishing are each **one database
+  transaction**: `start_quick_workout()` creates the session and its log together, under a session
+  id the form supplies, so a resent start returns the same workout; `finish_workout()` completes
+  the log and, for a quick session, records its name and time trained together. Both are security
+  invoker, like `save_personal_routine()`.
 - **Discarding** a quick workout deletes the session too (it existed only for that workout);
   discarding a planned workout still keeps the session.
 - The summary screen's main action is **Post about it**, which opens the usual composer.

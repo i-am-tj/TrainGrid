@@ -43,6 +43,36 @@ export function clearLocalWorkout(sessionId: string) {
   }
 }
 
+const QUICK_START_KEY = "traingrid:quick-start-request";
+
+/**
+ * The request id for starting a quick workout from Home, kept for this tab
+ * until that workout's screen opens. A retry after a dropped response (or
+ * after the error page's Try again) sends the same id, so the server returns
+ * the workout it may already have started instead of a second one (F18).
+ */
+export function quickStartRequestId(): string {
+  try {
+    const kept = window.sessionStorage.getItem(QUICK_START_KEY);
+    if (kept) return kept;
+    const fresh = crypto.randomUUID();
+    window.sessionStorage.setItem(QUICK_START_KEY, fresh);
+    return fresh;
+  } catch {
+    // Storage blocked: a fresh id per visit still stops a double submit.
+    return crypto.randomUUID();
+  }
+}
+
+/** The workout screen for this quick start opened: the next start is a new one. */
+export function settleQuickStartRequest(sessionId: string) {
+  try {
+    if (window.sessionStorage.getItem(QUICK_START_KEY) === sessionId) window.sessionStorage.removeItem(QUICK_START_KEY);
+  } catch {
+    // Nothing kept.
+  }
+}
+
 export function readPreference<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
   try {
     const value = window.localStorage.getItem(`traingrid:${key}`);

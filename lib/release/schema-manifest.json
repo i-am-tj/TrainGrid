@@ -154,12 +154,14 @@
     "accept_invitation",
     "begin_invitation_email",
     "complete_invitation_email",
+    "finish_workout",
     "is_member",
     "request_invite",
     "revoke_invitation",
     "save_personal_routine",
     "search_social_profiles",
     "social_posts",
-    "social_profile"
+    "social_profile",
+    "start_quick_workout"
   ]
 }

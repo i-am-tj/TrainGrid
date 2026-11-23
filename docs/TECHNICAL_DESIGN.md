@@ -175,6 +175,15 @@ replaced in a single transaction. Copying uses the same call: `copyGlobalRoutine
 source with the member’s own client, requires it to be GLOBAL (anything else is “not found”), and
 saves the content without item ids, so the copy gets new ids and a failed copy leaves nothing.
 
+Workouts follow the same rule. **Start a workout** on Home is one call, `start_quick_workout()`,
+which creates the quick session and its log together. Its session id is the request id the form
+sends, kept in the tab's `sessionStorage` until that workout's screen opens, so a double tap or a
+retry after a lost response (even from the error page) returns the workout already started rather
+than a second one. **Finish** is one call, `finish_workout()`: it completes the log, keeps the
+finish time within (started, now] and the first finish time on a re-finish, and for a quick
+session records the name and minutes trained in the same transaction. Both run as the caller
+(security invoker) under the tables' own policies.
+
 ### Library list
 
 `listLibraryRoutines()` makes **one** request: the member’s visible routines (GLOBAL and their

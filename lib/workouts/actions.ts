@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { DataError } from "@/lib/data/model";
 import { memberData } from "@/lib/data/server";
 import { deleteSession, getSession } from "@/lib/data/sessions";
-import { discardWorkout, finishWorkout, nameQuickWorkout, saveWorkout, startQuickWorkout, startWorkout } from "@/lib/data/workouts";
+import { discardWorkout, finishWorkout, saveWorkout, startQuickWorkout, startWorkout } from "@/lib/data/workouts";
 import { getRequestToday } from "@/lib/today";
-import { trainedMinutes, type WorkoutLog, type WorkoutProgress } from "./model";
+import type { WorkoutLog, WorkoutProgress } from "./model";
 
 /**
  * The workout screen's mutations. Called from event handlers, so each
@@ -55,7 +55,8 @@ export async function saveWorkoutAction(
 
 /**
  * Finishes the workout. For a quick workout, `name` is the name the member
- * gave it at the finish, and the session records the time actually trained.
+ * gave it at the finish, and the session records the time actually trained,
+ * in the same transaction as the finish.
  */
 export async function finishWorkoutAction(
   sessionId: string,
@@ -64,13 +65,7 @@ export async function finishWorkoutAction(
   name?: string,
 ): Promise<WorkoutActionResult<WorkoutLog>> {
   const { db, userId } = await memberData();
-  const result = await attempt(async () => {
-    const log = await finishWorkout(db, userId, sessionId, progress, finishedAt);
-    if (name !== undefined && log.finishedAt) {
-      await nameQuickWorkout(db, userId, sessionId, name, trainedMinutes(log.startedAt, log.finishedAt));
-    }
-    return log;
-  });
+  const result = await attempt(() => finishWorkout(db, userId, sessionId, progress, finishedAt, name));
   if (result.ok) revalidateMemberPages();
   return result;
 }
@@ -78,7 +73,8 @@ export async function finishWorkoutAction(
 /**
  * "Start a workout" on Home: a quick session for the member's today, with its
  * workout already started, then straight into the workout screen. Only the
- * type (and the weight unit this phone uses) come from the form.
+ * type, the weight unit this phone uses and the request id (so a resent
+ * form returns the same workout) come from the form.
  */
 export async function startQuickWorkoutAction(form: FormData) {
   const { db, userId } = await memberData();
@@ -87,6 +83,7 @@ export async function startQuickWorkoutAction(form: FormData) {
     category: form.get("category"),
     date: today.date,
     unit: form.get("unit"),
+    requestId: form.get("request"),
   });
   revalidateMemberPages();
   redirect(`/workout/${sessionId}`);
