@@ -51,9 +51,11 @@ Membership means “has a `profiles` row that is not revoked”. That row is cre
 `accept_invitation()`, which takes no arguments, reads the caller’s own confirmed email from Supabase
 Auth, requires it to come from a Google or GitHub identity, and matches it against a live invitation.
 
-The secret key bypasses RLS. It is read only in `lib/supabase/admin.ts` (marked `server-only`) and
-used only for invitation management, after a server-side admin check. Admins are listed by user id
-in `TRAINGRID_ADMIN_USER_IDS`.
+The secret key bypasses RLS. Admin invitation operations check membership and the server-side
+`TRAINGRID_ADMIN_USER_IDS` allowlist. The public invite-request action uses the privileged
+client for the rate-limited `request_invite` RPC and uses the secret to hash the network
+identifier. The health route uses the secret to read schema metadata. Maintenance scripts
+that receive this key also run with elevated privileges.
 
 The social layer (profiles, follows, posts) adds one rule: other members' rows are visible only
 while that member is active, and posts only to the people the author's visibility allows. Helpers
