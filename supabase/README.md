@@ -59,12 +59,10 @@ How to add or change a routine, and the rule that item ids never move (keys, the
 `data/templates/seed-ids.json`, renames and removals), is in [docs/CONTENT.md](../docs/CONTENT.md).
 
 - **Locally** it runs automatically on `npm run db:reset`.
-- **On production** it is applied deliberately, with the migrations:
-
-```bash
-npx supabase db push --remote --include-seed --dry-run
-npx supabase db push --remote --include-seed
-```
+- **On production** it is applied deliberately. The first time, `npx supabase db push --remote
+  --include-seed` (after `--dry-run`) runs it. After that, the CLI only records a changed file's
+  hash and does not run it, so an **updated** seed is run by hand in the SQL Editor: see
+  [docs/CONTENT.md](../docs/CONTENT.md#applying-it-to-production-owner-only-deliberately).
 
 It is idempotent: every routine and item has a fixed id derived from its template, so running it
 again updates the same rows instead of adding copies. Items removed from a template are removed

@@ -171,8 +171,12 @@ in the app at `/whats-new`.
   The release journey (schedule a routine across weeks, reload, start, resume, finish, quick
   workout, export) runs as an integration test. See docs/RELEASING.md.
 - The six running plans lost their advisory items (12 items: `seed-ids.json` records them as
-  removed; Cooldown keeps its id with `Key: 3`). Apply with
-  `npx supabase db push --remote --include-seed` after merging; scheduled sessions are untouched.
+  removed; Cooldown keeps its id with `Key: 3`). Applied to production by running
+  `supabase/seed.sql` in the SQL Editor; scheduled sessions are untouched.
+- docs/CONTENT.md: `supabase db push --include-seed` only records a changed seed's hash and does not
+  run it, so an updated seed is now run by hand in the SQL Editor, then checked. Also: run seed and
+  migration commands from an up-to-date `main`, and never accept the CLI's suggested
+  `migration repair --status reverted` when it only means the checkout is behind.
 - Starting and finishing a workout are now one database call each (`start_quick_workout()`,
   `finish_workout()`, security invoker). Needs migration `20261125000000_atomic_quick_workouts`
   **before** this build deploys: without it, `/api/health` reports the schema as behind and
