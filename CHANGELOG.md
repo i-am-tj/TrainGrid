@@ -7,6 +7,16 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Plan any day
+
+- **Pick the actual date**: adding a session, including **Schedule** from the Library, now has a
+  date field that works for any week, with **Today**, **Tomorrow** and **Next Monday** one tap
+  away and the chosen day spelled out (“Monday 30 November 2026 · next week”). The routine you
+  picked stays selected.
+- **Move a session the same way**: Edit uses the same date field instead of a week code, so
+  moving Thursday’s run to next Tuesday, or into January, is one choice.
+- A missing date is explained beside the field, and the rest of the form keeps what you typed.
+
 ### Start now, share it, cheer each other on
 
 - **Start a workout from Home**: no planning needed. Pick Lift, Run, Plyo or Other and you’re

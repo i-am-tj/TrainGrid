@@ -2,12 +2,14 @@ import { notFound } from "next/navigation";
 import { EditSessionForm } from "@/components/session/EditSessionForm";
 import { memberData } from "@/lib/data/server";
 import { getSession } from "@/lib/data/sessions";
+import { getRequestToday } from "@/lib/today";
 
 export default async function EditSessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { db, userId } = await memberData();
   const { id } = await params;
   const session = await getSession(db, userId, id);
   if (!session) notFound();
+  const today = await getRequestToday();
 
   return (
     <div className="workout-body mx-auto max-w-2xl px-3 py-7 sm:px-4 sm:py-10">
@@ -16,7 +18,7 @@ export default async function EditSessionPage({ params }: { params: Promise<{ id
         Changes the day, time, name or notes of this session only.
       </p>
       <div className="mt-6">
-        <EditSessionForm session={session} />
+        <EditSessionForm session={session} today={today.date} />
       </div>
     </div>
   );

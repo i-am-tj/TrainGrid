@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { expect, test } from "@playwright/test";
 import { signInAsNewLocalMember } from "./local-supabase";
-import { createRoutine, fillItem, scheduleRoutine } from "./planner-helpers";
+import { chooseDate, createRoutine, dateThisWeek, fillItem, scheduleRoutine } from "./planner-helpers";
 
 // Every test runs as a brand-new member, so each starts with an empty calendar.
 test.beforeEach(async ({ context, baseURL }) => {
@@ -52,7 +52,7 @@ test("Journey 3 — multi-session day, timed and untimed, then reschedule", asyn
 
   await page.getByRole("link", { name: "Lower B, 08:30" }).click();
   await page.getByRole("link", { name: "Edit" }).click();
-  await page.locator('select[name="day"]').selectOption("2");
+  await chooseDate(page, dateThisWeek(2));
   await page.locator('select[name="time"]').selectOption("18:00");
   await page.getByRole("button", { name: "Save" }).click();
 
@@ -62,13 +62,34 @@ test("Journey 3 — multi-session day, timed and untimed, then reschedule", asyn
   await expect(page.getByRole("link", { name: "Lower B, 18:00" })).toBeVisible();
 });
 
-test("rescheduling to a week that does not exist is refused", async ({ page }) => {
+test("a missing or impossible date is explained beside the field, and nothing changes", async ({ page }) => {
   await scheduleRoutine(page, "Easy Run", "2", "07:00");
   await page.getByRole("link", { name: "Easy Run, 07:00" }).click();
   await page.waitForURL(/\/session\/[0-9a-f-]{36}$/);
   const sessionUrl = page.url();
   await page.getByRole("link", { name: "Edit" }).click();
-  await page.getByLabel("Week (YYYY-Www)").fill("2026-W60");
+  await page.waitForURL(/\/edit$/);
+  const date = page.getByLabel("Date", { exact: true });
+  await expect(date).toHaveValue(dateThisWeek(2));
+
+  // Cleared: the form stays, with the problem beside the field.
+  await page.getByLabel("Name", { exact: true }).fill("Easy Run (edited)");
+  await date.fill("");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Choose a date." })).toBeVisible();
+  await expect(date).toHaveAttribute("aria-invalid", "true");
+  await expect(date).toBeFocused();
+  await expect(page).toHaveURL(/\/edit$/);
+  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Easy Run (edited)");
+
+  // A forged impossible date is still refused by the server.
+  await date.evaluate((input) => {
+    const field = input as HTMLInputElement;
+    field.name = "ignored";
+    field.required = false;
+    const forged = Object.assign(document.createElement("input"), { type: "hidden", name: "date", value: "2026-02-30" });
+    field.form!.append(forged);
+  });
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("heading", { name: "Could not complete that action" })).toBeVisible();
 
