@@ -7,7 +7,7 @@ person who builds TrainGrid.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="images/v1/home-first-visit-desktop-dark.png" />
-    <img src="images/v1/home-first-visit-desktop-light.png" alt="Home on a first visit, with the getting-started card" width="820" />
+    <img src="images/v1/home-first-visit-desktop-light.png" alt="Home on a first visit, inviting you to plan your first session" width="820" />
   </picture>
 </p>
 
@@ -33,12 +33,11 @@ Home shows the day ahead and the week around it:
 - **Today’s planned sessions**, untimed first, then by start time. **Start workout** runs one
   right away (see below); **Details** shows its full workout.
 - **This week**: how many sessions are planned on each day. Tap a day to open it in the planner.
-- **Quick actions** for the things you do most.
 - **My routines**: your three most recently changed routines, ready to schedule.
 
-New here? The **Getting started** card has three steps (plan a session, make a routine your own,
-schedule a routine). Each ticks itself off when you do it, and the card steps aside when you’re
-done. You can also hide it with **×**.
+New here? Until you’ve planned anything, Today invites you to plan your first session:
+**Choose a routine** opens the TrainGrid routines, ready to schedule, or plan a session of your
+own. It steps aside once a session is planned, and **×** hides it.
 
 ## 3. Plan your week
 

@@ -104,14 +104,11 @@ test("mobile home prioritizes today's first session ahead of getting started", a
     for (const width of [320, 360, 1440]) {
       await page.setViewportSize({ width, height: 800 });
       await expect(first).toBeVisible();
-      await expect(page.getByTestId("getting-started")).toBeVisible();
+      // A member with a session never sees the first-session invitation.
+      await expect(page.getByTestId("first-session")).toHaveCount(0);
       if (width < 640) {
         const session = (await first.boundingBox())!;
-        const intro = (await page
-          .getByTestId("getting-started")
-          .boundingBox())!;
         expect(session.y).toBeLessThan(480);
-        expect(intro.y).toBeGreaterThan(session.y + session.height);
         const release = page.locator('main a[href="/whats-new"]');
         if (await release.count())
           expect((await release.boundingBox())!.height).toBeLessThanOrEqual(44);

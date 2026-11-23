@@ -214,7 +214,7 @@ for (const scheme of ["light", "dark"] as const) {
     await makeLocalMember(userId, "Sam Lee");
     await page.goto("/home");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Welcome, Sam Lee.");
-    await expect(page.getByTestId("getting-started")).toBeVisible();
+    await expect(page.getByTestId("first-session")).toBeVisible();
     await shot(page, `home-first-visit-desktop-${scheme}`, false);
   });
 

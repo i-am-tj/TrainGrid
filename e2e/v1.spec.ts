@@ -1,17 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 import { todayIn } from "../lib/time-zone";
 import {
-  createLocalRoutineFor,
   createLocalSessionFor,
   hasLocalSecretKey,
-  linkSessionToRoutine,
   readRows,
   signInAsNewLocalMember,
   supabaseState,
 } from "./local-supabase";
 
 /**
- * TrainGrid 1.0: feedback, getting started, the information pages, install
+ * TrainGrid 1.0: feedback, the first-session invitation, the information pages, install
  * metadata. No browser-native dialog (alert/confirm/prompt) may ever appear.
  */
 
@@ -161,36 +159,40 @@ test.describe("members", () => {
     await expect(dialog).toBeHidden();
   });
 
-  test("getting started ticks itself off from real data, and can be hidden", async ({ page, context, baseURL }) => {
+  test("a new member gets one invitation to plan a first session, until they plan one", async ({ page, context, baseURL }) => {
     const { userId } = await signInAsNewLocalMember(context, baseURL!);
     await page.goto("/home");
-    const card = page.getByTestId("getting-started");
-    await expect(card.getByRole("heading", { name: "Make TrainGrid yours" })).toBeVisible();
-    await expect(card.getByRole("progressbar", { name: "Getting started progress" })).toHaveAttribute("aria-valuenow", "0");
-    await expect(card.getByText("0 of 3 done")).toBeVisible();
+    const today = page.getByRole("region", { name: "Today’s planned sessions" });
+    const invite = today.getByTestId("first-session");
+    await expect(invite.getByRole("heading", { name: "Put a workout on your week" })).toBeVisible();
+    // In place of Today's empty state, not beside it (PRODUCT_AUDIT F14).
+    await expect(page.getByText("A little space in your day.")).toHaveCount(0);
+    await expect(page.getByTestId("getting-started")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Quick actions" })).toHaveCount(0);
+    await expect(invite.getByRole("link", { name: /^Choose a routine/ })).toHaveAttribute("href", "/library?scope=global");
+    await expect(invite.getByRole("link", { name: "or plan your own session" })).toHaveAttribute("href", /\/week\/\d{4}-W\d{2}\/add\?day=\d$/);
 
-    const today = todayIn(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone), new Date());
-    const routineId = await createLocalRoutineFor(userId, "Starter routine");
+    // A session on another week still counts: the invitation steps aside on its own,
+    // whether or not it came from a routine.
+    const nextMonth = todayIn(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone), new Date(Date.now() + 30 * 86_400_000));
+    await createLocalSessionFor(userId, "Later session", nextMonth.date);
     await page.reload();
-    await expect(card.getByText("1 of 3 done")).toBeVisible();
-    await expect(card.getByRole("heading", { name: "Make a routine your own (done)" })).toBeVisible();
-
-    const sessionId = await createLocalSessionFor(userId, "Starter session", today.date);
-    await linkSessionToRoutine(sessionId, routineId);
-    await page.reload();
-    // All three done: the card steps aside on its own.
-    await expect(card).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Today’s planned sessions" })).toBeVisible();
+    await expect(page.getByText("A little space in your day.")).toBeVisible();
+    await expect(page.getByTestId("first-session")).toHaveCount(0);
   });
 
-  test("hiding getting started is remembered", async ({ page, context, baseURL }) => {
+  test("hiding the first-session invitation is remembered", async ({ page, context, baseURL }) => {
     await signInAsNewLocalMember(context, baseURL!);
     await page.goto("/home");
     await hydrated(page);
-    await page.getByRole("button", { name: "Hide getting started" }).click();
-    await expect(page.getByTestId("getting-started")).toHaveCount(0);
+    await page.getByRole("button", { name: "Hide this suggestion" }).click();
+    await expect(page.getByTestId("first-session")).toHaveCount(0);
+    await expect(page.getByText("A little space in your day.")).toBeVisible();
     await page.reload();
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByTestId("getting-started")).toHaveCount(0);
+    await expect(page.getByText("A little space in your day.")).toBeVisible();
+    await expect(page.getByTestId("first-session")).toHaveCount(0);
   });
 
   test("members read the information pages inside the app, with their own header", async ({ page, context, baseURL }) => {

@@ -192,7 +192,8 @@ test.describe("member home", () => {
   test("an empty member sees honest empty states", async ({ page, context, baseURL }) => {
     await signInAsNewLocalMember(context, baseURL!);
     await page.goto("/home");
-    await expect(page.getByText("A little space in your day.")).toBeVisible();
+    // Never planned anything: Today invites a first session instead (PRODUCT_AUDIT F14).
+    await expect(page.getByTestId("first-session")).toBeVisible();
     await expect(page.getByText("Make a routine your own.")).toBeVisible();
     await expect(page.getByText("An open week.", { exact: false })).toBeVisible();
     expect(await landmarks(page)).toEqual({ banner: 1, main: 1, mainId: "main-content", footer: 1 });
@@ -272,12 +273,12 @@ test.describe("member home", () => {
       await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
     }
     await expect(page.getByTestId("section-loader")).toHaveCount(0);
-    await expect(page.getByText("A little space in your day.")).toBeVisible();
+    await expect(page.getByTestId("first-session")).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Weekly planned sessions" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Make a routine your own." })).toBeVisible();
   });
 
-  test("home links sweep an underline in without changing colour; shortcut arrows take the icon colour", async ({
+  test("home links sweep an underline in without changing colour", async ({
     page,
     context,
     baseURL,
@@ -295,14 +296,6 @@ test.describe("member home", () => {
       expect(await link.evaluate((el) => getComputedStyle(el).color)).toBe(before);
       await expect(link).toHaveCSS("text-decoration-line", "none");
     }
-
-    const shortcut = page.getByRole("link", { name: /^Open planner/ });
-    const icon = shortcut.locator("svg");
-    const arrow = shortcut.locator(".dashboard-shortcut-arrow");
-    const iconColor = await icon.evaluate((el) => getComputedStyle(el).color);
-    expect(await arrow.evaluate((el) => getComputedStyle(el).color)).not.toBe(iconColor);
-    await shortcut.hover();
-    await expect(arrow).toHaveCSS("color", iconColor);
   });
 
   test("the login page's planner link and the brand lead to real member pages", async ({

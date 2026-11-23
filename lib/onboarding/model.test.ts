@@ -1,31 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { onboardingSteps, showOnboarding } from "./model";
+import { showFirstSessionInvite } from "./model";
 
-const none = { plannedSession: false, ownRoutine: false, scheduledRoutine: false };
-const all = { plannedSession: true, ownRoutine: true, scheduledRoutine: true };
-
-describe("onboardingSteps", () => {
-  it("lists three steps in order, each done from the member's data", () => {
-    const steps = onboardingSteps({ ...none, ownRoutine: true }, { addSessionHref: "/week/2026-W47/add?day=3" });
-    expect(steps.map((step) => [step.id, step.done])).toEqual([
-      ["plannedSession", false],
-      ["ownRoutine", true],
-      ["scheduledRoutine", false],
-    ]);
-    expect(steps[0]!.href).toBe("/week/2026-W47/add?day=3");
-    expect(steps.every((step) => step.href.startsWith("/"))).toBe(true);
-  });
-});
-
-describe("showOnboarding", () => {
-  it("shows until everything is done", () => {
-    expect(showOnboarding(none, false)).toBe(true);
-    expect(showOnboarding({ ...all, scheduledRoutine: false }, false)).toBe(true);
-    expect(showOnboarding(all, false)).toBe(false);
+describe("showFirstSessionInvite", () => {
+  it("invites a member who has never planned a session", () => {
+    expect(showFirstSessionInvite(false, false)).toBe(true);
   });
 
-  it("stays hidden once dismissed, or when progress could not be read", () => {
-    expect(showOnboarding(none, true)).toBe(false);
-    expect(showOnboarding(null, false)).toBe(false);
+  it("steps aside once any session is planned", () => {
+    expect(showFirstSessionInvite(true, false)).toBe(false);
+  });
+
+  it("stays hidden once dismissed, or when it could not be read", () => {
+    expect(showFirstSessionInvite(false, true)).toBe(false);
+    expect(showFirstSessionInvite(null, false)).toBe(false);
   });
 });

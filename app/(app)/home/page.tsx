@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 import Link from "next/link";
-import { GettingStarted } from "@/components/dashboard/GettingStarted";
+import { FirstSessionInvite } from "@/components/dashboard/FirstSessionInvite";
 import { QuickStart } from "@/components/dashboard/QuickStart";
 import { DiscardWorkoutButton } from "@/components/workout/DiscardWorkoutButton";
 import { displayVersion, isRecentRelease } from "@/lib/changelog";
@@ -22,13 +22,9 @@ import {
   type DashboardFrame,
 } from "@/lib/dashboard/prepare";
 import { listOwnRoutinesForDashboard } from "@/lib/data/dashboard";
-import { getOnboardingProgress } from "@/lib/data/onboarding";
-import {
-  ONBOARDING_DISMISSED_COOKIE,
-  onboardingSteps,
-  showOnboarding,
-  type OnboardingProgress,
-} from "@/lib/onboarding/model";
+import type { Db } from "@/lib/data/model";
+import { hasPlannedSession } from "@/lib/data/onboarding";
+import { ONBOARDING_DISMISSED_COOKIE, showFirstSessionInvite } from "@/lib/onboarding/model";
 import type { ScheduledSessionRecord } from "@/lib/data/model";
 import { memberData } from "@/lib/data/server";
 import { listSessionsForWeek } from "@/lib/data/sessions";
@@ -78,11 +74,10 @@ export default async function MemberHomePage() {
   const week = settle(listSessionsForWeek(db, userId, today.weekId));
   const routines = settle(listOwnRoutinesForDashboard(db, userId));
 
-  // Getting started: three head-only counts, skipped entirely once the member
-  // has hidden it. It streams like the sections (a slow routines read must not
-  // hold up the frame) and renders nothing while it waits.
+  // The first-session invitation replaces Today's empty state for a member
+  // who has never planned anything (PRODUCT_AUDIT F14). Its one count runs
+  // only when this week is empty and the member hasn't hidden it.
   const dismissed = (await cookies()).get(ONBOARDING_DISMISSED_COOKIE)?.value === "1";
-  const progress = dismissed ? null : getOnboardingProgress(db, userId).catch(() => null);
   const [latest] = await loadReleases();
 
   return (
@@ -107,16 +102,9 @@ export default async function MemberHomePage() {
           </Link>
         ) : null
       }
-      intro={
-        progress ? (
-          <Suspense fallback={null}>
-            <GettingStartedSlot progress={progress} addSessionHref={frame.addSessionHref} />
-          </Suspense>
-        ) : null
-      }
       today={
         <Suspense fallback={<SectionLoader label="Loading today’s sessions…" minHeight="min-h-56" />}>
-          <TodaySlot today={today} frame={frame} week={week} />
+          <TodaySlot today={today} frame={frame} week={week} invite={dismissed ? null : { db, userId }} />
         </Suspense>
       }
       week={
@@ -133,28 +121,38 @@ export default async function MemberHomePage() {
   );
 }
 
-async function GettingStartedSlot({
-  progress,
-  addSessionHref,
-}: {
-  progress: Promise<OnboardingProgress | null>;
-  addSessionHref: string;
-}) {
-  const value = await progress;
-  if (!showOnboarding(value, false)) return null;
-  return <GettingStarted steps={onboardingSteps(value!, { addSessionHref })} />;
-}
-
 type WeekRead = Promise<Settled<ScheduledSessionRecord[]>>;
 
-async function TodaySlot({ today, frame, week }: { today: MemberToday; frame: DashboardFrame; week: WeekRead }) {
+async function TodaySlot({
+  today,
+  frame,
+  week,
+  invite,
+}: {
+  today: MemberToday;
+  frame: DashboardFrame;
+  week: WeekRead;
+  /** Where to check for a first session; null once the member has hidden the invitation. */
+  invite: { db: Db; userId: string } | null;
+}) {
   const result = await week;
   if (!result.ok) return <DashboardSectionError message={WEEK_ERROR} />;
   const { todaySessions } = prepareDashboardWeek(today, result.value);
+  // Anything this week means a session was planned; otherwise ask once. A
+  // failed read keeps the usual empty state.
+  const firstSession =
+    invite !== null &&
+    result.value.length === 0 &&
+    showFirstSessionInvite(await hasPlannedSession(invite.db, invite.userId).catch(() => null), false);
   return (
     <TodaySessionList
       sessions={todaySessions}
       addSessionHref={frame.addSessionHref}
+      empty={
+        firstSession ? (
+          <FirstSessionInvite libraryHref={frame.sharedLibraryHref} addSessionHref={frame.addSessionHref} />
+        ) : undefined
+      }
       inProgressAction={(session) => (
         <DiscardWorkoutButton sessionId={session.id} name={session.name} quick={session.quick === true} variant="link" />
       )}

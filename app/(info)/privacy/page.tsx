@@ -91,7 +91,7 @@ export default function PrivacyPage() {
                   <code>tg_tz</code>, your device’s time zone, so “today” means your today;
                 </li>
                 <li>
-                  <code>tg_onboarding_hidden</code>, set only if you hide the getting-started card.
+                  <code>tg_onboarding_hidden</code>, set only if you hide the first-session suggestion on Home.
                 </li>
               </ul>
               <p>
