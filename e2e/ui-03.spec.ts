@@ -1,5 +1,5 @@
-import { mkdir } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { docImage } from "../tests/helpers/doc-images";
 import { createRoutine } from "./planner-helpers";
 import {
   createLocalSessionFor,
@@ -10,10 +10,8 @@ import {
 } from "./local-supabase";
 
 async function capture(page: import("@playwright/test").Page, name: string) {
-  await mkdir("docs/images/epic-3/ui-03", { recursive: true });
   await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({
-    path: `docs/images/epic-3/ui-03/${name}.png`,
+  await docImage(page, `docs/images/epic-3/ui-03/${name}.png`, {
     fullPage: true,
     style: "nextjs-portal { display: none !important; }",
   });

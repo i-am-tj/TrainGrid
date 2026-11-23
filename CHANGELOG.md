@@ -172,8 +172,9 @@ in the app at `/whats-new`.
 
 - `agents/` trimmed to the roadmap and the decisions in force; finished epic records moved to
   `agents/archive/`, Epic 2-era requirements and UX spec to `docs/archive/`.
-- `e2e/secondary-actions.spec.ts` saves screenshots only with `UI_SHOTS=1`, so test runs no longer
-  rewrite `docs/images`.
+- Tests save their documentation screenshots only with `UI_SHOTS=1`, through one helper
+  (`tests/helpers/doc-images.ts`), so `npm run test:ui` and the E2E suite no longer rewrite
+  committed images under `docs/images`.
 - **Schema gate**: `npm run release:check` reads a Supabase project's Data API schema (secret key)
   and fails, listing what is missing, when a migration this build needs has not been applied.
   `/api/health` now reports `"schema":"ok" | "behind" | "unknown"` and answers `503` when the

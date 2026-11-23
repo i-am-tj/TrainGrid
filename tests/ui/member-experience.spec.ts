@@ -1,6 +1,7 @@
-import { readFile, mkdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
+import { docImage } from "../helpers/doc-images";
 import { dashboardFixtures } from "./fixtures/dashboard";
 import { loginFixtures } from "./fixtures/login";
 
@@ -61,9 +62,7 @@ for (const theme of ["light", "dark"] as const) {
             "login-signed-out",
           ].includes(name)
         ) {
-          await mkdir("docs/images/epic-3/ui-02", { recursive: true });
-          await page.screenshot({
-            path: `docs/images/epic-3/ui-02/${name}-${width}-${theme}.png`,
+          await docImage(page, `docs/images/epic-3/ui-02/${name}-${width}-${theme}.png`, {
             fullPage: true,
           });
         }
@@ -233,8 +232,7 @@ test("empty routine actions have comfortable spacing in both themes and wrap on 
       } else {
         expect(second.y - first.y - first.height).toBeGreaterThanOrEqual(12);
       }
-      await mkdir("docs/images/epic-3/enhancements", { recursive: true });
-      await page.locator(".ui-panel").filter({ hasText: "Make a routine your own." }).screenshot({ path: `docs/images/epic-3/enhancements/empty-routines-${width}-${theme}.png`, animations: "disabled" });
+      await docImage(page.locator(".ui-panel").filter({ hasText: "Make a routine your own." }), `docs/images/epic-3/enhancements/empty-routines-${width}-${theme}.png`, { animations: "disabled" });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
   }
