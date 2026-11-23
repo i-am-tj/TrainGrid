@@ -82,14 +82,38 @@ never share a key or a pinned position.
 ## Applying it to production (owner only, deliberately)
 
 The seed is **not** applied by merging and **not** by a plain `npx supabase db push`, which applies
-migrations only. Apply it explicitly, after a dry run:
+migrations only.
 
-```bash
-npx supabase db push --remote --include-seed --dry-run
-npx supabase db push --remote --include-seed
-```
+**An updated seed must be run by hand.** `npx supabase db push --remote --include-seed` runs a seed
+file only the first time the project sees it. Once it has run, a changed `supabase/seed.sql` is
+listed as `(hash update)`: the CLI records the new hash and does **not** run the file, so
+production keeps the old content while the CLI reports success. To apply a change:
+
+1. Merge the pull request, so `main` holds the seed you mean to apply.
+2. In Supabase → **SQL Editor** on the production project, paste the whole of `supabase/seed.sql`
+   from `main` and run it. It is one transaction and idempotent, so running it again is harmless;
+   if any statement fails, nothing changes.
+3. Check the result, for example that a routine you changed has the items you expect:
+
+   ```sql
+   select r.slug, string_agg(i.name, ' > ' order by i.sort_order)
+     from public.routines r join public.workout_items i on i.routine_id = r.id
+    where r.scope = 'GLOBAL' and r.slug = 'easy-run'
+    group by r.slug;
+   ```
+
+4. Optionally record the new hash, so later dry runs stay quiet:
+   `npx supabase db push --remote --include-seed` (from an up-to-date `main` checkout; it lists
+   `supabase/seed.sql (hash update)` and runs nothing).
+
+On a project that has never been seeded, `npx supabase db push --remote --include-seed` (after
+`--dry-run`) does run the file.
 
 - Only when shared content actually changed. Nothing in the app needs a seed run otherwise.
+- Run seed and migration commands from a checkout of the latest `main`. From an older branch the
+  CLI reports "Remote migration versions not found in local migrations directory" and suggests
+  `supabase migration repair --status reverted …`. **Do not run that**: it marks migrations that
+  production already has as reverted. Update the checkout instead.
 - **Never** run `supabase db reset` against production: it would destroy every member's data.
 - Sessions already scheduled keep their own snapshot. Changing a routine does not change them, by
   design.
