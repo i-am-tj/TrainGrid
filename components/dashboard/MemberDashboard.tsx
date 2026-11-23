@@ -81,7 +81,6 @@ export function DashboardShell({
   today,
   week,
   routines,
-  intro,
   notice,
   headerAction,
 }: {
@@ -89,8 +88,6 @@ export function DashboardShell({
   today: ReactNode;
   week: ReactNode;
   routines: ReactNode;
-  /** Getting started follows today on narrow screens and leads the desktop grid. */
-  intro?: ReactNode;
   /** A small note above the greeting (what's new). */
   notice?: ReactNode;
   /** The main action beside the greeting (Start a workout); the planner link follows it. */
@@ -141,8 +138,7 @@ export function DashboardShell({
           />
           {today}
         </section>
-        {intro ? <div className="min-w-0 lg:order-first lg:col-span-2 [&:empty]:hidden">{intro}</div> : null}
-        <aside className="min-w-0 space-y-7" aria-label="Week and shortcuts">
+        <aside className="min-w-0" aria-label="This week">
           <section className="ui-panel p-4 sm:p-5" aria-labelledby="week-title">
             <SectionTitle id="week-title" title="This week" />
             <p className="mt-2 text-xs leading-6 text-stone-600">
@@ -156,7 +152,6 @@ export function DashboardShell({
               </span>
             </Link>
           </section>
-          <QuickActions data={frame} />
         </aside>
       </div>
       <section
@@ -203,12 +198,16 @@ export function TodaySessionList({
   sessions,
   addSessionHref,
   inProgressAction,
+  empty,
 }: {
   sessions: DashboardData["todaySessions"];
   addSessionHref: string;
   /** An extra action for a session whose workout is in progress (Discard workout). */
   inProgressAction?: (session: DashboardData["todaySessions"][number]) => ReactNode;
+  /** Replaces the usual empty state (the first-session invitation). */
+  empty?: ReactNode;
 }) {
+  if (!sessions.length && empty) return empty;
   if (!sessions.length)
     return (
       <div className="mt-5">
@@ -447,67 +446,6 @@ export function WeeklyOverview({ week }: { week: DashboardWeek }) {
         ))}
       </ol>
     </nav>
-  );
-}
-
-function QuickActions({ data }: { data: DashboardFrameData }) {
-  const actions = [
-    [
-      "Add session",
-      "time",
-      data.addSessionHref,
-      "Make room for the next workout",
-    ],
-    ["Open planner", "week", data.plannerHref, "See the week together"],
-    [
-      "Browse TrainGrid library",
-      "library",
-      data.sharedLibraryHref,
-      "Find a routine to start from",
-    ],
-    [
-      "Create routine",
-      "routine",
-      data.createRoutineHref,
-      "Build something personal",
-    ],
-  ];
-  return (
-    <section aria-labelledby="quick-title">
-      <h2 id="quick-title" className="text-lg font-semibold tracking-tight">
-        Quick actions
-      </h2>
-      <ul className="mt-4 divide-y divide-line rounded-xl border border-line bg-card">
-        {actions.map(([title, icon, href, description]) => (
-          <li key={title}>
-            <Link
-              href={href!}
-              className="dashboard-shortcut group flex min-h-16 min-w-0 items-center gap-3 rounded-lg px-4 py-3"
-            >
-              <svg
-                aria-hidden="true"
-                className="size-7 shrink-0 text-accent"
-                viewBox="0 0 40 40"
-              >
-                <use href={`/marketing/features.svg#${icon}`} />
-              </svg>
-              <span className="min-w-0">
-                <span className="block text-sm font-medium">{title}</span>
-                <span className="mt-0.5 block text-xs leading-5 text-stone-600">
-                  {description}
-                </span>
-              </span>
-              <span
-                aria-hidden="true"
-                className="dashboard-shortcut-arrow ml-auto text-stone-600 group-hover:text-accent group-focus-visible:text-accent"
-              >
-                ↗
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
 

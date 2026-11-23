@@ -151,6 +151,10 @@ in the app at `/whats-new`.
 
 ### Planner and home
 
+- **A simpler first visit**: instead of a three-step checklist, a new member’s Home invites them
+  to plan a first session, in Today’s empty space: **Choose a routine** or plan their own. It steps
+  aside once any session is planned. Quick actions are gone, since every one of them is already
+  on the page.
 - **Today is right from the first page**: just after midnight, or straight after travelling,
   TrainGrid no longer shows yesterday on the first page you open. The planner’s highlighted day
   always matches home.
