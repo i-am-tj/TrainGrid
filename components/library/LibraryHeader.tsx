@@ -16,7 +16,7 @@ const SCOPE_TABS: Array<{ id: LibraryScope; label: string }> = [
 ];
 
 const INTRO: Record<LibraryScope, string> = {
-  all: "Shared TrainGrid routines and your own. Schedule one onto any week, or open it to see the workout.",
+  all: "Shared TrainGrid routines and your own. Schedule one onto any day, or open it to see the workout.",
   global:
     "Routines shared with every member. They are read-only: schedule one, or open it to see the workout.",
   mine: "Routines you created. Only you can see and edit them.",

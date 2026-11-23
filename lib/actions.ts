@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { dateOfWeekDay, isRealWeekId } from "@/lib/calendar-date";
+import { dateProblem } from "@/lib/session-date";
 import { DataError } from "@/lib/data/model";
 import { copyGlobalRoutine, deletePersonalRoutine, savePersonalRoutine } from "@/lib/data/routines";
 import type { WorkoutItemInput } from "@/lib/data/schemas";
@@ -41,7 +42,18 @@ function isoDay(form: FormData): IsoDay {
   return n as IsoDay;
 }
 
+/**
+ * The session's date: `date` ("YYYY-MM-DD", from the date field), or the
+ * older `weekId` + `day` pair that a form loaded before this change may
+ * still send.
+ */
 function dateFromForm(form: FormData): string {
+  if (form.has("date")) {
+    const date = text(form, "date").trim();
+    const problem = dateProblem(date);
+    if (problem) throw new DataError("invalid", problem);
+    return date;
+  }
   const weekId = text(form, "weekId");
   if (!isRealWeekId(weekId)) throw new DataError("invalid", "Invalid week");
   return dateOfWeekDay(weekId, isoDay(form));

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hasLocalSecretKey, signInAsNewLocalMember, supabaseState } from "./local-supabase";
-import { createRoutine } from "./planner-helpers";
+import { chooseDate, createRoutine, dateThisWeek } from "./planner-helpers";
 
 /**
  * Shared routine cards and detail, and scheduling from the library
@@ -54,7 +54,7 @@ test("Schedule is the primary action on detail and preselects the routine", asyn
   await expect(page).toHaveURL(/\/week\/(current|\d{4}-W\d{2})\/add\?routine=[0-9a-f-]{36}$/);
   await expect(routineSelect(page).locator("option:checked")).toHaveText("Lower A");
 
-  await page.locator('select[name="day"]').selectOption("3");
+  await chooseDate(page, dateThisWeek(3));
   await page.locator('select[name="time"]').selectOption("07:00");
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await page.waitForURL(/\/week\//);

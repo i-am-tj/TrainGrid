@@ -1,4 +1,17 @@
 import { expect, type Page } from "@playwright/test";
+import { dateOfWeekDay } from "../lib/calendar-date";
+import type { IsoDay } from "../lib/domain";
+import { todayIn } from "../lib/time-zone";
+
+/** The date of a weekday ("1" = Monday … "7" = Sunday) in this week; tests run in UTC. */
+export function dateThisWeek(day: string | number): string {
+  return dateOfWeekDay(todayIn("UTC").weekId, Number(day) as IsoDay);
+}
+
+/** Chooses a session's date in the add or edit form. */
+export async function chooseDate(page: Page, date: string) {
+  await page.getByLabel("Date", { exact: true }).fill(date);
+}
 
 /** Fills workout item `index` (0-based) in the structured item editor. */
 export async function fillItem(
@@ -43,8 +56,8 @@ export async function createRoutine(
   return page.url();
 }
 
-/** Schedules a routine from the library onto this week. */
-export async function scheduleRoutine(page: Page, routineName: string, day: string, time: string) {
+/** Schedules a routine from the library onto a day of this week, or onto `date` when given. */
+export async function scheduleRoutine(page: Page, routineName: string, day: string, time: string, date?: string) {
   await page.goto("/library");
   await page
     .getByRole("listitem")
@@ -52,7 +65,7 @@ export async function scheduleRoutine(page: Page, routineName: string, day: stri
     .getByRole("link", { name: "Schedule" })
     .click();
   await page.waitForURL(/\/add/);
-  await page.locator('select[name="day"]').selectOption(day);
+  await chooseDate(page, date ?? dateThisWeek(day));
   await page.locator('select[name="time"]').selectOption(time);
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await page.waitForURL(/\/week\//);

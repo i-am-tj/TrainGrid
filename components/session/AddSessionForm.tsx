@@ -6,25 +6,28 @@ import { useMemo, useState } from "react";
 import { WorkoutItemEditor } from "@/components/library/WorkoutItemEditor";
 import { createScheduledSession } from "@/lib/actions";
 import type { RoutineSummary } from "@/lib/data/model";
-import type { IsoDay, SessionType } from "@/lib/domain";
+import type { SessionType } from "@/lib/domain";
 import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
 import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
-import { datesOfWeek, formatLongDay, TIME_OPTIONS } from "@/lib/week";
+import { TIME_OPTIONS } from "@/lib/week";
+import { DateField } from "./DateField";
 
 export function AddSessionForm({
   weekId,
   routines,
-  initialDay,
+  initialDate,
+  today,
   initialTime,
   initialRoutineId,
 }: {
+  /** The week the form was opened from, for Cancel. */
   weekId: string;
   routines: RoutineSummary[];
-  initialDay: IsoDay;
+  initialDate: string;
+  today: string;
   initialTime: string | null;
   initialRoutineId: string | null;
 }) {
-  const dates = datesOfWeek(weekId);
   const [from, setFrom] = useState<"routine" | "blank">(
     initialRoutineId || routines.length ? "routine" : "blank",
   );
@@ -47,22 +50,12 @@ export function AddSessionForm({
       action={createScheduledSession}
       className="ui-panel space-y-5 p-4 sm:p-6"
     >
-      <input type="hidden" name="weekId" value={weekId} />
       <input type="hidden" name="from" value={from} />
       {from === "routine" ? (
         <input type="hidden" name="routineId" value={routineId} />
       ) : null}
 
-      <label className="block text-sm font-medium">
-        Day
-        <select name="day" className={fieldClass} defaultValue={initialDay}>
-          {dates.map((date, i) => (
-            <option key={i} value={i + 1}>
-              {formatLongDay(date)}
-            </option>
-          ))}
-        </select>
-      </label>
+      <DateField defaultValue={initialDate} today={today} />
 
       <div className="flex flex-wrap items-end gap-3">
         <label className="block text-sm font-medium">

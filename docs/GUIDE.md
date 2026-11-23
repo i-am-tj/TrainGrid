@@ -51,10 +51,11 @@ done. You can also hide it with **×**.
 
 - **Planner** shows Monday to Sunday. On a phone it shows one day at a time; move between the
   days with the arrow buttons.
-- **Add session** puts a run, a lift or anything else on a day, with or without a time. Several
-  sessions per day are fine.
-- Open a session to **edit**, **reschedule** or **delete** it, or to **customise** its workout for
-  that day only.
+- **Add session** puts a run, a lift or anything else on any date, with or without a time:
+  choose it on the calendar or tap **Today**, **Tomorrow** or **Next Monday**. Several sessions per
+  day are fine.
+- Open a session to **edit**, **reschedule** (the same date field, any week) or **delete** it, or
+  to **customise** its workout for that day only.
 
 ### Run a workout
 
@@ -90,7 +91,7 @@ completely. From the finish screen, **Post about it** opens the post screen.
 - **Copy to My Library** makes an editable copy of a TrainGrid routine. The original never changes.
 - **Create routine** builds your own, with workout items: instruction, sets or target, rest, notes,
   equipment and an optional YouTube demo link.
-- **Schedule** puts a routine on a day. TrainGrid copies the workout into the session, so editing
+- **Schedule** puts a routine on any day you choose, this week or later. TrainGrid copies the workout into the session, so editing
   the routine later never changes sessions you have already planned or done.
 
 ## 5. TrainGrid on your phone

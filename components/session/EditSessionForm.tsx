@@ -7,27 +7,22 @@ import type { ScheduledSessionRecord } from "@/lib/data/model";
 import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
 import { updateScheduledSession } from "@/lib/actions";
 import type { SessionDeletion } from "@/lib/workouts/deletion";
+import { TIME_OPTIONS } from "@/lib/week";
+import { DateField } from "./DateField";
 import { DeleteSessionButton } from "./DeleteSessionButton";
-import {
-  datesOfWeek,
-  formatLongDay,
-  isValidWeekId,
-  TIME_OPTIONS,
-} from "@/lib/week";
 import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
 
 export function EditSessionForm({
   session,
   deletion,
+  today,
 }: {
   session: ScheduledSessionRecord;
   deletion: SessionDeletion;
+  /** The member's today, "YYYY-MM-DD". */
+  today: string;
 }) {
-  const [weekId, setWeekId] = useState(session.weekId);
   const [untimed, setUntimed] = useState(session.startTime === null);
-  const dates = isValidWeekId(weekId)
-    ? datesOfWeek(weekId)
-    : datesOfWeek(session.weekId);
 
   return (
     <div className="space-y-6">
@@ -37,26 +32,7 @@ export function EditSessionForm({
       >
         <input type="hidden" name="id" value={session.id} />
 
-        <label className="block text-sm font-medium">
-          Week (YYYY-Www)
-          <input
-            name="weekId"
-            className={fieldClass}
-            value={weekId}
-            onChange={(e) => setWeekId(e.target.value)}
-          />
-        </label>
-
-        <label className="block text-sm font-medium">
-          Day
-          <select name="day" className={fieldClass} defaultValue={session.day}>
-            {dates.map((date, i) => (
-              <option key={i} value={i + 1}>
-                {formatLongDay(date)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <DateField defaultValue={session.date} today={today} />
 
         <div className="flex flex-wrap items-end gap-3">
           <label className="block text-sm font-medium">
