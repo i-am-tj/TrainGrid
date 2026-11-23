@@ -89,7 +89,12 @@ test("a member runs a workout from start to finish on a phone", async ({ page, c
     { weight: 62.5, reps: 5, done: true },
   ]);
 
-  await page.getByRole("link", { name: "Done" }).click();
+  // Done is the primary finish action; posting stays one tap away (PRODUCT_AUDIT F16).
+  const done = page.getByRole("link", { name: "Done" });
+  await expect(done).toHaveClass(/workout-log-button/);
+  await expect(page.getByTestId("post-about-it")).toBeVisible();
+  await expect(page.getByTestId("post-about-it")).not.toHaveClass(/workout-log-button/);
+  await done.click();
   await page.waitForURL("/home");
   await expect(page.getByRole("link", { name: "View workout: Upper Test" })).toBeVisible();
   await page.goto(`/session/${sessionId}`);
