@@ -1,5 +1,5 @@
 begin;
-select plan(14);
+select plan(19);
 
 insert into auth.users (id, email, email_confirmed_at) values
   ('ade00000-0000-4000-8000-000000000001','first@example.test',now()),
@@ -52,6 +52,52 @@ select lives_ok($$update public.scheduled_sessions set snapshot='{"version":1,"i
     where id='ade10000-0000-4000-8000-000000000002'$$,'an owner can replace a historical payload with valid data');
 select is((select snapshot from public.scheduled_sessions where id='ade10000-0000-4000-8000-000000000002'),
     '{"version":1,"items":[]}'::jsonb,'the repaired snapshot is persisted');
+
+-- Daily limits: the lock only works if it fires before each table's counter,
+-- and PostgreSQL fires same-timing triggers in name order.
+reset role;
+select is((select count(*)::int from pg_trigger where tgname = 'acquire_daily_limit' and not tgisinternal), 4,
+  'the daily-limit lock is installed on all four limited tables');
+select is_empty($$
+  select t.tgrelid::regclass || '.' || t.tgname
+    from pg_trigger t
+   where not t.tgisinternal
+     and t.tgrelid in ('public.member_feedback'::regclass, 'public.follows'::regclass,
+                       'public.session_posts'::regclass, 'public.post_comments'::regclass)
+     and t.tgtype::int & 7 = 7 -- ROW (1) + BEFORE (2) + INSERT (4)
+     and t.tgname < 'acquire_daily_limit'
+$$, 'no BEFORE INSERT trigger fires ahead of the daily-limit lock');
+
+-- Follow vs going public: a follow holds the followee's visibility lock
+-- shared; only a private -> public switch takes it exclusively. Locks held by
+-- this transaction are visible in pg_locks.
+insert into public.social_profiles (user_id, username, display_name) values
+  ('ade00000-0000-4000-8000-000000000001', 'audit_first', 'First'),
+  ('ade00000-0000-4000-8000-000000000002', 'audit_return', 'Return');
+create temporary view audit_visibility_locks as
+  select l.mode, k.user_id
+    from pg_locks l
+    join (values ('ade00000-0000-4000-8000-000000000001'::uuid), ('ade00000-0000-4000-8000-000000000002'::uuid)) as k(user_id)
+      on ((l.classid::bigint << 32) | l.objid::bigint) = private.social_visibility_lock_key(k.user_id)
+   where l.locktype = 'advisory' and l.pid = pg_backend_pid();
+-- Act as the member, check as the test owner (the key helper is private).
+set local role authenticated;
+insert into public.follows (followee_id) values ('ade00000-0000-4000-8000-000000000001');
+reset role;
+select results_eq($$select mode, user_id from audit_visibility_locks$$,
+  $$values ('ShareLock'::text, 'ade00000-0000-4000-8000-000000000001'::uuid)$$,
+  'a follow holds its followee''s visibility lock shared');
+set local role authenticated;
+update public.social_profiles set bio = 'Edited', visibility = 'private' where user_id = auth.uid();
+reset role;
+select is_empty($$select 1 from audit_visibility_locks where user_id = auth.uid()$$,
+  'editing a profile without going public takes no visibility lock');
+set local role authenticated;
+update public.social_profiles set visibility = 'public' where user_id = auth.uid();
+reset role;
+select results_eq($$select mode from audit_visibility_locks where user_id = auth.uid()$$,
+  $$values ('ExclusiveLock'::text)$$,
+  'going public takes the visibility lock exclusively');
 
 select * from finish();
 rollback;

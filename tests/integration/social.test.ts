@@ -90,20 +90,6 @@ describe.skipIf(!integrationReady)("social (local Supabase)", () => {
     await deleteTestUsers();
   });
 
-  it("accepts a follow arriving while a private profile becomes public", async () => {
-    const owner = await createTestUser("visibility");
-    const account = await profile(owner, "private", "visibility");
-    await Promise.all([
-      saveSocialProfile(owner.db, owner.id, { ...account, visibility: "public", useIdentityAvatar: false }),
-      followMember(fan.db, fan.id, owner.id),
-    ]);
-    const relation = await fan.db.from("follows").select("status")
-      .eq("follower_id", fan.id).eq("followee_id", owner.id).single();
-    expect(relation.error).toBeNull();
-    expect(relation.data?.status).toBe("accepted");
-    await unfollowMember(fan.db, fan.id, owner.id);
-  });
-
   describe("profiles", () => {
     it("creates a profile, private by default, and edits it", async () => {
       const user = await createTestUser("sprof");

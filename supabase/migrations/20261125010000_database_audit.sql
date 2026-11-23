@@ -52,7 +52,6 @@ begin
      -- Active members returned above. Every new admission needs an unused invite,
      -- including when the previously invited auth account has been deleted.
      and i.accepted_at is null
-     and i.accepted_by is null
    for update;
 
   if not found then
@@ -77,8 +76,8 @@ begin
   on conflict (id) do update set revoked_at = null;
 
   update public.invitations
-     set accepted_at = coalesce(accepted_at, now()),
-         accepted_by = coalesce(accepted_by, caller_id)
+     set accepted_at = now(),
+         accepted_by = caller_id
    where id = invitation_id;
 
   return 'member';
@@ -147,8 +146,10 @@ before insert or update of entries on public.workout_logs
 for each row execute function private.require_training_document_keys();
 
 -- Serialize the existing daily count checks per writer and table under the
--- Data API's READ COMMITTED isolation. Alphabetic trigger order puts this
--- lock before each table's existing BEFORE INSERT counter.
+-- Data API's READ COMMITTED isolation. PostgreSQL fires same-timing triggers
+-- in name order, so 'acquire_daily_limit' must sort before every other BEFORE
+-- INSERT trigger on these tables; 16_database_audit.test.sql fails if one
+-- ever sorts ahead of it.
 create function private.lock_daily_member_limit()
 returns trigger
 language plpgsql security invoker set search_path = ''
@@ -161,6 +162,10 @@ begin
     when 'follows' then writer := new.follower_id;
     else writer := new.author_id;
   end case;
+  -- Key on the caller, not the row: RLS rejects a row naming someone else
+  -- only after this runs, so a forged writer column must not take (and hold)
+  -- that member's lock. The service role has no auth.uid() and uses the row.
+  writer := coalesce((select auth.uid()), writer);
   perform pg_advisory_xact_lock(hashtextextended(writer::text, tg_relid::bigint));
   return new;
 end;
