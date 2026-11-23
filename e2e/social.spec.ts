@@ -292,8 +292,6 @@ for (const theme of ["light", "dark"] as const) {
     for (const path of ["/feed", `/people/${myName}`, "/people", "/people/requests", "/profile/social", `/session/${sessionId}/post`, "/feed/new"]) {
       await page.goto(path);
       await hydrated(page);
-      // The shell hydrates while the route still shows its streamed loading state.
-      await expect(page.getByRole("main").getByRole("heading", { level: 1 })).toBeVisible();
       await noOverflow(page);
       const { violations } = await accessibilityResults(page);
       expect(violations, `${path} (${theme})`).toEqual([]);

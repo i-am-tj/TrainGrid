@@ -85,6 +85,34 @@ begin
 end;
 $$;
 
+-- Deleting the accepting account (accepted_by ON DELETE SET NULL) spends the
+-- invitation for good. Retire it so it no longer holds the address's one live
+-- slot: an admin can then invite that address again in one step. accepted_at
+-- stays as the record of the original admission.
+create function private.invitations_retire_on_account_delete()
+returns trigger
+language plpgsql security invoker set search_path = ''
+as $$
+begin
+  new.revoked_at := coalesce(new.revoked_at, now());
+  return new;
+end;
+$$;
+revoke all on function private.invitations_retire_on_account_delete() from public, anon, authenticated;
+
+create trigger invitations_retire_on_account_delete
+before update of accepted_by on public.invitations
+for each row
+when (old.accepted_by is not null and new.accepted_by is null and new.accepted_at is not null)
+execute function private.invitations_retire_on_account_delete();
+
+-- Invitations already spent by earlier account deletions.
+update public.invitations
+   set revoked_at = now()
+ where accepted_at is not null
+   and accepted_by is null
+   and revoked_at is null;
+
 -- Existing CHECKs enforce types and version when keys exist. Missing keys
 -- yield SQL UNKNOWN. Check presence when the application writes a document.
 -- Historical malformed documents remain editable in unrelated columns.

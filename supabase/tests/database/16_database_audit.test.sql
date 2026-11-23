@@ -1,5 +1,5 @@
 begin;
-select plan(12);
+select plan(14);
 
 insert into auth.users (id, email, email_confirmed_at) values
   ('ade00000-0000-4000-8000-000000000001','first@example.test',now()),
@@ -15,12 +15,15 @@ select set_config('request.jwt.claims','{"sub":"ade00000-0000-4000-8000-00000000
 select is(public.accept_invitation(),'not_invited','a previously consumed invitation does not admit a new identity');
 select ok(not public.is_member(),'the second identity has no membership');
 reset role;
+-- What deleting the accepting auth user does to the row (ON DELETE SET NULL).
 update public.invitations set accepted_by=null where email='return@example.test';
+select ok((select revoked_at is not null and accepted_at is not null from public.invitations where email='return@example.test'),
+  'deleting the accepting account retires the invitation and keeps its acceptance time');
 set local role authenticated;
 select is(public.accept_invitation(),'not_invited','account deletion does not turn a consumed invitation into a pending one');
 reset role;
-update public.invitations set revoked_at=now() where email='return@example.test';
-insert into public.invitations(email) values ('return@example.test');
+select lives_ok($$insert into public.invitations(email) values ('return@example.test')$$,
+  'an admin can invite the address again without revoking the spent invitation first');
 set local role authenticated;
 select is(public.accept_invitation(),'member','a newly issued invitation admits the intended member');
 
