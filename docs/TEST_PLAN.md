@@ -55,7 +55,7 @@ against anything but a local URL.
     the templates; re-seeding is idempotent; an item id never moves to a different exercise.
 11. **Secrets** — no credentials in files or Git history; the secret key is absent from browser
     bundles.
-12. **Member features** — home sections stream and fail on their own; getting started; feedback
+12. **Member features** — home sections stream and fail on their own; the first-session invitation; feedback
     (insert-only, rate limited, no native dialogs); profile (numbers, data download, appearance,
     About TrainGrid); information pages public; slow loaders retry once.
 13. **Social** — profiles (create, edit, unique and valid usernames, private by default, avatar
