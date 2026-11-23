@@ -39,6 +39,9 @@ workout rules (RLS, one log per session) apply unchanged.
 - **Discarding** a quick workout deletes the session too (it existed only for that workout);
   discarding a planned workout still keeps the session.
 - The summary screen's main action is **Post about it**, which opens the usual composer.
+  *Amended 2026-11-23 (PRODUCT_AUDIT F16):* **Done** is now the primary action, since finishing is
+  the natural end for a member who does not post; **Post about it** stays one tap away beside
+  **Edit sets**.
 
 ### 2. Workout totals are part of the post's snapshot
 

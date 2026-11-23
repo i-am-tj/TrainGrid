@@ -64,7 +64,8 @@ in the app at `/whats-new`.
 - **Discard a started workout from anywhere**: a workout in progress now has **Discard workout** on
   Home’s session card and on the session page (and an empty quick workout offers it on its own
   screen), always with a confirmation. A planned session stays, ready to start again.
-- **Post about it**: the finish screen takes you straight to the post screen. If the session has a
+- **Post about it**: one tap on the finish screen takes you to the post screen (its main button,
+  **Done**, takes you back to Home). If the session has a
   finished workout you can also share the **time trained**, **sets done** and **volume lifted**,
   each only if you tick it. Exercises and individual sets are never shared, and nothing is posted
   unless you post it.

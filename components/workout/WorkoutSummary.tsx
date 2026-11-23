@@ -10,6 +10,9 @@ import {
 } from "@/lib/workouts/model";
 import type { WorkoutSessionInfo } from "./WorkoutPlayer";
 
+const secondaryAction =
+  "ui-control inline-flex h-12 min-w-0 items-center justify-center rounded-2xl border border-stone-300 px-3 text-base font-medium text-stone-800 hover:bg-stone-100";
+
 /** The end of a workout: a moment of satisfaction, then what was done. */
 export function WorkoutSummaryView({
   session,
@@ -48,7 +51,7 @@ export function WorkoutSummaryView({
 
   return (
     <div className="workout-screen min-h-dvh">
-      <div className="mx-auto max-w-lg px-4 pb-[calc(9rem+env(safe-area-inset-bottom))] pt-[calc(2.5rem+env(safe-area-inset-top))]">
+      <div className="mx-auto max-w-lg px-4 pb-[calc(12rem+env(safe-area-inset-bottom))] pt-[calc(2.5rem+env(safe-area-inset-top))]">
         <div className="workout-celebrate text-center">
           <span className="workout-trophy mx-auto grid size-20 place-items-center rounded-full">
             <svg aria-hidden="true" viewBox="0 0 24 24" className="ui-check-draw size-10" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -96,27 +99,21 @@ export function WorkoutSummaryView({
         ) : null}
       </div>
 
+      {/* Done is the finish (PRODUCT_AUDIT F16): the full-width primary action,
+          nearest the thumb. Posting stays one tap away, beside Edit sets. */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-card/95 px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg gap-2">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="ui-control inline-flex h-14 items-center justify-center rounded-2xl border border-stone-300 px-5 text-base font-medium text-stone-800 hover:bg-stone-100"
-          >
+        <div className="mx-auto grid max-w-lg grid-cols-2 gap-2">
+          <button type="button" onClick={onEdit} className={secondaryAction}>
             Edit sets
           </button>
-          <Link
-            href="/home"
-            className="ui-control inline-flex h-14 items-center justify-center rounded-2xl border border-stone-300 px-5 text-base font-medium text-stone-800 hover:bg-stone-100"
-          >
-            Done
+          <Link href={postHref} data-testid="post-about-it" className={secondaryAction}>
+            Post about it
           </Link>
           <Link
-            href={postHref}
-            data-testid="post-about-it"
-            className="workout-log-button ui-control inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl text-base font-semibold"
+            href="/home"
+            className="workout-log-button ui-control col-span-2 inline-flex h-14 items-center justify-center rounded-2xl text-base font-semibold"
           >
-            Post about it
+            Done
           </Link>
         </div>
       </div>

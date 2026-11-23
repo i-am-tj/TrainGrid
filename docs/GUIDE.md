@@ -65,7 +65,8 @@ Open the gym, open TrainGrid: **Start workout** on today’s session (on Home or
 The workout starts at once: tap **Add exercise**, name it, choose how you log it (weight and reps,
 reps, or a tick) and the rest between sets, and add more as you go. When you finish, give the
 workout a name. It becomes today’s session on Home and in the planner; **Discard** removes it
-completely. From the finish screen, **Post about it** opens the post screen.
+completely. On the finish screen, **Done** takes you back to Home, and **Post about it** opens the
+post screen.
 
 - One exercise at a time, with what you planned (“4 × 5–6”, the target, the rest) and what you did
   **last time**.
