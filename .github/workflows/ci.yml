@@ -38,6 +38,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run scan:secrets
+      - run: npm audit --omit=dev
+      - run: npm run test:assets
       # The build needs no Supabase settings: pages render on demand.
       - run: npm run build
 
@@ -104,6 +106,9 @@ jobs:
         env:
           E2E_SERVER: build
 
+      - run: npm run test:ui
+      - run: npm run test:audit
+
       - name: Upload the Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
@@ -112,6 +117,10 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            .next/ui-test-results/
+            .next/audit-results/
+            .next/ui-audit/
+          include-hidden-files: true
           retention-days: 7
 
       - name: Stop the local Supabase stack
