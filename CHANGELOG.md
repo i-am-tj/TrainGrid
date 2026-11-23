@@ -28,6 +28,13 @@ in the app at `/whats-new`.
   available), the file says so (`complete: false`) instead of listing it as empty. The export
   format is now version 6 (docs/DATA_FORMAT.md).
 
+### Your data, your call
+
+- **Delete my account** on your profile explains how to have your account and everything in it
+  deleted, including when you can no longer sign in.
+- Invite requests are now deleted on schedule, 180 days after they are made, even when nobody
+  else asks for an invite. Needs migration `20261124000000_invite_request_retention`.
+
 ### Start now, share it, cheer each other on
 
 - **Start a workout from Home**: no planning needed. Pick Lift, Run, Plyo or Other and you’re
@@ -100,6 +107,9 @@ in the app at `/whats-new`.
   and in the phone menu.
 - **History at a glance**: a request from someone whose access or invitation was revoked is
   marked as such; inviting them restores their data.
+- If invite requests can’t be loaded, the Invitations page says so, with **Try again**, instead
+  of showing “No requests waiting”; the header badge shows no count rather than zero.
+- The Invitations page warns while `TRAINGRID_CONTACT_EMAIL` is not set.
 
 ### Profile
 

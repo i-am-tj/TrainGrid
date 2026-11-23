@@ -20,8 +20,15 @@ export type InviteRequestRow = {
   history: "former_member" | "revoked_invitation" | null;
 };
 
+/**
+ * The pending list, or "unavailable" when it could not be read. Never an
+ * empty list on failure: the sole reviewer must not read a failed query as
+ * "nobody is waiting" (PRODUCT_AUDIT F8).
+ */
+export type PendingInviteRequests = { status: "ok"; requests: InviteRequestRow[] } | { status: "unavailable" };
+
 /** Pending requests, oldest first (first come, first reviewed), with each address's history. */
-export async function listPendingInviteRequests(): Promise<InviteRequestRow[]> {
+export async function listPendingInviteRequests(): Promise<PendingInviteRequests> {
   if (!(await getAdminViewer())) throw new NotAdminError();
   const db = createSupabaseAdminClient();
   const { data, error } = await db
@@ -31,11 +38,10 @@ export async function listPendingInviteRequests(): Promise<InviteRequestRow[]> {
     .order("created_at", { ascending: true })
     .limit(200);
   if (error) {
-    // Logged so a missing grant or table is visible, not just an empty list.
     console.error("invite requests not listed", { code: error.code });
-    return [];
+    return { status: "unavailable" };
   }
-  if (data.length === 0) return [];
+  if (data.length === 0) return { status: "ok", requests: [] };
 
   // Live invitations resolve requests (trigger), so any earlier one here is revoked.
   const earlier = await db
@@ -43,23 +49,31 @@ export async function listPendingInviteRequests(): Promise<InviteRequestRow[]> {
     .select("email, accepted_at")
     .in("email", data.map((row) => row.email))
     .not("revoked_at", "is", null);
+  // History is a hint for the reviewer; the list still shows without it.
+  if (earlier.error) console.error("invite request history not read", { code: earlier.error.code });
   const history = new Map<string, InviteRequestRow["history"]>();
   for (const row of earlier.data ?? []) {
     if (row.accepted_at) history.set(row.email, "former_member");
     else if (!history.has(row.email)) history.set(row.email, "revoked_invitation");
   }
-  return data.map((row) => ({ ...row, history: history.get(row.email) ?? null }));
+  return { status: "ok", requests: data.map((row) => ({ ...row, history: history.get(row.email) ?? null })) };
 }
 
-/** How many requests wait for review; 0 when unknown. For the header badge. */
-export async function countPendingInviteRequests(): Promise<number> {
+/**
+ * How many requests wait for review, for the header badge; null when it could
+ * not be counted, so the badge shows nothing rather than a confident zero.
+ */
+export async function countPendingInviteRequests(): Promise<number | null> {
   if (!(await getAdminViewer())) return 0;
   const { count, error } = await createSupabaseAdminClient()
     .from("invite_requests")
     .select("id", { count: "exact", head: true })
     .eq("status", "pending");
-  if (error) console.error("invite requests not counted", { code: error.code });
-  return error ? 0 : (count ?? 0);
+  if (error) {
+    console.error("invite requests not counted", { code: error.code });
+    return null;
+  }
+  return count ?? 0;
 }
 
 /** Declines a pending request. Nothing is sent to the person who asked. */

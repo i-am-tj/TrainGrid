@@ -142,3 +142,15 @@ test("an admin revokes an accepted member's access; the member is locked out at 
     await memberContext.close();
   }
 });
+
+test("the admin is told when former members would have no way to ask for deletion", async ({ page, context, baseURL }) => {
+  // The E2E server sets no TRAINGRID_CONTACT_EMAIL.
+  await signInAsLocalAdmin(context, baseURL!);
+  await page.goto("/admin/invitations");
+  await expect(page.getByTestId("contact-email-missing")).toContainText("Set TRAINGRID_CONTACT_EMAIL");
+
+  // Signed out, the privacy notice still explains how to ask for deletion.
+  await context.clearCookies();
+  await page.goto("/privacy#delete-account");
+  await expect(page.locator("#delete-account")).toContainText("If you can no longer sign in, ask the person who invited you.");
+});

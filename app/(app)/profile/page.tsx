@@ -96,6 +96,13 @@ export default async function ProfilePage() {
             download
             className="border-t border-line"
           />
+          <Row
+            title="Delete my account"
+            detail="How to have your account and everything in it deleted, even after your access ends."
+            icon={<TrashIcon />}
+            href="/privacy#delete-account"
+            className="border-t border-line"
+          />
           <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-3.5 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
               <span
@@ -357,6 +364,14 @@ function DownloadIcon() {
   return (
     <svg {...iconProps}>
       <path d="M10 3.5v9M6 9l4 4 4-4M4 16.5h12" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M4 5.5h12M8 5.5V4h4v1.5M5.5 5.5l.7 10.5h7.6l.7-10.5M8.5 8.5v5M11.5 8.5v5" />
     </svg>
   );
 }
