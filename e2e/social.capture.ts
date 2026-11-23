@@ -106,12 +106,55 @@ async function seed(context: BrowserContext, baseURL: string) {
   await session(alex, "Plyo primer", "plyometrics", addDays(today, 2), 25);
   const jordanSprints = await session(jordan, "Hill sprints", "plyometrics", addDays(today, -1), 35);
 
-  await createLocalPostFor(priya, priyaHeavy, "New squat single at RPE 8. Moved well, kept it there. Deadlifts next week.", true, ago(1.5));
-  await createLocalPostFor(sam, samLong, "Two hours on the ridge trail. Fogged in at the top, perfect at the bottom. Legs are cooked in the best way.", true, ago(5));
+  // Priya's session was a finished workout, so her post shares its totals.
+  await admin().from("workout_logs").insert({
+    user_id: priya,
+    session_id: priyaHeavy,
+    status: "completed",
+    started_at: ago(2.8),
+    finished_at: ago(1.6),
+    unit: "kg",
+    entries: {
+      version: 1,
+      items: [
+        { item_id: crypto.randomUUID(), name: "Back squat", mode: "load", sets: [100, 110, 120, 130, 140].map((weight) => ({ weight, reps: weight === 140 ? 1 : 3, done: true })) },
+        { item_id: crypto.randomUUID(), name: "Romanian deadlift", mode: "load", sets: [80, 80, 80].map((weight) => ({ weight, reps: 8, done: true })) },
+        { item_id: crypto.randomUUID(), name: "Walking lunge", mode: "load", sets: [20, 20].map((weight) => ({ weight, reps: 12, done: true })) },
+      ],
+    },
+  });
+  const { data: priyaPost, error: priyaError } = await admin()
+    .from("session_posts")
+    .insert({
+      author_id: priya,
+      session_id: priyaHeavy,
+      caption: "New squat single at RPE 8. Moved well, kept it there. Deadlifts next week.",
+      shows_duration: true,
+      shows_sets: true,
+      shows_volume: true,
+      created_at: ago(1.5),
+    } as never)
+    .select("id")
+    .single();
+  if (priyaError) throw new Error(priyaError.message);
+  const priyaPostId = (priyaPost as { id: string }).id;
+  const samPostId = await createLocalPostFor(sam, samLong, "Two hours on the ridge trail. Fogged in at the top, perfect at the bottom. Legs are cooked in the best way.", true, ago(5));
   await createLocalPostFor(alex, alexTempo, "Three blocks at threshold, all on pace. The last one hurt, in a good way.", false, ago(30));
   await createLocalPostFor(sam, samEasy, "Easy 30 to flush the legs.", false, ago(74));
   await createLocalPostFor(jordan, jordanSprints, "8 × 10 s hill sprints. Short, sharp, done.", true, ago(20));
-  return { alex, alexLower };
+
+  // Likes and a short conversation.
+  await admin().from("post_likes").insert([
+    { post_id: priyaPostId, user_id: sam },
+    { post_id: priyaPostId, user_id: jordan },
+    { post_id: samPostId, user_id: priya },
+  ]);
+  await admin().from("post_comments").insert([
+    { post_id: priyaPostId, author_id: sam, body: "140 for a single at RPE 8 is huge. What’s the plan for deadlifts?", created_at: ago(1.2) },
+    { post_id: priyaPostId, author_id: priya, body: "Working up to a heavy triple next week, then we’ll see!", created_at: ago(0.9) },
+    { post_id: samPostId, author_id: priya, body: "That ridge is brutal. Nice work.", created_at: ago(4) },
+  ]);
+  return { alex, alexLower, priyaPostId };
 }
 
 async function settle(page: Page) {
@@ -175,5 +218,61 @@ for (const scheme of ["light", "dark"] as const) {
     await shot(page, `composer-phone-${scheme}`, true);
     await page.goto("/people/requests");
     await shot(page, `requests-phone-${scheme}`);
+  });
+}
+
+for (const scheme of ["light", "dark"] as const) {
+  test(`quick workout, likes and comments (${scheme})`, async ({ page, context, baseURL }) => {
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
+    await page.setViewportSize(DESKTOP);
+    await page.goto("/login");
+    const { priyaPostId } = await seed(context, baseURL!);
+
+    await page.goto("/home");
+    await shot(page, `home-start-desktop-${scheme}`);
+    await page.goto(`/posts/${priyaPostId}`);
+    await expect(page.getByTestId("comment").first()).toBeVisible();
+    await shot(page, `post-comments-desktop-${scheme}`, true);
+    await page.goto("/feed");
+    await expect(page.getByTestId("post-card").first()).toBeVisible();
+    await shot(page, `feed-reactions-desktop-${scheme}`);
+
+    await page.setViewportSize(PHONE);
+    await page.goto("/home");
+    await page.getByTestId("quick-start").click();
+    await expect(page.getByRole("dialog", { name: "Start a workout now" })).toBeVisible();
+    await shot(page, `quick-start-phone-${scheme}`);
+    await page.getByRole("dialog", { name: "Start a workout now" }).getByRole("button", { name: /^Lift/ }).click();
+    await page.waitForURL(/\/workout\//);
+    const sessionId = page.url().split("/").at(-1)!;
+    await expect(page.getByTestId("add-first-exercise")).toBeVisible();
+    await shot(page, `quick-running-phone-${scheme}`);
+    await page.getByTestId("add-first-exercise").click();
+    const add = page.getByRole("dialog", { name: "Add exercise" });
+    await add.getByRole("textbox", { name: "Exercise" }).fill("Back squat");
+    await add.getByRole("radio", { name: "1:30" }).click();
+    await shot(page, `quick-add-exercise-phone-${scheme}`);
+    await add.getByRole("button", { name: "Add exercise" }).click();
+    for (const reps of ["5", "5", "5"]) {
+      await page.getByRole("textbox", { name: /Weight/ }).fill("100");
+      await page.getByRole("textbox", { name: "Reps" }).fill(reps);
+      await page.getByRole("button", { name: "Log set" }).click();
+      const timer = page.getByRole("region", { name: "Rest timer" });
+      if (await timer.count()) await timer.getByRole("button", { name: "Skip" }).click();
+    }
+    await page.getByRole("button", { name: "Finish workout" }).click();
+    const finish = page.getByRole("dialog", { name: "Finish workout?" });
+    await finish.getByRole("textbox", { name: "Name this workout" }).fill("Squat triples");
+    await shot(page, `quick-finish-phone-${scheme}`);
+    await finish.getByRole("button", { name: "Finish workout" }).click();
+    await expect(page.getByText("Workout complete")).toBeVisible();
+    await shot(page, `quick-summary-phone-${scheme}`);
+    await page.getByTestId("post-about-it").click();
+    await page.waitForURL(`/session/${sessionId}/post`);
+    await page.getByLabel(/Volume lifted/).check();
+    await page.getByLabel("Caption").fill("Three clean triples at 100.");
+    await shot(page, `quick-composer-phone-${scheme}`, true);
+    await page.setViewportSize(DESKTOP);
+    await shot(page, `quick-composer-desktop-${scheme}`);
   });
 }
