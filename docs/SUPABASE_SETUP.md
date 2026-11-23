@@ -57,8 +57,10 @@ npm run dev
 `npm run supabase:stop` stops the stack. The keys printed by the local stack are fixed
 development defaults; they grant nothing outside your machine.
 
-To confirm the app can reach Supabase, open `/api/health`. It returns `{"supabase":"ok"}` when
-the connection works, `unconfigured` when the variables are missing, and `unreachable` otherwise.
+To confirm the app can reach Supabase, open `/api/health`. It returns `{"supabase":"ok","schema":"ok"}`
+when the connection works and every migration is applied, `"schema":"behind"` (status 503) when a
+migration is missing (`npm run release:check` lists what), `unconfigured` when the variables are
+missing, and `unreachable` otherwise.
 
 ## Production project
 
@@ -83,8 +85,8 @@ environment only:
 - `NEXT_PUBLIC_SUPABASE_URL` — from Supabase → Project Settings → API
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — the publishable key from the same page
 
-Redeploy, then open `https://train-grid.vercel.app/api/health`. `{"supabase":"ok"}` confirms the
-deployment reaches the project.
+Redeploy, then open `https://train-grid.vercel.app/api/health`. `{"supabase":"ok","schema":"ok"}`
+confirms the deployment reaches the project and its database matches the build.
 
 Without these, a deployment serves only the login page and the health check.
 

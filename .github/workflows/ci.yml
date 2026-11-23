@@ -62,6 +62,9 @@ jobs:
       - name: Export the local stack's URL and keys
         run: scripts/ci-supabase-env.sh >> "$GITHUB_ENV"
 
+      # The schema manifest must match the freshly migrated stack exactly
+      # (regenerate it with `npm run release:check -- --write` after a migration).
+      - run: npm run release:check -- --exact
       - run: npm run db:test
       - run: npm run test:integration
 
