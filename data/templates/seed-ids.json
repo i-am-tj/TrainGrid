@@ -7,17 +7,9 @@
     "routine": "easy-run",
     "name": "Main"
   },
-  "7bf6e183-f300-52a8-9b13-592509ffac72": {
-    "routine": "easy-run",
-    "name": "Recovery"
-  },
   "ed875a7f-f1b1-58c7-9107-c3dc7f05ad44": {
     "routine": "easy-run",
     "name": "Cooldown"
-  },
-  "0ac34507-a597-5164-befd-152a2d9e067f": {
-    "routine": "easy-run",
-    "name": "Progression"
   },
   "e6966dcb-31f5-5f66-b469-56c59fc74257": {
     "routine": "long-run",
@@ -27,17 +19,9 @@
     "routine": "long-run",
     "name": "Main"
   },
-  "cbe16aa6-36db-50f1-92ca-e8c101596b8a": {
-    "routine": "long-run",
-    "name": "Recovery"
-  },
   "884a8b7a-a3d3-5ba8-839b-e32c55e30e6e": {
     "routine": "long-run",
     "name": "Cooldown"
-  },
-  "a1003266-a828-52fd-a78a-ab6cd22ab612": {
-    "routine": "long-run",
-    "name": "Progression"
   },
   "346f0bcc-ca37-5c2f-8c21-d443e81f416b": {
     "routine": "lower-a",
@@ -179,17 +163,9 @@
     "routine": "recovery-run",
     "name": "Main"
   },
-  "53c06b85-566f-5ae6-8617-e1e12096053c": {
-    "routine": "recovery-run",
-    "name": "Recovery"
-  },
   "222d8940-9c71-5163-8400-1296c97a7e65": {
     "routine": "recovery-run",
     "name": "Cooldown"
-  },
-  "8631775f-93cb-5a62-9617-8f07f9e32f20": {
-    "routine": "recovery-run",
-    "name": "Progression"
   },
   "9613097c-d688-5bb6-a857-739a0433a910": {
     "routine": "running-cooldown",
@@ -243,17 +219,9 @@
     "routine": "speed-run",
     "name": "Main"
   },
-  "8acc8e6f-1bbd-540a-a620-cb9e208c1e4f": {
-    "routine": "speed-run",
-    "name": "Recovery"
-  },
   "68ec8364-8d45-54a2-be06-b1eb7fed4512": {
     "routine": "speed-run",
     "name": "Cooldown"
-  },
-  "4897652e-b008-530c-973f-33e057a748d6": {
-    "routine": "speed-run",
-    "name": "Progression"
   },
   "103a1baa-f7ba-5a0b-9cdd-6e1f1faa7c22": {
     "routine": "tempo-run",
@@ -263,17 +231,9 @@
     "routine": "tempo-run",
     "name": "Main"
   },
-  "7f31dfc5-d089-5a30-b64e-adfdf9ad0370": {
-    "routine": "tempo-run",
-    "name": "Recovery"
-  },
   "9c1f6099-0eab-571d-b2c3-caa7b45588d5": {
     "routine": "tempo-run",
     "name": "Cooldown"
-  },
-  "cb24dbbb-3b2a-55fc-8632-add5ef87b226": {
-    "routine": "tempo-run",
-    "name": "Progression"
   },
   "45a53158-b505-5ab8-adcd-8cfd37a33582": {
     "routine": "upper-a",
@@ -371,16 +331,8 @@
     "routine": "vo2-run",
     "name": "Main"
   },
-  "d09f0fe4-dff7-5967-99cb-1cd59b7a0293": {
-    "routine": "vo2-run",
-    "name": "Recovery"
-  },
   "60be9955-da6a-54f7-967e-a97756f50036": {
     "routine": "vo2-run",
     "name": "Cooldown"
-  },
-  "afd335fd-d428-5e30-98bf-7338a9ed7d89": {
-    "routine": "vo2-run",
-    "name": "Progression"
   }
 }

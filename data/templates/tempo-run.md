@@ -17,14 +17,12 @@ Even breathing. You can speak a short phrase, not a sentence.
 
 Intensity: RPE 6–7 / 10
 
-## Recovery
+If you split it into blocks, jog easy between them.
 
-Easy jog between tempo blocks if you split them.
+Next time: 20 min → 25 min, or add a third block before you chase pace.
 
 ## Cooldown
 
 8–10 min easy jog
 
-## Progression
-
-20 min → 25 min, or add a third block before you chase pace.
+Key: 3

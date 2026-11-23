@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { convertSection, convertTemplate, seedSql, uuidV5 } from "./convert-template";
+import { planExercise } from "@/lib/workouts/model";
 import { SEED_FILE, TEMPLATES_DIR, loadSeedRoutines } from "./templates";
 
 describe("uuidV5", () => {
@@ -108,6 +109,26 @@ describe("every template in data/templates", () => {
       expect(routine.items.filter((item) => item.videoUrl).length).toBe(count(/^Video:/gm));
     });
   }
+
+  // PRODUCT_AUDIT F9: the workout screen asks for a tick on every item, so an
+  // item must be something you do. Advice for the run, or for next time, goes
+  // in the main step's notes; the recovery between repetitions is its rest.
+  it("running plans hold only steps you do, with the advice kept in the notes", () => {
+    const plans = routines.filter((routine) => routine.slug.endsWith("-run"));
+    expect(plans.map((routine) => routine.slug).sort()).toEqual(
+      ["easy-run", "long-run", "recovery-run", "speed-run", "tempo-run", "vo2-run"],
+    );
+    for (const plan of plans) {
+      expect(plan.items.map((item) => item.name), plan.slug).toEqual(["Warm-up", "Main", "Cooldown"]);
+      expect(plan.items[1]!.notes, plan.slug).toMatch(/(^|\n)Next time: /);
+    }
+
+    const vo2 = routines.find((routine) => routine.slug === "vo2-run")!;
+    const main = planExercise({ ...vo2.items[1]!, equipment: vo2.items[1]!.equipment }, "running");
+    expect(main).toMatchObject({ mode: "done", sets: 6, rest: "200m walk/jog" });
+    const speed = routines.find((routine) => routine.slug === "speed-run")!;
+    expect(planExercise(speed.items[1]!, "running").restSeconds).toBe(120);
+  });
 
   it("gives every routine and item a unique id", () => {
     const ids = routines.flatMap((routine) => [routine.id, ...routine.items.map((item) => item.id)]);

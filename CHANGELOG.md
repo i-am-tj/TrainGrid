@@ -17,6 +17,11 @@ in the app at `/whats-new`.
   stay up, and suggests changing the date if it is only on the wrong day.
 - **Who sees a post**: the session page no longer says a post goes only to your followers; the
   post screen shows exactly who can read it before you post.
+- **Running plans you can follow step by step**: Easy, Long, Recovery, Tempo, Speed and VO2max
+  runs now have three steps, Warm-up, Main and Cooldown, instead of also asking you to tick off
+  “Recovery” and “Progression”. That advice is now in Main’s notes (“Next time: …”), and the
+  walk or jog between repetitions is Main’s rest. Sessions you already scheduled keep the steps
+  they were copied with.
 - **No half-started workouts**: if the connection drops just as you tap **Start a workout**,
   trying again opens the workout that started instead of making a second one, and a failed start
   leaves nothing behind. Finishing a quick workout saves it and its name together, so it is never
@@ -165,6 +170,9 @@ in the app at `/whats-new`.
   schema is `lib/release/schema-manifest.json`; CI fails if it does not match the migrations.
   The release journey (schedule a routine across weeks, reload, start, resume, finish, quick
   workout, export) runs as an integration test. See docs/RELEASING.md.
+- The six running plans lost their advisory items (12 items: `seed-ids.json` records them as
+  removed; Cooldown keeps its id with `Key: 3`). Apply with
+  `npx supabase db push --remote --include-seed` after merging; scheduled sessions are untouched.
 - Starting and finishing a workout are now one database call each (`start_quick_workout()`,
   `finish_workout()`, security invoker). Needs migration `20261125000000_atomic_quick_workouts`
   **before** this build deploys: without it, `/api/health` reports the schema as behind and

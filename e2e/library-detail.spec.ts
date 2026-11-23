@@ -22,7 +22,7 @@ test("cards show how many items a routine has and the equipment it uses", async 
   // Canonical equipment order, each tag once, from every item of Lower B.
   await expect(card(page, "Lower B").getByText("6 items · Bodyweight, Dumbbell, Barbell, Machine, Bench")).toBeVisible();
   // No equipment is claimed where the content names none.
-  await expect(card(page, "Easy Run").getByText("5 items", { exact: true })).toBeVisible();
+  await expect(card(page, "Easy Run").getByText("3 items", { exact: true })).toBeVisible();
 });
 
 test("a GLOBAL routine's detail shows everything it asks for, read-only", async ({ page }) => {
@@ -31,10 +31,13 @@ test("a GLOBAL routine's detail shows everything it asks for, read-only", async 
   await expect(page.getByRole("heading", { name: "Easy Run", level: 1 })).toBeVisible();
   await expect(page.getByRole("main").getByText("TrainGrid", { exact: true })).toBeVisible();
   await expect(page.getByText("Running · Easy aerobic run. Keep it conversational.")).toBeVisible();
-  await expect(page.getByText("5 items", { exact: true })).toBeVisible();
+  await expect(page.getByText("3 items", { exact: true })).toBeVisible();
 
-  // Advisory items are content too: shown in order, nothing dropped.
-  await expect(page.locator("main section h2")).toHaveText(["Warm-up", "Main", "Recovery", "Cooldown", "Progression"]);
+  // Only steps you do are items (PRODUCT_AUDIT F9); the advice lives in Main's notes.
+  await expect(page.locator("main section h2")).toHaveText(["Warm-up", "Main", "Cooldown"]);
+  const main = page.locator("main section").filter({ has: page.getByRole("heading", { name: "Main", level: 2 }) });
+  await expect(main.getByText("Stay easy the whole way: if you surge, slow down.")).toBeVisible();
+  await expect(main.getByText(/Next time: add 5–10 min/)).toBeVisible();
 
   // Read-only: nothing to edit or delete.
   await expect(page.getByRole("link", { name: /edit/i })).toHaveCount(0);
