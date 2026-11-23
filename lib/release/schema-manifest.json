@@ -1,0 +1,165 @@
+{
+  "tables": {
+    "follows": [
+      "accepted_at",
+      "created_at",
+      "followee_id",
+      "follower_id",
+      "status"
+    ],
+    "invitation_email_deliveries": [
+      "created_at",
+      "failure_code",
+      "finished_at",
+      "id",
+      "invitation_id",
+      "provider",
+      "provider_message_id",
+      "requested_by",
+      "status"
+    ],
+    "invitations": [
+      "accepted_at",
+      "accepted_by",
+      "created_at",
+      "email",
+      "id",
+      "invited_by",
+      "revoked_at"
+    ],
+    "invite_requests": [
+      "created_at",
+      "email",
+      "id",
+      "ip_hash",
+      "name",
+      "note",
+      "resolved_at",
+      "status"
+    ],
+    "member_feedback": [
+      "created_at",
+      "id",
+      "kind",
+      "message",
+      "page_path",
+      "user_id"
+    ],
+    "post_comments": [
+      "author_id",
+      "body",
+      "created_at",
+      "id",
+      "post_id"
+    ],
+    "post_likes": [
+      "created_at",
+      "post_id",
+      "user_id"
+    ],
+    "profiles": [
+      "avatar_url",
+      "created_at",
+      "display_name",
+      "id",
+      "revoked_at",
+      "updated_at"
+    ],
+    "routines": [
+      "category",
+      "created_at",
+      "description",
+      "id",
+      "name",
+      "owner_user_id",
+      "scope",
+      "slug",
+      "updated_at"
+    ],
+    "scheduled_sessions": [
+      "category",
+      "created_at",
+      "date",
+      "duration_minutes",
+      "id",
+      "name",
+      "notes",
+      "origin",
+      "snapshot",
+      "source_routine_id",
+      "start_time",
+      "updated_at",
+      "user_id"
+    ],
+    "session_posts": [
+      "author_id",
+      "caption",
+      "created_at",
+      "edited_at",
+      "id",
+      "session_category",
+      "session_date",
+      "session_duration_minutes",
+      "session_id",
+      "session_name",
+      "shows_duration",
+      "shows_sets",
+      "shows_volume",
+      "updated_at",
+      "workout_completed",
+      "workout_sets",
+      "workout_unit",
+      "workout_volume"
+    ],
+    "social_profiles": [
+      "avatar_url",
+      "bio",
+      "created_at",
+      "display_name",
+      "updated_at",
+      "use_identity_avatar",
+      "user_id",
+      "username",
+      "visibility"
+    ],
+    "workout_items": [
+      "created_at",
+      "equipment",
+      "id",
+      "instruction",
+      "name",
+      "notes",
+      "rest",
+      "routine_id",
+      "sort_order",
+      "target",
+      "updated_at",
+      "video_url"
+    ],
+    "workout_logs": [
+      "created_at",
+      "entries",
+      "finished_at",
+      "id",
+      "notes",
+      "session_id",
+      "started_at",
+      "status",
+      "unit",
+      "updated_at",
+      "user_id"
+    ]
+  },
+  "functions": [
+    "accept_invitation",
+    "begin_invitation_email",
+    "complete_invitation_email",
+    "is_member",
+    "request_invite",
+    "revoke_invitation",
+    "save_personal_routine",
+    "search_social_profiles",
+    "social_posts",
+    "social_profile"
+  ]
+}
