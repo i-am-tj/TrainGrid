@@ -16,7 +16,7 @@ A calm, invite-only training planner: your week at a glance, a shared library of
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/v1/home-desktop-dark.png" />
-    <img src="docs/images/v1/home-desktop-light.png" alt="TrainGrid home: today’s planned sessions, the week at a glance, quick actions and your routines" width="860" />
+    <img src="docs/images/v1/home-desktop-light.png" alt="TrainGrid home: today’s planned sessions, the week at a glance and your routines" width="860" />
   </picture>
 </p>
 
@@ -62,9 +62,9 @@ Every release: [What’s new](https://github.com/i-am-tj/TrainGrid/blob/main/CHA
     <td width="50%" valign="top">
       <picture>
         <source media="(prefers-color-scheme: dark)" srcset="docs/images/v1/home-first-visit-desktop-dark.png" />
-        <img src="docs/images/v1/home-first-visit-desktop-light.png" alt="A new member’s first visit, with the getting-started card" />
+        <img src="docs/images/v1/home-first-visit-desktop-light.png" alt="A new member’s first visit, inviting them to plan a first session" />
       </picture>
-      <p><strong>A warm first visit.</strong> New members are welcomed by name and guided through three small steps.</p>
+      <p><strong>A warm first visit.</strong> New members are welcomed by name and invited to plan a first session, from a TrainGrid routine or their own.</p>
     </td>
     <td width="50%" valign="top">
       <picture>

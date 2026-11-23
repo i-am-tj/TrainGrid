@@ -203,7 +203,7 @@ slide; its `loading.tsx` applies to `/library` only, so detail pages keep real 4
 | `/api/health` | Public | `ok` / `unconfigured` / `unreachable`, plus schema `ok` / `behind` / `unknown` only |
 | `/` | Public | Landing page, identical for every visitor |
 | `/privacy`, `/terms`, `/whats-new` | Public | Information pages; members keep their header |
-| `/home` | Member | Today, the week's counts, getting started, routines (each section streams) |
+| `/home` | Member | Today (with the first-session invitation for a new member), the week's counts, routines (each section streams) |
 | `/profile` | Member | Identity, plan numbers, data download, appearance, time zone, About TrainGrid, sign out |
 | `/week/[weekId]` | Member | Planner (`?day=` selects the mobile day); `/week/current` redirects to the member's today |
 | `/week/[weekId]/add` | Member | Add session (`?routine=<id>`, legacy `?template=<slug>`) |
