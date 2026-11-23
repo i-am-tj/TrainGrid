@@ -29,7 +29,8 @@
     "test:audit": "playwright test --config playwright.audit.config.ts",
     "test:assets": "node --import tsx scripts/check-ui-assets.ts",
     "screenshots": "npm run build && E2E_SERVER=build playwright test --config playwright.screenshots.config.ts",
-    "icons:generate": "node --import tsx scripts/generate-app-icons.ts"
+    "icons:generate": "node --import tsx scripts/generate-app-icons.ts",
+    "release:check": "tsx scripts/release-check.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

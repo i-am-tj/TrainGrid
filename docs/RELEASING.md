@@ -38,9 +38,29 @@ After the release's last PR is merged:
 3. Production checklist (owner):
    - apply any new migrations in `supabase/migrations/` to the production project **before or
      with** the deploy, and check Supabase → Advisors;
+   - **schema gate**: check that production has every table, column and function `main` needs.
+     It only reads the Data API's schema, and exits non-zero (listing what is missing) when a
+     migration has not been applied. Do not deploy, or roll back, until it passes:
+
+     ```bash
+     NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co SUPABASE_SECRET_KEY=<secret key> npm run release:check
+     ```
+
    - set any new environment variables in Vercel (Production) and redeploy;
-   - smoke test: `/` loads signed out, sign-in lands on `/home`, the planner and library load,
-     Feedback sends, `/api/health` answers `200`.
+   - `/api/health` answers `200` with `{"supabase":"ok","schema":"ok"}`. A `503` with
+     `"schema":"behind"` means Auth is up but a migration is missing (the planner would fail);
+     `"schema":"unknown"` means the deployment has no secret key or the Data API did not answer;
+   - smoke test with a member account, on a phone: `/` loads signed out, sign-in lands on
+     `/home`; in Library, schedule a TrainGrid routine for **next week**, reload and find it in
+     the planner on that day; start it, leave, **Resume** it from its session page and finish;
+     start a quick workout from Home and find it on the calendar; download the data from
+     Profile; Feedback sends. Delete the test sessions afterwards.
+
+   The same journey runs in CI on a fully migrated local stack
+   (`tests/integration/release-journey.test.ts`), and CI fails if
+   `lib/release/schema-manifest.json` does not match the migrations (`npm run release:check --
+   --exact`). After adding a migration, apply it locally and run
+   `npm run release:check -- --write` to update the manifest.
 4. Tag the merge commit on `main` and push the tag:
 
    ```bash

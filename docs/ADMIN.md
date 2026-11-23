@@ -73,7 +73,8 @@ email’s Reply-To is the member, so you can answer directly.
 ## Know when something breaks
 
 - **Uptime**: point a monitor (for example UptimeRobot, free) at `https://<your-domain>/api/health`.
-  It answers `200` when the app can reach Supabase and `503` when it can’t.
+  It answers `200` when the app can reach Supabase and its database is up to date, and `503` when it
+  can’t reach it or a migration is missing (`"schema":"behind"`).
 - **Errors**: every server error appears in Vercel → Logs as `"event":"server_error"`, without any
   member data. Set `TRAINGRID_ALERT_WEBHOOK_URL` to a Slack or Discord incoming webhook to be
   alerted, at most once per distinct error per 10 minutes. Details: [SECURITY.md](SECURITY.md#error-reports-and-alerts).

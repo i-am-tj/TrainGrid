@@ -191,7 +191,7 @@ slide; its `loading.tsx` applies to `/library` only, so detail pages keep real 4
 | --- | --- | --- |
 | `/login` | Public | Sign in; invite-only and error messages |
 | `/auth/callback` | Public | OAuth return: code exchange, then invitation check |
-| `/api/health` | Public | `ok` / `unconfigured` / `unreachable` only |
+| `/api/health` | Public | `ok` / `unconfigured` / `unreachable`, plus schema `ok` / `behind` / `unknown` only |
 | `/` | Public | Landing page, identical for every visitor |
 | `/privacy`, `/terms`, `/whats-new` | Public | Information pages; members keep their header |
 | `/home` | Member | Today, the week's counts, getting started, routines (each section streams) |

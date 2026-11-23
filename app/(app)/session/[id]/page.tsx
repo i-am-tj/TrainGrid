@@ -38,7 +38,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
         {session.durationMinutes != null ? ` · ${session.durationMinutes}m` : ""}
       </p>
 
-      <WorkoutCallout sessionId={session.id} log={log} hasItems={session.items.length > 0} />
+      <WorkoutCallout sessionId={session.id} log={log} />
       {log?.status === "in_progress" ? (
         <p className="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-stone-600">
           Started by mistake, or not training today?
@@ -69,7 +69,15 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
       ) : null}
 
       <div className="mt-6 border-t border-line pt-4">
-        <WorkoutItemsView items={session.items} />
+        {session.items.length === 0 ? (
+          <p className="text-sm leading-6 text-stone-600">
+            {log && log.entries.items.length > 0
+              ? `Nothing was planned; ${log.entries.items.length === 1 ? "1 exercise was" : `${log.entries.items.length} exercises were`} added during the workout.`
+              : "Nothing planned. Start the workout and add exercises as you go, or use Customize content to plan it."}
+          </p>
+        ) : (
+          <WorkoutItemsView items={session.items} />
+        )}
       </div>
 
       <div className="mt-8 flex flex-wrap gap-2">
@@ -84,8 +92,8 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
         </Link>
       </div>
       <p className="mt-2 text-xs leading-5 text-stone-600">
-        Post update shares this session’s name, type and date (and its duration, if you choose) with your followers.
-        Nothing is shared unless you post it.
+        Post update shares this session’s name, type and date (and its duration, if you choose). You’ll see who can
+        read it before you post, and nothing is shared unless you post it.
       </p>
     </div>
   );
@@ -94,8 +102,12 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
 /**
  * The way into the live workout. On phones the button sits in a bar at the
  * bottom of the screen, where the thumb is; on wider screens it sits inline.
+ *
+ * Offered whatever the plan holds: a session with no planned exercises (a
+ * quick workout, or one added from scratch) opens as a free-form workout, and
+ * an unfinished workout is resumed from its log, not from the plan.
  */
-function WorkoutCallout({ sessionId, log, hasItems }: { sessionId: string; log: WorkoutLog | null; hasItems: boolean }) {
+function WorkoutCallout({ sessionId, log }: { sessionId: string; log: WorkoutLog | null }) {
   const href = `/workout/${sessionId}`;
   if (log?.status === "completed") {
     const summary = summarize(log.entries);
@@ -123,7 +135,6 @@ function WorkoutCallout({ sessionId, log, hasItems }: { sessionId: string; log: 
     );
   }
 
-  if (!hasItems) return null;
   const inProgress = log?.status === "in_progress";
   const summary = inProgress ? summarize(log.entries) : null;
   return (
@@ -131,7 +142,10 @@ function WorkoutCallout({ sessionId, log, hasItems }: { sessionId: string; log: 
       <div className="mx-auto flex max-w-2xl items-center gap-3">
         {summary ? (
           <p className="min-w-0 flex-1 text-sm text-stone-700 sm:order-2 sm:flex-none">
-            <span className="font-semibold text-stone-900">In progress</span> · {summary.setsDone} of {summary.setsTotal} sets
+            <span className="font-semibold text-stone-900">In progress</span> ·{" "}
+            {summary.setsTotal > 0
+              ? `${summary.setsDone} of ${summary.setsTotal} sets`
+              : `${summary.setsDone} ${summary.setsDone === 1 ? "set" : "sets"} logged`}
           </p>
         ) : null}
         <Link
