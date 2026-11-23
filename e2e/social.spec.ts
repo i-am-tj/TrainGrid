@@ -291,6 +291,9 @@ for (const theme of ["light", "dark"] as const) {
 
     for (const path of ["/feed", `/people/${myName}`, "/people", "/people/requests", "/profile/social", `/session/${sessionId}/post`, "/feed/new"]) {
       await page.goto(path);
+      // Audit the page, not its loading fallback: the feed's loading.tsx (no h1)
+      // also covers /feed/new, and under load it can still be streaming here.
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       await hydrated(page);
       await noOverflow(page);
       const { violations } = await accessibilityResults(page);
