@@ -163,8 +163,13 @@ async function shot(page: Page, name: string, fullPage = false) {
 }
 
 test.afterEach(async () => {
-  const results = await Promise.all(captureUsers.splice(0).map((id) => admin().auth.admin.deleteUser(id)));
-  if (results.some(({ error }) => error)) throw new Error("Could not clean up all capture users.");
+  // Follow edges and comments reference several fixtures. Concurrent cascades
+  // can lock the same rows in opposite orders.
+  const client = admin();
+  for (const id of captureUsers.splice(0)) {
+    const { error } = await client.auth.admin.deleteUser(id);
+    if (error) throw new Error("Could not clean up a capture user.");
+  }
 });
 
 test.beforeAll(async () => {
