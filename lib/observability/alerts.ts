@@ -6,7 +6,7 @@
  * webhook) — an alert, at most once per distinct error per 10 minutes on
  * each server instance.
  *
- * Privacy: a report carries the route, the path without its query, the
+ * Privacy: a report carries the framework's route template, the
  * method, the error's class name and Next.js's digest. Never the message
  * (it can contain data), never headers, cookies, bodies or user ids.
  */
@@ -14,7 +14,6 @@
 export type ErrorReport = {
   at: string;
   route: string;
-  path: string;
   method: string;
   kind: string;
   error: string;
@@ -32,7 +31,6 @@ export function buildErrorReport(error: unknown, request: RequestInfo, context: 
   return {
     at: now.toISOString(),
     route: context.routePath.slice(0, 200),
-    path: (request.path.split(/[?#]/)[0] ?? "").slice(0, 200),
     method: request.method.toUpperCase().slice(0, 10),
     kind: context.routeType.slice(0, 20),
     error: name,
@@ -67,6 +65,6 @@ export function createThrottle(windowMs = THROTTLE_MS) {
 
 /** Slack reads `text`, Discord reads `content`; both get the same line. */
 export function alertMessage(report: ErrorReport): { text: string; content: string } {
-  const line = `TrainGrid server error: ${report.error} on ${report.method} ${report.path} (${report.kind} ${report.route})${report.digest ? ` · digest ${report.digest}` : ""} · ${report.at}`;
+  const line = `TrainGrid server error: ${report.error} on ${report.method} ${report.route} (${report.kind})${report.digest ? ` · digest ${report.digest}` : ""} · ${report.at}`;
   return { text: line, content: line };
 }

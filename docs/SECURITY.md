@@ -146,7 +146,7 @@ linking, so the conventions above still matter.
 ## Error reports and alerts
 
 `instrumentation.ts` reports every server error as one JSON log line (`"event":"server_error"`,
-searchable in Vercel → Logs) with the route, the path **without its query**, the method, the
+searchable in Vercel → Logs) with the framework route template, the method, the
 error's class name and Next.js's digest. It never includes the error message, headers, cookies,
 request bodies or user ids. When `TRAINGRID_ALERT_WEBHOOK_URL` is an `https` Slack or Discord
 webhook, the same line is posted there, at most once per distinct error per 10 minutes per server

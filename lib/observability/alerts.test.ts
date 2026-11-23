@@ -4,7 +4,7 @@ import { alertMessage, alertWebhook, buildErrorReport, createThrottle } from "./
 const now = new Date("2026-11-18T09:00:00Z");
 
 describe("buildErrorReport", () => {
-  it("keeps only the route, path without query, method, class name and digest", () => {
+  it("keeps the framework route, method, class name and digest", () => {
     const error = Object.assign(new TypeError("leaked: member@example.test"), { digest: "123456789" });
     const report = buildErrorReport(
       error,
@@ -15,13 +15,26 @@ describe("buildErrorReport", () => {
     expect(report).toEqual({
       at: "2026-11-18T09:00:00.000Z",
       route: "/library",
-      path: "/library",
       method: "GET",
       kind: "render",
       error: "TypeError",
       digest: "123456789",
     });
     expect(JSON.stringify(report)).not.toContain("member@example.test");
+  });
+
+  it("omits member handles and search terms from both reporting destinations", () => {
+    const report = buildErrorReport(
+      new Error("private-message"),
+      { path: "/people/qa-synthetic-person?q=private-search", method: "GET" },
+      { routePath: "/people/[username]", routeType: "render" },
+      now,
+    );
+    for (const output of [report, alertMessage(report)]) {
+      const json = JSON.stringify(output);
+      expect(json).toContain("/people/[username]");
+      expect(json).not.toMatch(/qa-synthetic-person|private-search|private-message/);
+    }
   });
 
   it("does not trust odd names or digests", () => {
@@ -58,7 +71,7 @@ describe("alertMessage", () => {
   it("is one readable line for Slack and Discord", () => {
     const report = buildErrorReport(new Error("x"), { path: "/home", method: "GET" }, { routePath: "/home", routeType: "render" }, now);
     const message = alertMessage(report);
-    expect(message.text).toBe("TrainGrid server error: Error on GET /home (render /home) · 2026-11-18T09:00:00.000Z");
+    expect(message.text).toBe("TrainGrid server error: Error on GET /home (render) · 2026-11-18T09:00:00.000Z");
     expect(message.content).toBe(message.text);
   });
 });
