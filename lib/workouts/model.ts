@@ -21,7 +21,8 @@ export type WorkoutStatus = (typeof WORKOUT_STATUSES)[number];
  *   reps  reps only (bodyweight)
  *   done  a tick per set (runs, strides, carries, anything without a rep count)
  */
-export type SetMode = "load" | "reps" | "done";
+export const SET_MODES = ["load", "reps", "done"] as const;
+export type SetMode = (typeof SET_MODES)[number];
 
 export const MAX_SETS = 30;
 const MAX_LOGGED_ITEMS = 200;
@@ -50,6 +51,12 @@ export const loggedExerciseSchema = z.object({
   item_id: z.uuid(),
   name: z.string().trim().min(1).max(200),
   sets: z.array(loggedSetSchema).max(MAX_SETS),
+  /**
+   * Free-form workouts only (no plan to read): how the exercise is logged and
+   * its rest, chosen when it was added. Planned exercises leave these out.
+   */
+  mode: z.enum(SET_MODES).optional(),
+  rest_seconds: z.number().int().min(5).max(1800).nullable().optional(),
 });
 
 export const workoutEntriesSchema = z.object({
@@ -264,6 +271,87 @@ export function alignEntries(
     exercises: [...exercises, ...orphanPlans],
     entries: { version: 1, items: [...items, ...orphans] },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Free-form workouts: no plan, exercises added as you go
+// ---------------------------------------------------------------------------
+
+/** A quick workout's name until the member names it at the finish. */
+export const QUICK_WORKOUT_NAMES: Record<SessionType, string> = {
+  running: "Quick run",
+  strength: "Quick lift",
+  plyometrics: "Quick plyo",
+  other: "Quick workout",
+};
+
+/** How a new exercise is logged by default in a session of this type. */
+export function defaultSetMode(category: SessionType): SetMode {
+  if (category === "strength") return "load";
+  if (category === "running") return "done";
+  return "reps";
+}
+
+/** The rest choices offered when adding an exercise, in seconds (null: no timer). */
+export const REST_CHOICES: ReadonlyArray<number | null> = [null, 60, 90, 120, 180];
+
+export const newExerciseSchema = z.object({
+  name: z.string().trim().min(1, "Name the exercise.").max(200, "Keep the name to 200 characters."),
+  mode: z.enum(SET_MODES),
+  restSeconds: z.number().int().min(5).max(1800).nullable(),
+});
+
+export type NewExercise = z.input<typeof newExerciseSchema>;
+
+/** How a free-form exercise runs, from what is stored with it. */
+export function freeFormPlan(item: LoggedExercise): PlannedExercise {
+  const loaded = item.sets.some((set) => set.weight !== null);
+  const counted = item.sets.some((set) => set.reps !== null);
+  return {
+    itemId: item.item_id,
+    name: item.name,
+    mode: item.mode ?? (loaded ? "load" : counted ? "reps" : "done"),
+    sets: Math.max(1, item.sets.length),
+    repsLabel: null,
+    suggestedReps: null,
+    restSeconds: item.rest_seconds ?? null,
+    rest: item.rest_seconds ? formatRestChoice(item.rest_seconds) : "",
+    target: "",
+    instruction: "",
+    notes: "",
+    equipment: [],
+    videoUrl: null,
+  };
+}
+
+/** A free-form workout's exercises are exactly what its log holds. */
+export function alignFreeForm(stored: WorkoutEntries): { exercises: PlannedExercise[]; entries: WorkoutEntries } {
+  return { exercises: stored.items.map(freeFormPlan), entries: stored };
+}
+
+/** A new exercise for a free-form workout: three open sets (one for a tick), ready to log. */
+export function newFreeFormExercise(input: NewExercise, id: string): { plan: PlannedExercise; entry: LoggedExercise } {
+  const parsed = newExerciseSchema.parse(input);
+  const entry: LoggedExercise = {
+    item_id: id,
+    name: parsed.name,
+    sets: Array.from({ length: parsed.mode === "done" ? 1 : 3 }, emptySet),
+    mode: parsed.mode,
+    rest_seconds: parsed.restSeconds,
+  };
+  return { plan: freeFormPlan(entry), entry };
+}
+
+/** "90 s", "2 min", "No timer". */
+export function formatRestChoice(seconds: number | null): string {
+  if (seconds === null) return "No timer";
+  return seconds % 60 === 0 ? `${seconds / 60} min` : `${seconds} s`;
+}
+
+/** Minutes trained, 1–1440, from a finished workout's start and finish. */
+export function trainedMinutes(startedAt: string, finishedAt: string): number {
+  const minutes = Math.round((Date.parse(finishedAt) - Date.parse(startedAt)) / 60000);
+  return Math.min(1440, Math.max(1, Number.isFinite(minutes) ? minutes : 1));
 }
 
 // ---------------------------------------------------------------------------

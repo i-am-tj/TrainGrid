@@ -39,6 +39,11 @@ export default async function WorkoutPage({ params }: PageProps<"/workout/[id]">
     const found = history.get(exerciseKey(exercise.name));
     if (found) previous[exercise.itemId] = found;
   }
+  // A free-form workout's exercises are named as they are added, so it gets
+  // "last time" by name instead.
+  const freeForm = exercises.length === 0;
+  const previousByName: Record<string, PreviousPerformance> = freeForm ? Object.fromEntries(history) : {};
+  const quick = session.origin === "quick";
   const date = datesOfWeek(session.weekId)[session.day - 1]!;
 
   return (
@@ -47,12 +52,17 @@ export default async function WorkoutPage({ params }: PageProps<"/workout/[id]">
         id: session.id,
         name: session.name,
         categoryLabel: SESSION_TYPE_LABELS[session.category],
+        category: session.category,
         dateLabel: formatLongDay(date),
-        backHref: `/session/${session.id}`,
+        // A discarded quick workout no longer exists, so its way out is Home.
+        backHref: quick ? "/home" : `/session/${session.id}`,
+        quick,
+        freeForm,
       }}
       exercises={exercises}
       log={log}
       previous={previous}
+      previousByName={previousByName}
     />
   );
 }

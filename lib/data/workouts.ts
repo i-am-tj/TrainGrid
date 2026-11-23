@@ -1,6 +1,9 @@
+import { z } from "zod";
 import type { Json, Tables } from "@/lib/database.types";
 import {
   EMPTY_ENTRIES,
+  QUICK_WORKOUT_NAMES,
+  WEIGHT_UNITS,
   latestPerformances,
   workoutEntriesSchema,
   workoutProgressSchema,
@@ -11,7 +14,7 @@ import {
   type WorkoutProgress,
 } from "@/lib/workouts/model";
 import { DataError, type Db } from "./model";
-import { idSchema } from "./schemas";
+import { categorySchema, idSchema, isoDateSchema } from "./schemas";
 import { validate } from "./validate";
 
 /**
@@ -175,6 +178,59 @@ export async function finishWorkout(
   if (error) throw new Error("Could not finish the workout.");
   if (!data) throw NOT_FOUND();
   return logFromRow(data);
+}
+
+/**
+ * Starts a quick workout: a session for `date` (the member's today) with no
+ * plan, marked quick, and its workout already under way. Returns the session
+ * id. Exercises are added during the workout; it is named at the finish.
+ */
+export async function startQuickWorkout(
+  db: Db,
+  userId: string,
+  input: { category: unknown; date: unknown; unit: unknown },
+): Promise<string> {
+  const category = validate(categorySchema, input.category);
+  const date = validate(isoDateSchema, input.date);
+  const unit = WEIGHT_UNITS.includes(input.unit as WeightUnit) ? (input.unit as WeightUnit) : "kg";
+  const { data, error } = await db
+    .from("scheduled_sessions")
+    .insert({
+      user_id: userId,
+      date,
+      name: QUICK_WORKOUT_NAMES[category],
+      category,
+      origin: "quick",
+      snapshot: { version: 1, items: [] },
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error("Could not start the workout.");
+  await startWorkout(db, userId, data.id, { unit, entries: EMPTY_ENTRIES, notes: "" });
+  return data.id;
+}
+
+/**
+ * Names a finished quick workout and records how long it took, so the
+ * planner, Home and any post show what was actually done. Only quick sessions
+ * are renamed this way; planned ones keep their name and planned duration.
+ */
+export async function nameQuickWorkout(
+  db: Db,
+  userId: string,
+  rawSessionId: unknown,
+  rawName: unknown,
+  durationMinutes: number,
+): Promise<void> {
+  const id = sessionId(rawSessionId);
+  const name = validate(z.string().trim().min(1, "Name your workout.").max(200, "Keep the name to 200 characters."), rawName);
+  const { error } = await db
+    .from("scheduled_sessions")
+    .update({ name, duration_minutes: Math.min(1440, Math.max(1, Math.round(durationMinutes))) })
+    .eq("id", id)
+    .eq("user_id", userId)
+    .eq("origin", "quick");
+  if (error) throw new Error("Could not name the workout.");
 }
 
 /** Discards the workout log. The planned session is untouched. */

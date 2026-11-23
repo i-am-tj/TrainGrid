@@ -20,6 +20,7 @@ export function WorkoutSummaryView({
   startedAt,
   finishedAt,
   onEdit,
+  postHref,
 }: {
   session: WorkoutSessionInfo;
   plans: PlannedExercise[];
@@ -29,6 +30,8 @@ export function WorkoutSummaryView({
   startedAt: string | null;
   finishedAt: string | null;
   onEdit: () => void;
+  /** Where "Post about it" goes: the composer for this session. */
+  postHref: string;
 }) {
   const summary = summarize(entries);
   const seconds = startedAt && finishedAt ? (Date.parse(finishedAt) - Date.parse(startedAt)) / 1000 : null;
@@ -104,9 +107,16 @@ export function WorkoutSummaryView({
           </button>
           <Link
             href="/home"
-            className="workout-log-button ui-control inline-flex h-14 flex-1 items-center justify-center rounded-2xl text-base font-semibold"
+            className="ui-control inline-flex h-14 items-center justify-center rounded-2xl border border-stone-300 px-5 text-base font-medium text-stone-800 hover:bg-stone-100"
           >
             Done
+          </Link>
+          <Link
+            href={postHref}
+            data-testid="post-about-it"
+            className="workout-log-button ui-control inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl text-base font-semibold"
+          >
+            Post about it
           </Link>
         </div>
       </div>
