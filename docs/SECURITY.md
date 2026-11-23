@@ -153,7 +153,11 @@ webhook, the same line is posted there, at most once per distinct error per 10 m
 instance (`lib/observability/alerts.ts`).
 
 For uptime, point a monitor (for example UptimeRobot's free plan) at `/api/health`: it answers
-`200 {"supabase":"ok"}` when the app can reach Supabase, `503` otherwise, and reveals nothing else.
+`200 {"supabase":"ok","schema":"ok"}` when the app can reach Supabase and its database has every
+table, column and function this build needs, and `503` when Supabase is unreachable or the schema
+is `"behind"` (a migration was not applied). It reveals nothing else: not which part of the schema is
+missing (`npm run release:check` says that, for the owner, with the secret key). The schema is read
+at most once per server instance every five minutes.
 
 ## Member feedback
 
