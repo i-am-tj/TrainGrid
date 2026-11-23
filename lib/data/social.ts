@@ -26,6 +26,7 @@ import {
 } from "@/lib/social/model";
 import { SocialUnavailableError, socialFailure } from "@/lib/social/availability";
 import { DataError, type Db } from "./model";
+import { readAllPages } from "./paging";
 import { idSchema } from "./schemas";
 import { validate } from "./validate";
 
@@ -598,33 +599,51 @@ export async function listPostableSessions(db: Db, userId: string, todayIso: str
 
 /** The member's own social data, for the data download: usernames, never user ids or emails. */
 export async function exportSocialData(db: Db, userId: string) {
+  type Relation = { status: string; created_at: string; accepted_at: string | null; profile: { username: string } };
+  // Every list is read in full, page by page, in a stable order (lib/data/paging.ts).
+  const all = <T,>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>) =>
+    readAllPages(page).catch((error: { code?: string | null } | null) => {
+      throw socialFailure(error, "Could not export your social data.");
+    });
   const [profile, following, followers, posts, comments, likes] = await Promise.all([
     getOwnSocialProfile(db, userId),
-    db
-      .from("follows")
-      .select("status, created_at, accepted_at, profile:social_profiles!follows_followee_id_fkey!inner(username)")
-      .eq("follower_id", userId)
-      .order("created_at")
-      .limit(1000),
-    db
-      .from("follows")
-      .select("status, created_at, accepted_at, profile:social_profiles!follows_follower_id_fkey!inner(username)")
-      .eq("followee_id", userId)
-      .order("created_at")
-      .limit(1000),
-    db
-      .from("session_posts")
-      .select("id, caption, session_name, session_category, session_date, session_duration_minutes, created_at, edited_at")
-      .eq("author_id", userId)
-      .order("created_at")
-      .limit(5000),
-    db.from("post_comments").select("id, post_id, body, created_at").eq("author_id", userId).order("created_at").limit(5000),
-    db.from("post_likes").select("post_id, created_at").eq("user_id", userId).order("created_at").limit(5000),
+    all((from, to) =>
+      db
+        .from("follows")
+        .select("status, created_at, accepted_at, followee_id, profile:social_profiles!follows_followee_id_fkey!inner(username)")
+        .eq("follower_id", userId)
+        .order("created_at")
+        .order("followee_id")
+        .range(from, to),
+    ),
+    all((from, to) =>
+      db
+        .from("follows")
+        .select("status, created_at, accepted_at, follower_id, profile:social_profiles!follows_follower_id_fkey!inner(username)")
+        .eq("followee_id", userId)
+        .order("created_at")
+        .order("follower_id")
+        .range(from, to),
+    ),
+    all((from, to) =>
+      db
+        .from("session_posts")
+        .select(
+          "id, caption, session_name, session_category, session_date, session_duration_minutes, workout_completed, workout_sets, workout_volume, workout_unit, created_at, edited_at",
+        )
+        .eq("author_id", userId)
+        .order("created_at")
+        .order("id")
+        .range(from, to),
+    ),
+    all((from, to) =>
+      db.from("post_comments").select("id, post_id, body, created_at").eq("author_id", userId).order("created_at").order("id").range(from, to),
+    ),
+    all((from, to) =>
+      db.from("post_likes").select("post_id, created_at").eq("user_id", userId).order("created_at").order("post_id").range(from, to),
+    ),
   ]);
-  const failed = following.error ?? followers.error ?? posts.error ?? comments.error ?? likes.error;
-  if (failed) throw socialFailure(failed, "Could not export your social data.");
-  type Row = { status: string; created_at: string; accepted_at: string | null; profile: { username: string } };
-  const relation = (row: Row) => ({ username: row.profile.username, status: row.status, since: row.accepted_at ?? row.created_at });
+  const relation = (row: Relation) => ({ username: row.profile.username, status: row.status, since: row.accepted_at ?? row.created_at });
   return {
     profile: profile
       ? {
@@ -635,24 +654,32 @@ export async function exportSocialData(db: Db, userId: string) {
           useIdentityAvatar: profile.useIdentityAvatar,
         }
       : null,
-    following: ((following.data ?? []) as unknown as Row[]).map(relation),
-    followers: ((followers.data ?? []) as unknown as Row[]).map(relation),
-    posts: (posts.data ?? []).map((row) => ({
+    following: (following as unknown as Relation[]).map(relation),
+    followers: (followers as unknown as Relation[]).map(relation),
+    posts: posts.map((row) => ({
       id: row.id,
       caption: row.caption,
+      /** Exactly what the post shows, copied when it was posted. */
       session: {
         name: row.session_name,
         category: row.session_category,
         date: row.session_date,
         durationMinutes: row.session_duration_minutes,
       },
+      /** The workout totals the post shares; each is null unless the author chose to show it. */
+      workout: {
+        completed: row.workout_completed,
+        sets: row.workout_sets,
+        volume: row.workout_volume,
+        unit: row.workout_unit,
+      },
       createdAt: row.created_at,
       editedAt: row.edited_at,
     })),
     /** Comments the member wrote (on their own or others' posts). */
-    comments: (comments.data ?? []).map((row) => ({ id: row.id, postId: row.post_id, body: row.body, createdAt: row.created_at })),
+    comments: comments.map((row) => ({ id: row.id, postId: row.post_id, body: row.body, createdAt: row.created_at })),
     /** Posts the member liked. */
-    likes: (likes.data ?? []).map((row) => ({ postId: row.post_id, createdAt: row.created_at })),
+    likes: likes.map((row) => ({ postId: row.post_id, createdAt: row.created_at })),
   };
 }
 

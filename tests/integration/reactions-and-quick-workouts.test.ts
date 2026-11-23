@@ -228,9 +228,17 @@ describe.skipIf(!integrationReady)("quick workouts, workout posts, likes and com
       await likePost(cyd.db, postId);
       const commentId = await addComment(cyd.db, postId, "Exported comment");
       const data = await exportUserData(cyd.db, cyd.id);
-      expect(data.version).toBe(5);
-      expect(data.social.comments).toContainEqual(expect.objectContaining({ id: commentId, postId, body: "Exported comment" }));
-      expect(data.social.likes).toContainEqual(expect.objectContaining({ postId }));
+      expect(data.version).toBe(6);
+      expect(data.social!.comments).toContainEqual(expect.objectContaining({ id: commentId, postId, body: "Exported comment" }));
+      expect(data.social!.likes).toContainEqual(expect.objectContaining({ postId }));
+    });
+
+    it("keeps a quick workout quick and a post's shared totals (v6)", async () => {
+      const { sessionId } = await finishedQuickLift(ada, "Export lift");
+      const postId = await createPost(ada.db, ada.id, { sessionId, caption: "Totals", showsDuration: false, showsSets: true, showsVolume: true });
+      const data = await exportUserData(ada.db, ada.id);
+      expect(data.sessions.find((session) => session.id === sessionId)?.origin).toBe("quick");
+      expect(data.social!.posts.find((post) => post.id === postId)?.workout).toEqual({ completed: true, sets: 3, volume: 1000, unit: "kg" });
     });
   });
 });
