@@ -41,9 +41,19 @@ test("a quick workout left running can be resumed from its session page, with th
   // Leave, then come back the long way: the calendar's session page.
   await page.getByRole("link", { name: /Leave the workout/ }).click();
   await page.waitForURL("/home");
+  // The page with a workout in progress (and its Discard dialog) must hydrate
+  // without React rebuilding it: no invalid nesting, no server/client mismatch.
+  const hydrationErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" && /hydrat|cannot be a descendant|cannot contain a nested/i.test(message.text())) {
+      hydrationErrors.push(message.text());
+    }
+  });
   await page.goto(`/session/${sessionId}`);
   await hydrated(page);
   await expect(page.getByText("1 of 3 sets")).toBeVisible();
+  await expect(page.getByTestId("discard-workout")).toBeVisible();
+  expect(hydrationErrors).toEqual([]);
   await page.getByRole("link", { name: "Resume workout" }).click();
   await page.waitForURL(`/workout/${sessionId}`);
   await expect(page.getByRole("button", { name: /Deadlift: 1 of 3 sets/ })).toBeVisible();

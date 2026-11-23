@@ -40,10 +40,12 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
 
       <WorkoutCallout sessionId={session.id} log={log} />
       {log?.status === "in_progress" ? (
-        <p className="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-stone-600">
-          Started by mistake, or not training today?
+        // A div, not a p: the button carries its confirmation dialog, and a
+        // dialog inside a paragraph is invalid HTML React can't hydrate.
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-stone-600">
+          <span>Started by mistake, or not training today?</span>
           <DiscardWorkoutButton sessionId={session.id} name={session.name} quick={session.origin === "quick"} variant="link" />
-        </p>
+        </div>
       ) : null}
 
       <p className="mt-3 rounded-md bg-stone-100 px-3 py-2 text-sm text-stone-700">
