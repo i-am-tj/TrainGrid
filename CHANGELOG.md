@@ -7,6 +7,17 @@ in the app at `/whats-new`.
 
 ## [Unreleased]
 
+### Safer workout history
+
+- **Resume from the session page**: a workout you started and left, including a quick workout
+  from Home, now always shows **Resume workout** on its session page, with the sets you logged.
+  A session with nothing planned can be started there too, and you add exercises as you go.
+- **Deleting a session says what goes with it**: TrainGrid’s own dialog (no more browser pop-up)
+  names the workout you logged in it, which is deleted with the session, says that posts about it
+  stay up, and suggests changing the date if it is only on the wrong day.
+- **Who sees a post**: the session page no longer says a post goes only to your followers; the
+  post screen shows exactly who can read it before you post.
+
 ### Start now, share it, cheer each other on
 
 - **Start a workout from Home**: no planning needed. Pick Lift, Run, Plyo or Other and you’re

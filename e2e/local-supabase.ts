@@ -201,6 +201,17 @@ export async function createLocalSessionFor(userId: string, name: string, date: 
   return data.id;
 }
 
+/** A session with nothing planned in it (a blank session, or a quick workout's session). */
+export async function createLocalEmptySessionFor(userId: string, name: string, date: string): Promise<string> {
+  const { data, error } = await serviceClient()
+    .from("scheduled_sessions")
+    .insert({ user_id: userId, date, start_time: null, name, category: "other", snapshot: { version: 1, items: [] } })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return data.id;
+}
+
 /** A strength session for today with a loaded lift and a bodyweight move (live workout tests). */
 export async function createLocalWorkoutSessionFor(userId: string, name: string, date: string): Promise<string> {
   const item = (name: string, instruction: string, rest: string, equipment: string[]) => ({
