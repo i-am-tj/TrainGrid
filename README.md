@@ -134,7 +134,8 @@ Every release: [What’s new](https://github.com/i-am-tj/TrainGrid/blob/main/CHA
 - **Train with the plan.** Start a planned session on your phone and log each set (weight and reps, reps, or a tick). The rest timer starts from the plan’s rest, each exercise shows last time’s numbers, and a summary closes the workout. Sets save on the phone at once and reach TrainGrid when the connection returns; the planned session itself never changes.
 - **Today means your today.** “Today” follows your device’s time zone, on home and in the planner, from the very first page you open.
 - **Your profile.** Your plan in numbers, your data download, appearance, and What’s new, privacy and terms, behind your initials in the header.
-- **Train together (members only).** An optional social profile with a username, private by default. Follow members (private profiles approve requests first), post a short update about one of your sessions (its name, type, date and, if you choose, duration; never notes or exercises), and read the people you follow on `/feed`. Who sees what is decided by the database, not just the screen ([ADR 002](docs/adr/002-members-only-social-layer.md)).
+- **Start now.** **Start a workout** on Home with nothing planned: add exercises as you go, name it when you finish, and post about it.
+- **Train together (members only).** An optional social profile with a username, private by default. Follow members (private profiles approve requests first), post a short update about one of your sessions (its name, type, date and, if you choose, duration, sets done and volume; never notes or exercises), like and comment on posts, and read the people you follow on `/feed`. Who sees what is decided by the database, not just the screen ([ADR 002](docs/adr/002-members-only-social-layer.md)).
 
 Guides: **[Member guide](docs/GUIDE.md)** · **[Admin guide](docs/ADMIN.md)** · all docs in **[docs/](docs/README.md)**
 

@@ -147,7 +147,7 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
 ```json
 {
   "format": "traingrid-export",
-  "version": 4,
+  "version": 5,
   "exportedAt": "2026-11-13T09:00:00.000Z",
   "routines": [
     {
@@ -187,7 +187,9 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
     "posts": [
       { "id": "…", "caption": "Three blocks at threshold.", "createdAt": "2026-11-21T08:00:00.000Z", "editedAt": null,
         "session": { "name": "Tempo Tuesdays", "category": "running", "date": "2026-11-17", "durationMinutes": null } }
-    ]
+    ],
+    "comments": [ { "id": "…", "postId": "…", "body": "Huge!", "createdAt": "2026-11-22T09:10:00.000Z" } ],
+    "likes": [ { "postId": "…", "createdAt": "2026-11-22T09:09:00.000Z" } ]
   }
 }
 ```
@@ -195,7 +197,8 @@ Pending (neither accepted nor revoked), Accepted, or Revoked.
 It contains only the member’s PERSONAL routines, scheduled sessions, workout logs and social data:
 no GLOBAL routines, other members' content, invitations or account details. Other members appear
 only as the usernames the member follows or is followed by, never as ids or emails. There is no
-import. Version 4 added `social` (`profile` is null without a social profile); version 3 added
+import. Version 5 added `social.comments` (written by the member) and `social.likes` (posts they
+liked); version 4 added `social` (`profile` is null without a social profile); version 3 added
 `workoutLogs`; versions 1 and 2 had no logs.
 
 ## Social
@@ -212,6 +215,12 @@ import. Version 4 added `social` (`profile` is null without a social profile); v
 | | `session_name`, `session_category`, `session_date` | Copied from the session when posted; never change |
 | | `session_duration_minutes` | Copied only when `shows_duration`; else null |
 | | `edited_at` | Set when the caption changes |
+| | `workout_completed` | The session had a finished workout when posted |
+| | `workout_sets`, `workout_volume`, `workout_unit` | Sets done and Σ weight × reps (kg or lb) from that workout, each only when `shows_sets` / `shows_volume`; copied when posted, never change |
+| `post_likes` | (`post_id`, `user_id`) | One like per member per post |
+| `post_comments` | `body` | 1–500 characters, trimmed; not editable |
+| `scheduled_sessions` | `origin` | `planned` (default) or `quick` (started from Home) |
+| `workout_logs.entries` items | `mode`, `rest_seconds` | Optional, for exercises added during a free-form workout: `load` / `reps` / `done`, and 5–1800 s or null |
 
 Feed and timeline pages use an opaque cursor: base64url of `<created_at>|<post id>`, validated on
 the way back in.

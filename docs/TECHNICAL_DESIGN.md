@@ -83,8 +83,11 @@ member_feedback (user_id, kind, message, page_path; insert-only for members)
 profiles.id
       └── social_profiles.user_id   (optional; username, display_name, bio, visibility)
               ├── follows (follower_id, followee_id, status pending|accepted)
-              └── session_posts.author_id   (caption + snapshot of name, category, date, duration)
-                      └── session_id → scheduled_sessions (provenance; never readable by API roles)
+              └── session_posts.author_id   (caption + snapshot of name, category, date, duration,
+                      │                        and opt-in workout totals: sets, volume)
+                      ├── session_id → scheduled_sessions (provenance; never readable by API roles)
+                      ├── post_likes (post_id, user_id)
+                      └── post_comments (id, post_id, author_id, body)
 ```
 
 | Table | Key columns | Rules |
@@ -99,6 +102,8 @@ profiles.id
 | `member_feedback` | `user_id` (defaults to the caller), `kind`, `message`, `page_path` | Members may insert their own rows only (column grant + RLS), at most 10 per 24 h; nobody reads it through the API. |
 | `social_profiles` | `user_id` (defaults to the caller), `username` (unique, lower-case), `display_name`, `bio`, `visibility` (`private` default / `public`), `use_identity_avatar`, `avatar_url` (trigger-filled) | Optional. Basic identity visible to active members; only the owner writes it. |
 | `follows` | (`follower_id`, `followee_id`) key, `status` (`pending`/`accepted`), `accepted_at` | Status set by trigger from the followed profile's visibility; only the followed member approves; either side deletes. |
+| `post_likes` | (`post_id`, `user_id`) key | Visible where the post is; members insert and delete only their own. [ADR 003](adr/003-quick-workouts-likes-comments.md). |
+| `post_comments` | `post_id`, `author_id` (defaults to the caller), `body` (1–500) | Visible where the post is; deleted by their author or the post's author; not updatable; 100 a day. |
 | `session_posts` | `author_id` (defaults to the caller), `caption`, `shows_duration`, `session_name`, `session_category`, `session_date`, `session_duration_minutes`, `session_id` | Snapshot filled by trigger from the author's own session and never updatable; `session_id` not granted to API roles. Visible per [ADR 002](adr/002-members-only-social-layer.md). |
 
 Ownership columns are not updatable by members, so a row can never be reassigned. Exact shapes and

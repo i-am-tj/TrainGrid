@@ -99,8 +99,10 @@ or link previews.
 
 ## Consequences
 
-- Posts are text plus a session summary. Photos, likes, comments and performance sharing are out
-  of scope for this release and would each need their own decision.
+- Posts were text plus a session summary. Photos, likes, comments and performance sharing were out
+  of scope for this release. **Amended by [ADR 003](003-quick-workouts-likes-comments.md)**
+  (2026-11-23): posts may carry opt-in workout totals, and have likes and comments. Photos remain
+  out of scope.
 - Search uses `pg_trgm` GIN indexes on username and lower-cased display name.
 - The data download (`traingrid-export` v4) includes the member's social profile, relationships
   (by username) and posts.

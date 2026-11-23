@@ -69,6 +69,15 @@ against anything but a local URL.
     private posts; `noindex` headers; phone layouts and axe checks in light and dark; keyboard
     dialogs. In `supabase/tests/database/12_social.test.sql`, `tests/integration/social.test.ts`,
     `lib/social/model.test.ts` and `e2e/social.spec.ts`.
+14. **Quick workouts and reactions** — start from Home, add exercises during the workout (modes,
+    rest), reload keeps them, finish and name, discard removes the session; posts copy only the
+    ticked workout totals from the author's own completed log and never change; likes (once, own
+    only, counts, viewer state) and comments (validation, visibility, author and post-author
+    delete, no edits, 100 a day) follow the post's visibility, including after removal and
+    revocation; export v5; phone layout and axe checks. In
+    `supabase/tests/database/13_reactions_and_quick_workouts.test.sql`,
+    `tests/integration/reactions-and-quick-workouts.test.ts`, `lib/workouts/model.test.ts`,
+    `lib/social/model.test.ts` and `e2e/quick-workout-social.spec.ts`.
 
 Several suites were confirmed able to fail: with RLS disabled, with the admin check removed, and
 against a simulated exposed function, the relevant tests failed.
