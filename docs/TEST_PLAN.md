@@ -29,7 +29,9 @@ Some UI and E2E tests can also save the screenshots kept under `docs/images/epic
 `docs/images/live-workouts`. They do so only with `UI_SHOTS=1` (`tests/helpers/doc-images.ts`), so
 an ordinary run never changes committed files; the assertions run either way. To refresh them,
 for example `UI_SHOTS=1 npm run test:ui`. The guide and README images come from
-`npm run screenshots` instead.
+`npm run screenshots` instead. Use a dedicated local stack with an empty social directory for
+social screenshots. The capture checks the directory before seeding and cleans up its own users
+after each case. A populated directory stops the capture.
 
 ## Coverage map
 

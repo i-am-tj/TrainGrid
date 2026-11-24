@@ -15,10 +15,10 @@ url="$(value API_URL)"
 publishable="$(value PUBLISHABLE_KEY)"
 secret="$(value SECRET_KEY)"
 
-case "${url}" in
-  http://127.0.0.1:*|http://localhost:*) ;;
-  *) echo "Refusing a non-local Supabase URL: '${url}'" >&2; exit 1 ;;
-esac
+if ! [[ "${url}" =~ ^http://(127\.0\.0\.1|localhost):[0-9]{1,5}/?$ ]]; then
+  echo "Refusing a non-local Supabase URL." >&2
+  exit 1
+fi
 if [ -z "${publishable}" ] || [ -z "${secret}" ]; then
   echo "supabase status did not print PUBLISHABLE_KEY and SECRET_KEY" >&2
   exit 1

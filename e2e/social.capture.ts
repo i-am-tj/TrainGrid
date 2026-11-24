@@ -1,5 +1,4 @@
 import { mkdir } from "node:fs/promises";
-import { createClient } from "@supabase/supabase-js";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { addDays } from "../lib/calendar-date";
 import { todayIn } from "../lib/time-zone";
@@ -10,7 +9,8 @@ import {
   createLocalSocialProfile,
   makeLocalMember,
   signInAsNewLocalUser,
-  supabaseUrl,
+  requireEmptyCaptureDirectory,
+  serviceClient as admin,
 } from "./local-supabase";
 
 /**
@@ -28,11 +28,8 @@ const OUT = "docs/images/social";
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
 
-function admin() {
-  const key = process.env.SUPABASE_SECRET_KEY;
-  if (!key) throw new Error("SUPABASE_SECRET_KEY is not set");
-  return createClient(supabaseUrl, key, { auth: { persistSession: false } });
-}
+
+const captureUsers: string[] = [];
 
 async function otherMember(displayName: string) {
   const { data, error } = await admin().auth.admin.createUser({
@@ -41,6 +38,7 @@ async function otherMember(displayName: string) {
     email_confirm: true,
   });
   if (error || !data.user) throw new Error(error?.message);
+  captureUsers.push(data.user.id);
   await makeLocalMember(data.user.id, displayName);
   await backdateLocalProfile(data.user.id);
   return data.user.id;
@@ -68,12 +66,9 @@ async function session(userId: string, name: string, category: string, date: str
 const ago = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString();
 
 async function seed(context: BrowserContext, baseURL: string) {
-  // Fresh usernames on every run, and only these members on the local stack's
-  // People page (earlier local E2E runs leave throwaway profiles behind).
-  if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(supabaseUrl)) throw new Error("Local stack only");
-  await admin().from("social_profiles").delete().neq("username", "");
-
+  await requireEmptyCaptureDirectory();
   const { userId: alex } = await signInAsNewLocalUser(context, baseURL);
+  captureUsers.push(alex);
   await makeLocalMember(alex, "Alex Morgan");
   await backdateLocalProfile(alex);
   const sam = await otherMember("Sam Rivera");
@@ -166,6 +161,16 @@ async function shot(page: Page, name: string, fullPage = false) {
   await settle(page);
   await page.screenshot({ path: `${OUT}/${name}.png`, fullPage, animations: "disabled" });
 }
+
+test.afterEach(async () => {
+  // Follow edges and comments reference several fixtures. Concurrent cascades
+  // can lock the same rows in opposite orders.
+  const client = admin();
+  for (const id of captureUsers.splice(0)) {
+    const { error } = await client.auth.admin.deleteUser(id);
+    if (error) throw new Error("Could not clean up a capture user.");
+  }
+});
 
 test.beforeAll(async () => {
   await mkdir(OUT, { recursive: true });

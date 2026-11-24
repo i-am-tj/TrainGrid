@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { contrastRatio } from "../tests/helpers/contrast";
 import { accessibilityResults } from "../tests/helpers/accessibility";
+import { docImage } from "../tests/helpers/doc-images";
 import { createRoutine } from "./planner-helpers";
 import {
   hasLocalSecretKey,
@@ -35,11 +36,7 @@ async function audit(page: Page, name: string) {
     ).toBeGreaterThanOrEqual(3);
   }
   if (/^(planner|library)-/.test(name)) {
-    await mkdir("docs/images/epic-3/ui-04", { recursive: true });
-    await page.screenshot({
-      path: `docs/images/epic-3/ui-04/${name}.png`,
-      fullPage: true,
-    });
+    await docImage(page, `docs/images/epic-3/ui-04/${name}.png`, { fullPage: true });
   }
   const results = await accessibilityResults(page);
   await mkdir(folder, { recursive: true });

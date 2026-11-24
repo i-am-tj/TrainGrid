@@ -1,3 +1,4 @@
+import { isLocalSupabaseOrigin } from "./lib/supabase/local-origin";
 import { existsSync } from "fs";
 import path from "path";
 import { defineConfig, devices } from "@playwright/test";
@@ -5,6 +6,10 @@ import { defineConfig, devices } from "@playwright/test";
 // Give the test process the same local Supabase settings Next.js reads.
 const envFile = path.join(__dirname, ".env.local");
 if (existsSync(envFile)) process.loadEnvFile(envFile);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+if (supabaseUrl && !isLocalSupabaseOrigin(supabaseUrl)) {
+  throw new Error("Browser tests require a local Supabase project.");
+}
 
 /**
  * E2E_SERVER=build runs the suite against a production build (`next start`;

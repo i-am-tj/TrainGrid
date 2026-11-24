@@ -1,3 +1,4 @@
+import { isLocalSupabaseOrigin } from "../lib/supabase/local-origin";
 import type { BrowserContext } from "@playwright/test";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
@@ -26,18 +27,26 @@ export function hasLocalSecretKey(): boolean {
 }
 
 function assertLocal() {
-  if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(supabaseUrl)) {
+  if (!isLocalSupabaseOrigin(supabaseUrl)) {
     throw new Error("Refusing to create test users outside the local Supabase stack");
   }
 }
 
-function serviceClient() {
+export function serviceClient() {
   assertLocal();
   const secretKey = process.env.SUPABASE_SECRET_KEY;
   if (!secretKey) throw new Error("SUPABASE_SECRET_KEY is not set");
   return createClient(supabaseUrl, secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+}
+
+/** Keep member content out of public documentation screenshots. */
+export async function requireEmptyCaptureDirectory() {
+  const { count, error } = await serviceClient()
+    .from("social_profiles")
+    .select("user_id", { count: "exact", head: true });
+  if (error || count !== 0) throw new Error("Social screenshots require an empty local social directory.");
 }
 
 /** A cookie-backed client, so a sign-in produces the same cookies the app reads. */
