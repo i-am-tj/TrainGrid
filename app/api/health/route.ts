@@ -19,6 +19,7 @@ type Health = {
 /** One schema read per server instance per interval keeps the check cheap. */
 const SCHEMA_TTL_MS = 5 * 60_000;
 let schemaCache: { at: number; status: SchemaStatus } | null = null;
+let pendingSchemaRead: Promise<SchemaStatus> | null = null;
 
 /**
  * Reports whether this deployment can reach its Supabase project and whether
@@ -65,7 +66,13 @@ async function schemaStatus(url: string): Promise<SchemaStatus> {
   const secretKey = process.env.SUPABASE_SECRET_KEY?.trim();
   if (!secretKey || secretKey.startsWith("sb_publishable_")) return "unknown";
   if (schemaCache && Date.now() - schemaCache.at < SCHEMA_TTL_MS) return schemaCache.status;
+  pendingSchemaRead ??= readSchemaStatus(url, secretKey).finally(() => {
+    pendingSchemaRead = null;
+  });
+  return pendingSchemaRead;
+}
 
+async function readSchemaStatus(url: string, secretKey: string): Promise<SchemaStatus> {
   let status: SchemaStatus;
   try {
     const actual = await fetchSchemaShape(url, secretKey);
