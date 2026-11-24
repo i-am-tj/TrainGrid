@@ -12,6 +12,7 @@ import {
   savePersonalRoutine,
 } from "@/lib/data/routines";
 import {
+  countSessionsByWeek,
   createAdhocSession,
   deleteSession,
   duplicateWeek,
@@ -68,6 +69,25 @@ describe.skipIf(!integrationReady)("data layer (local Supabase)", () => {
     if (!integrationReady) return;
     await deleteTestUsers();
     await deleteGlobalRoutine(globalId);
+  });
+
+  it("lists, counts and duplicates a week past the Data API row cap", async () => {
+    const member = await createTestUser("large-week");
+    const sessions = Array.from({ length: 1001 }, (_, i) => ({
+      user_id: member.id,
+      date: MONDAY,
+      name: `Planned session ${i}`,
+      category: "other" as const,
+    }));
+    const { error } = await member.db.from("scheduled_sessions").insert(sessions);
+    expect(error).toBeNull();
+
+    const original = await listSessionsForWeek(member.db, member.id, WEEK);
+    expect.soft(new Set(original.map((row) => row.id)).size).toBe(sessions.length);
+    expect.soft(await countSessionsByWeek(member.db, member.id, [WEEK])).toEqual({ [WEEK]: sessions.length });
+    expect.soft(await duplicateWeek(member.db, member.id, { sourceWeekId: WEEK, destWeekId: NEXT_WEEK })).toBe(sessions.length);
+    const copies = await listSessionsForWeek(member.db, member.id, NEXT_WEEK);
+    expect(new Set(copies.map((row) => row.name))).toEqual(new Set(sessions.map((row) => row.name)));
   });
 
   describe("routines", () => {
