@@ -279,14 +279,14 @@ isOneToOne: false
                   ]
                 },"workout_logs": {
                   Row: {
-                    "created_at": string,"entries": NonNullable<Json>,"finished_at": string | null,"id": string,"notes": string,"session_id": string,"started_at": string,"status": string,"unit": string,"updated_at": string,"user_id": string
+                    "created_at": string,"entries": NonNullable<Json>,"finished_at": string | null,"id": string,"notes": string,"saved_by": string | null,"session_id": string,"started_at": string,"status": string,"unit": string,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"entries"?: NonNullable<Json>,"finished_at"?: string | null,"id"?: string,"notes"?: string,"session_id": string,"started_at"?: string,"status"?: string,"unit"?: string,"updated_at"?: string,"user_id"?: string
+                    "created_at"?: string,"entries"?: NonNullable<Json>,"finished_at"?: string | null,"id"?: string,"notes"?: string,"saved_by"?: string | null,"session_id": string,"started_at"?: string,"status"?: string,"unit"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Update: {
-                    "created_at"?: string,"entries"?: NonNullable<Json>,"finished_at"?: string | null,"id"?: string,"notes"?: string,"session_id"?: string,"started_at"?: string,"status"?: string,"unit"?: string,"updated_at"?: string,"user_id"?: string
+                    "created_at"?: string,"entries"?: NonNullable<Json>,"finished_at"?: string | null,"id"?: string,"notes"?: string,"saved_by"?: string | null,"session_id"?: string,"started_at"?: string,"status"?: string,"unit"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -321,12 +321,13 @@ isOneToOne: false
 { Args: { "p_delivery_id": string,"p_failure_code"?: string,"p_provider_message_id"?: string,"p_status": string }; Returns: string
                            },
 "finish_workout":
-{ Args: { "p_entries": Json,"p_finished_at": string,"p_name"?: string,"p_notes": string,"p_session_id": string,"p_unit": string }; Returns: {
+{ Args: { "p_device"?: string,"p_entries": Json,"p_expected_updated_at"?: string,"p_finished_at": string,"p_name"?: string,"p_notes": string,"p_session_id": string,"p_unit": string }; Returns: {
               "created_at": string,
 "entries": NonNullable<Json>,
 "finished_at": string | null,
 "id": string,
 "notes": string,
+"saved_by": string | null,
 "session_id": string,
 "started_at": string,
 "status": string,

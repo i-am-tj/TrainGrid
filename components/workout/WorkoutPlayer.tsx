@@ -16,6 +16,7 @@ import {
   initialEntries,
   newFreeFormExercise,
   REST_CHOICES,
+  isLaterVersion,
   summarize,
   weightStep,
   WEIGHT_UNITS,
@@ -31,6 +32,7 @@ import type { SessionType } from "@/lib/domain";
 import { parseYouTubeUrl } from "@/lib/youtube";
 import {
   clearLocalWorkout,
+  deviceId,
   haptic,
   readLocalWorkout,
   readPreference,
@@ -170,7 +172,12 @@ export function WorkoutPlayer({
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const active = phase === "active";
-  const autosave = useAutosave({ sessionId: session.id, enabled: phase !== "ready", progress: { unit, entries, notes } });
+  const autosave = useAutosave({
+    sessionId: session.id,
+    enabled: phase !== "ready",
+    progress: { unit, entries, notes },
+    version: log?.updatedAt ?? null,
+  });
   useWakeLock(active);
   const { prime, chime } = useChime();
   const now = useNow(active, rest ? 250 : 1000);
@@ -191,7 +198,13 @@ export function WorkoutPlayer({
     }
     const local = readLocalWorkout(session.id);
     if (!local) return;
-    if (log.status === "in_progress" && local.savedAt > Date.parse(log.updatedAt)) {
+    // This phone's copy wins when it has changes not saved yet, or when its
+    // last save landed after this page was rendered (a reload mid-save). A
+    // copy kept before versions has no base; for those, the newer of the two
+    // by this phone's clock wins, as before.
+    const pending = local.base ? local.pending === true : local.savedAt > Date.parse(log.updatedAt);
+    const ahead = !!local.base && !local.pending && isLaterVersion(local.base, log.updatedAt);
+    if (log.status === "in_progress" && (pending || ahead)) {
       const restored = align(local.entries);
       setPlans(restored.exercises);
       setEntries(restored.entries);
@@ -200,7 +213,10 @@ export function WorkoutPlayer({
       const index = Math.max(0, firstOpenExercise(restored.entries));
       setCurrent(index);
       setFocused(firstOpen(restored.entries.items[index]?.sets ?? []));
-      autosave.markDirty();
+      // Already on TrainGrid: nothing to save. Otherwise saved, unless another
+      // device saved since, in which case the member chooses.
+      if (ahead) autosave.adopt({ unit: local.unit, entries: restored.entries, notes: local.notes }, local.base!);
+      else autosave.restore(local.base ?? log.updatedAt, log);
     }
     if (log.status === "in_progress" && local.restEndsAt && local.restEndsAt > Date.now()) {
       setRest({ endsAt: local.restEndsAt, total: local.restTotal ?? 60, label: null });
@@ -368,7 +384,7 @@ export function WorkoutPlayer({
     setBusy("start");
     setProblem(null);
     prime();
-    const result = await startWorkoutAction(session.id, { unit, entries, notes: "" }).catch(() => null);
+    const result = await startWorkoutAction(session.id, { unit, entries, notes: "" }, deviceId()).catch(() => null);
     setBusy(null);
     if (!result?.ok) {
       setProblem(
@@ -379,9 +395,12 @@ export function WorkoutPlayer({
       return;
     }
     const aligned = align(result.value.entries);
+    // Already started on another device: that workout, with its notes, at its version.
+    autosave.adopt({ unit: result.value.unit, entries: aligned.entries, notes: result.value.notes }, result.value.updatedAt);
     setPlans(aligned.exercises);
     setEntries(aligned.entries);
     setUnit(result.value.unit);
+    setNotes(result.value.notes);
     setStartedAt(result.value.startedAt);
     const index = Math.max(0, firstOpenExercise(aligned.entries));
     setCurrent(index);
@@ -399,11 +418,16 @@ export function WorkoutPlayer({
       setProblem("Give your workout a name.");
       return;
     }
-    const result = await finishWorkoutAction(session.id, { unit, entries, notes }, at, session.quick ? name.trim() : undefined).catch(
-      () => null,
+    const result = await autosave.write((check) =>
+      finishWorkoutAction(session.id, { unit, entries, notes }, at, check, session.quick ? name.trim() : undefined),
     );
     setBusy(null);
     if (!result?.ok) {
+      // Saved on another device meanwhile: the member chooses a version first.
+      if (result?.reason === "conflict") {
+        setFinishOpen(false);
+        return;
+      }
       setProblem("Couldn’t finish just now — no connection? Your sets are saved on this phone. Try again in a moment.");
       return;
     }
@@ -415,6 +439,28 @@ export function WorkoutPlayer({
     haptic([20, 60, 40]);
     setPhase("summary");
     window.scrollTo({ top: 0 });
+  }
+
+  /** Replaces this device's unsaved changes with the version saved on another device. */
+  function takeOtherVersion() {
+    const other = autosave.conflict;
+    if (!other) return;
+    const aligned = align(other.entries);
+    autosave.adopt({ unit: other.unit, entries: aligned.entries, notes: other.notes }, other.updatedAt);
+    setPlans(aligned.exercises);
+    setEntries(aligned.entries);
+    setUnit(other.unit);
+    setNotes(other.notes);
+    setStartedAt(other.startedAt);
+    setFinishedAt(other.finishedAt);
+    const index = Math.max(0, firstOpenExercise(aligned.entries));
+    setCurrent(index);
+    setFocused(firstOpen(aligned.entries.items[index]?.sets ?? []));
+    if (other.status === "completed") {
+      setRest(null);
+      setPhase("summary");
+    }
+    setAnnouncement("Showing the version from your other device.");
   }
 
   async function discard() {
@@ -910,11 +956,84 @@ export function WorkoutPlayer({
           </button>
         </div>
       </Modal>
+
+      <ConflictDialog
+        mine={entries}
+        other={autosave.conflict}
+        onKeepMine={autosave.keepMine}
+        onTakeOther={takeOtherVersion}
+      />
     </div>
   );
 }
 
+/**
+ * Another device saved this workout while this one had unsaved changes.
+ * Nothing has been overwritten yet; the member picks which version stays.
+ */
+function ConflictDialog({
+  mine,
+  other,
+  onKeepMine,
+  onTakeOther,
+}: {
+  mine: WorkoutEntries;
+  other: WorkoutLog | null;
+  onKeepMine: () => void;
+  onTakeOther: () => void;
+}) {
+  const sets = (entries: WorkoutEntries) => {
+    const { setsDone } = summarize(entries);
+    return `${setsDone} ${setsDone === 1 ? "set" : "sets"} done`;
+  };
+  return (
+    <Modal
+      open={other !== null}
+      onClose={() => undefined}
+      dismissible={false}
+      initialFocus="[data-keep-mine]"
+      title="Changed on another device"
+      description="This workout was saved on another device while this one had changes that weren’t saved yet. Choose which version to keep. The other one is replaced."
+      className="max-w-md"
+    >
+      {other ? (
+        <dl className="mb-4 grid grid-cols-2 gap-2 text-sm">
+          <div className="rounded-lg border border-stone-200 px-3 py-2">
+            <dt className="text-stone-600">This device</dt>
+            <dd className="font-semibold text-stone-900">{sets(mine)}</dd>
+          </div>
+          <div className="rounded-lg border border-stone-200 px-3 py-2">
+            <dt className="text-stone-600">Other device</dt>
+            <dd className="font-semibold text-stone-900">
+              {sets(other.entries)}
+              {other.status === "completed" ? " · finished" : ""}
+            </dd>
+          </div>
+        </dl>
+      ) : null}
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          onClick={onTakeOther}
+          className="ui-control inline-flex min-h-12 items-center justify-center rounded-xl border border-stone-300 px-4 text-sm font-medium text-stone-800 hover:bg-stone-100"
+        >
+          Use the other version
+        </button>
+        <button
+          type="button"
+          data-keep-mine
+          onClick={onKeepMine}
+          className="ui-control inline-flex min-h-12 items-center justify-center rounded-xl bg-stone-900 px-4 text-sm font-semibold text-white hover:bg-stone-800"
+        >
+          Keep this device’s version
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 function SaveBadge({ state }: { state: SaveState }) {
+  if (state === "conflict") return <span className="font-medium text-amber-700">Not saved: changed on another device</span>;
   if (state === "offline") return <span className="font-medium text-amber-700">Saved on this phone</span>;
   if (state === "saving") return <span>Saving…</span>;
   return <span>Saved</span>;

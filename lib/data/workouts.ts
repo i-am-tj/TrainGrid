@@ -28,14 +28,59 @@ import { validate } from "./validate";
  * defaults to the caller in the database.
  */
 
-const LOG_COLUMNS = "id, session_id, status, started_at, finished_at, unit, entries, notes, updated_at";
+const LOG_COLUMNS = "id, session_id, status, started_at, finished_at, unit, entries, notes, updated_at, saved_by";
 
 type LogRow = Pick<
   Tables<"workout_logs">,
   "id" | "session_id" | "status" | "started_at" | "finished_at" | "unit" | "entries" | "notes" | "updated_at"
->;
+> &
+  // Read for the workout screen; the data export leaves it out.
+  Partial<Pick<Tables<"workout_logs">, "saved_by">>;
 
 const NOT_FOUND = () => new DataError("not_found", "Workout not found.");
+
+/**
+ * The workout was saved from another device after this one last saw it.
+ * Carries that newer version, so the member can choose which one to keep.
+ */
+export class WorkoutConflictError extends Error {
+  constructor(readonly latest: WorkoutLog) {
+    super("The workout was changed on another device.");
+    this.name = "WorkoutConflictError";
+  }
+}
+
+/**
+ * How a write checks that it is not overwriting another device's save.
+ *
+ *   expectedUpdatedAt  the log's version (`updated_at`) as the device last saw it
+ *   device             the device's own random id, recorded as `saved_by`
+ *
+ * The write applies if the log is still at that version, or if this device
+ * made the last save (its own save whose reply was lost). Otherwise it throws
+ * WorkoutConflictError with the newer log. The app always sends both; leaving
+ * them out writes unconditionally.
+ */
+export type WriteCheck = { expectedUpdatedAt?: unknown; device?: unknown };
+
+/** A version the server handed out (`updated_at`), sent back unchanged. It goes into a filter, so only this shape. */
+const versionSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/, "Unknown version.");
+
+function writeCheck(raw: WriteCheck | undefined): { expected?: string; device?: string } {
+  return {
+    expected: raw?.expectedUpdatedAt === undefined ? undefined : validate(versionSchema, raw.expectedUpdatedAt),
+    device: raw?.device === undefined ? undefined : validate(idSchema, raw.device),
+  };
+}
+
+/** After a refused write: the log as it is now, or not found. */
+async function conflictOrNotFound(db: Db, userId: string, id: string): Promise<never> {
+  const latest = await getWorkoutLog(db, userId, id);
+  if (!latest) throw NOT_FOUND();
+  throw new WorkoutConflictError(latest);
+}
 
 function entriesFromJson(value: Json): WorkoutEntries {
   const parsed = workoutEntriesSchema.safeParse(value);
@@ -62,6 +107,7 @@ export function logFromRow(row: LogRow): WorkoutLog {
     entries: entriesFromJson(row.entries),
     notes: row.notes,
     updatedAt: row.updated_at,
+    ...(row.saved_by === undefined ? {} : { savedBy: row.saved_by }),
   };
 }
 
@@ -94,16 +140,24 @@ export async function startWorkout(
   userId: string,
   rawSessionId: unknown,
   input: WorkoutProgress,
+  rawDevice?: unknown,
 ): Promise<WorkoutLog> {
   const id = sessionId(rawSessionId);
   const parsed = validate(workoutProgressSchema, input);
+  const { device } = writeCheck({ device: rawDevice });
 
   const existing = await getWorkoutLog(db, userId, id);
   if (existing) return existing;
 
   const { data, error } = await db
     .from("workout_logs")
-    .insert({ session_id: id, unit: parsed.unit, entries: entriesToJson(parsed.entries), notes: parsed.notes })
+    .insert({
+      session_id: id,
+      unit: parsed.unit,
+      entries: entriesToJson(parsed.entries),
+      notes: parsed.notes,
+      ...(device === undefined ? {} : { saved_by: device }),
+    })
     .select(LOG_COLUMNS)
     .single();
   if (error) {
@@ -119,24 +173,42 @@ export async function startWorkout(
   return logFromRow(data);
 }
 
-/** Saves progress (sets, unit, notes). Returns when it was saved. */
+/**
+ * Saves progress (sets, unit, notes). Returns the new version (`updated_at`).
+ * With `check`, refuses to overwrite another device's newer save (WriteCheck).
+ */
 export async function saveWorkout(
   db: Db,
   userId: string,
   rawSessionId: unknown,
   input: WorkoutProgress,
+  check?: WriteCheck,
 ): Promise<string> {
   const id = sessionId(rawSessionId);
   const parsed = validate(workoutProgressSchema, input);
-  const { data, error } = await db
+  const { expected, device } = writeCheck(check);
+  let query = db
     .from("workout_logs")
-    .update({ unit: parsed.unit, entries: entriesToJson(parsed.entries), notes: parsed.notes })
+    .update({
+      unit: parsed.unit,
+      entries: entriesToJson(parsed.entries),
+      notes: parsed.notes,
+      ...(device === undefined ? {} : { saved_by: device }),
+    })
     .eq("session_id", id)
-    .eq("user_id", userId)
-    .select("updated_at")
-    .maybeSingle();
+    .eq("user_id", userId);
+  if (expected !== undefined) {
+    // Both values are validated above (a timestamp and a uuid), so they are safe in the filter.
+    query = device === undefined
+      ? query.eq("updated_at", expected)
+      : query.or(`updated_at.eq."${expected}",saved_by.eq.${device}`);
+  }
+  const { data, error } = await query.select("updated_at").maybeSingle();
   if (error) throw new Error("Could not save the workout.");
-  if (!data) throw NOT_FOUND();
+  if (!data) {
+    if (expected !== undefined) return conflictOrNotFound(db, userId, id);
+    throw NOT_FOUND();
+  }
   return data.updated_at;
 }
 
@@ -151,6 +223,9 @@ const quickNameSchema = z.string().trim().min(1, "Name your workout.").max(200, 
  * For a quick workout, `name` is the name given at the finish: the session
  * takes it and the time actually trained in the same transaction, so a
  * workout is never left finished under its placeholder name (F18).
+ *
+ * With `check`, a log saved from another device since is not finished, and
+ * WorkoutConflictError carries it (WriteCheck).
  */
 export async function finishWorkout(
   db: Db,
@@ -159,10 +234,12 @@ export async function finishWorkout(
   input: WorkoutProgress,
   rawFinishedAt: unknown,
   rawName?: unknown,
+  check?: WriteCheck,
 ): Promise<WorkoutLog> {
   const id = sessionId(rawSessionId);
   const parsed = validate(workoutProgressSchema, input);
   const name = rawName === undefined ? undefined : validate(quickNameSchema, rawName);
+  const { expected, device } = writeCheck(check);
   const requested = typeof rawFinishedAt === "string" ? Date.parse(rawFinishedAt) : Number.NaN;
 
   const { data, error } = await db
@@ -174,10 +251,13 @@ export async function finishWorkout(
       // Unreadable: now. The database keeps it within (started, now] either way.
       p_finished_at: new Date(Number.isFinite(requested) ? requested : Date.now()).toISOString(),
       ...(name === undefined ? {} : { p_name: name }),
+      ...(expected === undefined ? {} : { p_expected_updated_at: expected }),
+      ...(device === undefined ? {} : { p_device: device }),
     })
     .maybeSingle();
   if (error) {
     if (error.code === "P0002") throw NOT_FOUND();
+    if (error.code === "40001") return conflictOrNotFound(db, userId, id);
     throw new Error("Could not finish the workout.");
   }
   if (!data) throw NOT_FOUND();

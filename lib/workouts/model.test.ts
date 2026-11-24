@@ -6,6 +6,7 @@ import {
   formatPerformance,
   formatVolume,
   initialEntries,
+  isLaterVersion,
   latestPerformances,
   parseReps,
   parseRestSeconds,
@@ -311,5 +312,14 @@ describe("free-form workouts", () => {
     expect(trainedMinutes("2026-11-23T06:00:00Z", "2026-11-23T06:00:05Z")).toBe(1);
     expect(trainedMinutes("2026-11-23T06:00:00Z", "2026-11-25T06:00:00Z")).toBe(1440);
     expect(trainedMinutes("bad", "worse")).toBe(1);
+  });
+});
+
+describe("isLaterVersion", () => {
+  it("orders TrainGrid versions to the microsecond, whatever their written precision", () => {
+    expect(isLaterVersion("2026-11-24T19:24:00.69226+00:00", "2026-11-24T19:24:00.692259+00:00")).toBe(true);
+    expect(isLaterVersion("2026-11-24T19:24:00.692259+00:00", "2026-11-24T19:24:00.69226+00:00")).toBe(false);
+    expect(isLaterVersion("2026-11-24T19:24:01+00:00", "2026-11-24T19:24:00.999999+00:00")).toBe(true);
+    expect(isLaterVersion("2026-11-24T19:24:00.5+00:00", "2026-11-24T19:24:00.500000+00:00")).toBe(false);
   });
 });

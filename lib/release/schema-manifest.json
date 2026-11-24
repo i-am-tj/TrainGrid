@@ -142,6 +142,7 @@
       "finished_at",
       "id",
       "notes",
+      "saved_by",
       "session_id",
       "started_at",
       "status",
