@@ -7,16 +7,17 @@ and the test jobs use the fixed development keys of a local Supabase stack start
 
 | Job | Runs |
 | --- | --- |
-| `checks` | `npm run lint`, `npm run typecheck`, `npm test`, `npm run scan:secrets`, `npm run build` |
-| `database` | `npm run supabase:start`, then `npm run db:test` (pgTAP) and `npm run test:integration` |
-| `e2e` | `npm run supabase:start`, `npm run build`, then `npm run test:e2e` with `E2E_SERVER=build` (Playwright, Chromium, against `next start`). A failed test is retried once and reported as flaky if it then passes. The report is uploaded as an artifact when the job fails. |
+| `checks` | Lint, typecheck, unit tests, secret scan, production dependency audit, static asset budget and production build. |
+| `database` | Fresh local stack, exact schema manifest, pgTAP and authenticated integration tests. |
+| `e2e` | Production build, Chromium E2E with `E2E_SERVER=build`, component UI suite and production accessibility/performance audit. The E2E suite retries a failure once. A failing job uploads the available Playwright results and UI audit evidence. |
 
 [`scripts/ci-supabase-env.sh`](../scripts/ci-supabase-env.sh) reads the local stack's URL,
 publishable key and secret key from `supabase status` and hands them to the later steps. It
 refuses any URL that is not `127.0.0.1` or `localhost`.
 
-Not in CI yet: `npm run test:ui`, `npm run test:assets` and `npm run test:audit`. Run them locally
-before a release (`npm run test:all` runs everything).
+The three browser suites run sequentially in the same job. The production audit reuses its
+local database and optimized build. Run `npm run test:all` for the local product suites and
+`npm audit --omit=dev` for the production dependency check.
 
 ## Reproduce locally
 
