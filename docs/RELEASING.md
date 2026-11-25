@@ -72,9 +72,11 @@ After the release's last PR is merged:
      supabase db push --remote --dry-run` lists none). Each should have been applied before its PR
      merged ([Changes that need a migration](#changes-that-need-a-migration)). Check Supabase →
      Advisors;
-   - **schema gate**: check that production has every table, column and function `main` needs.
-     It only reads the Data API's schema, and exits non-zero (listing what is missing) when a
-     migration has not been applied. Do not deploy, or roll back, until it passes:
+   - **schema gate**: check that production has every table, column, function and migration
+     `main` needs. It reads the Data API's schema and the project's migration history (both with
+     the secret key), and exits non-zero, listing what is missing, when a migration has not been
+     applied, including one that only changes a function body or a trigger. Do not deploy, or
+     roll back, until it passes:
 
      ```bash
      NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co SUPABASE_SECRET_KEY=<secret key> npm run release:check

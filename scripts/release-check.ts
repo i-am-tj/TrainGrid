@@ -43,7 +43,10 @@ async function main() {
 
   if (args.has("--write")) {
     writeFileSync(manifestPath, `${JSON.stringify(actual, null, 2)}\n`);
-    console.log(`Wrote ${path.relative(root, manifestPath)}: ${Object.keys(actual.tables).length} tables, ${actual.functions.length} functions.`);
+    console.log(
+      `Wrote ${path.relative(root, manifestPath)}: ${Object.keys(actual.tables).length} tables, ` +
+        `${actual.functions.length} functions, ${actual.migrations?.length ?? 0} migrations.`,
+    );
     return;
   }
 
@@ -70,7 +73,7 @@ async function main() {
         "Apply the missing migrations in supabase/migrations/ before deploying (supabase/README.md).",
     );
   }
-  console.log(`✓ ${target} has every table, column and function this checkout needs.`);
+  console.log(`✓ ${target} has every table, column, function and migration this checkout needs.`);
 }
 
 function fail(message: string): never {
