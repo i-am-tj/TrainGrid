@@ -4,6 +4,38 @@ A release is a Git tag and a GitHub release whose notes come from [CHANGELOG.md]
 the same notes appear in the app at `/whats-new`. Deployment is separate: Vercel deploys `main` on
 every merge, and production database changes are applied by the owner (see `supabase/README.md`).
 
+## Changes that need a migration
+
+Merging is deploying: Vercel puts every merge to `main` live within a minute. So a PR whose code
+needs a new migration merges only **after** that migration is on production. Otherwise the new
+build runs against the old schema until someone applies it.
+
+For such a PR:
+
+1. Write the migration so the build that is live now keeps working with it: add columns and
+   parameters with defaults, never drop or rename something the live build uses. A change that
+   cannot be made that way is split across two PRs: the first adds the new shape, the second,
+   merged after the first is live, removes the old one.
+2. Say in the PR description which migration it needs, and that the live build works with it.
+3. When the PR is reviewed and CI is green, apply the migration to production from the PR's
+   branch, up to date with `main` (`supabase/README.md`). The dry run must list only this PR's
+   migrations; if it lists others, production is behind `main`, so stop and find out why first.
+
+   ```bash
+   npx supabase db push --remote --dry-run
+   npx supabase db push --remote
+   ```
+
+4. Merge. Once Vercel has deployed, `/api/health` answers `200` with `"schema":"ok"`.
+
+If the PR is then closed instead, its migration stays on production but not in `main`: undo it with
+a new migration in a PR of its own.
+
+On 25 November 2026, #95 merged before its migration was applied. Its build was live for about 27
+minutes against a schema without the column it reads, so starting, saving and finishing workouts could not
+work until the migration was applied. The same push also applied two migrations from #86, merged
+on 23 November without reaching production; the dry run in step 3 catches that.
+
 ## Versions
 
 [Semantic Versioning](https://semver.org/). TrainGrid reached **1.0.0** on 18 November 2026, its
@@ -36,8 +68,10 @@ After the release's last PR is merged:
    - refresh the screenshots if screens changed: `npm run screenshots`.
 2. Open a PR, check CI is green, review and merge it.
 3. Production checklist (owner):
-   - apply any new migrations in `supabase/migrations/` to the production project **before or
-     with** the deploy, and check Supabase → Advisors;
+   - check that every migration in `supabase/migrations/` is on the production project (`npx
+     supabase db push --remote --dry-run` lists none). Each should have been applied before its PR
+     merged ([Changes that need a migration](#changes-that-need-a-migration)). Check Supabase →
+     Advisors;
    - **schema gate**: check that production has every table, column and function `main` needs.
      It only reads the Data API's schema, and exits non-zero (listing what is missing) when a
      migration has not been applied. Do not deploy, or roll back, until it passes:
@@ -81,4 +115,5 @@ Never move a tag that has a published release.
 
 - Release notes contain no secrets, personal emails, user ids or private schedule data.
 - A release never runs database migrations or seeds; it only records what is on `main`.
+- A PR that needs a migration merges only after the migration is on production.
 - Record each release in `agents/ROADMAP.md`.
