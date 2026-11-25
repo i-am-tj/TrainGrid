@@ -138,10 +138,8 @@ linking, so the conventions above still matter.
 - `npm audit --omit=dev` must report no vulnerabilities before a release.
 - Dependabot security updates raise pull requests for vulnerable dependencies; review them like any
   other change and run `npm run test:all`.
-- Known and accepted: moderate advisories in the lint toolchain (`typescript-eslint`, `minimatch`
-  through `eslint-config-next`). They affect only linting on a developer machine; npm's suggested
-  fix is a downgrade to the Next 15 config, which is wrong for this app. Revisit when a patched
-  `typescript-eslint` is released.
+- PR #87 updated the lint toolchain for the minimatch advisory. The full lockfile audit on
+  24 November 2026 reported zero advisories. Recheck the current lockfile at release time.
 
 ## Error reports and alerts
 

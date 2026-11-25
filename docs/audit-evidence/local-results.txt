@@ -1,0 +1,66 @@
+TrainGrid · 24 November 2026
+Baseline 2547e5ce2d76cc416576ba7470c0716f448d155d
+Selected assertion and runner summary lines. All accounts in these runs were synthetic.
+
+Baseline unit
+Test Files  39 passed (39)
+Tests  368 passed (368)
+
+Baseline integration
+Test Files  8 passed (8)
+Tests  102 passed (102)
+
+Baseline Chromium
+4 failed
+211 passed (8.2m)
+
+Calendar regression on main
+AssertionError: expected 1000 to be 1001 // Object.is equality
+
+Cold-health regression on main
+AssertionError: expected "fetchSchemaShape" to be called 1 times, but got 4 times
+
+Final unit with V8
+Test Files  41 passed (41)
+Tests  372 passed (372)
+
+Final integration
+Test Files  8 passed (8)
+Tests  103 passed (103)
+
+Final pgTAP
+Files=16, Tests=495,  1 wallclock secs ( 0.05 usr  0.02 sys +  0.07 cusr  0.04 csys =  0.18 CPU)
+Result: PASS
+
+Combined Chromium
+216 passed (4.4m)
+
+Final-build HTTP/protection smoke
+10 passed (4.3s)
+
+Final component browser
+51 passed (24.7s)
+
+Final optimized-app audit
+8 passed (19.7s)
+
+Firefox and WebKit smoke
+8 passed (1.8m)
+
+Clean-stack documentation capture
+4 passed (17.8s)
+
+Final loopback HTTP sample
+endpoint       concurrency    requests    status    p50 ms    p95 ms
+/api/health              1          48       200       2.1       6.9
+/api/health              4          48       200       4.6       8.4
+/api/health              8          48       200       8.5      10.8
+/api/health             16          48       200      14.9      19.4
+/login                   1          48       200       3.8       7.4
+/login                   4          48       200      14.0      17.9
+/login                   8          48       200      25.8      31.6
+/login                  16          48       200      51.2      61.4
+/api/export              1          48       401       0.6       1.4
+/api/export              4          48       401       1.5       2.4
+/api/export              8          48       401       3.0       4.1
+/api/export             16          48       401       6.0       6.9
