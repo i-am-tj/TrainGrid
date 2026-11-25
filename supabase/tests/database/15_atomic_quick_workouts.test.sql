@@ -35,17 +35,17 @@ select ok(
   'start_quick_workout runs as the caller (SECURITY INVOKER)'
 );
 select ok(
-  not (select prosecdef from pg_proc where oid = 'public.finish_workout(uuid, text, jsonb, text, timestamptz, text)'::regprocedure),
+  not (select prosecdef from pg_proc where oid = 'public.finish_workout(uuid, text, jsonb, text, timestamptz, text, timestamptz, uuid)'::regprocedure),
   'finish_workout runs as the caller (SECURITY INVOKER)'
 );
 select ok(
   not has_function_privilege('anon', 'public.start_quick_workout(uuid, date, text, text, text, jsonb)', 'execute')
-    and not has_function_privilege('anon', 'public.finish_workout(uuid, text, jsonb, text, timestamptz, text)', 'execute'),
+    and not has_function_privilege('anon', 'public.finish_workout(uuid, text, jsonb, text, timestamptz, text, timestamptz, uuid)', 'execute'),
   'anon can call neither'
 );
 select ok(
   has_function_privilege('authenticated', 'public.start_quick_workout(uuid, date, text, text, text, jsonb)', 'execute')
-    and has_function_privilege('authenticated', 'public.finish_workout(uuid, text, jsonb, text, timestamptz, text)', 'execute'),
+    and has_function_privilege('authenticated', 'public.finish_workout(uuid, text, jsonb, text, timestamptz, text, timestamptz, uuid)', 'execute'),
   'signed-in members can call both'
 );
 

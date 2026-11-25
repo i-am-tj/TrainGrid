@@ -5,7 +5,14 @@ import { redirect } from "next/navigation";
 import { DataError } from "@/lib/data/model";
 import { memberData } from "@/lib/data/server";
 import { deleteSession, getSession } from "@/lib/data/sessions";
-import { discardWorkout, finishWorkout, saveWorkout, startQuickWorkout, startWorkout } from "@/lib/data/workouts";
+import {
+  WorkoutConflictError,
+  discardWorkout,
+  finishWorkout,
+  saveWorkout,
+  startQuickWorkout,
+  startWorkout,
+} from "@/lib/data/workouts";
 import { getRequestToday } from "@/lib/today";
 import type { WorkoutLog, WorkoutProgress } from "./model";
 
@@ -17,12 +24,17 @@ import type { WorkoutLog, WorkoutProgress } from "./model";
  * and Row Level Security checks ownership again.
  */
 
-export type WorkoutActionResult<T> = { ok: true; value: T } | { ok: false; reason: "invalid" | "not_found" | "failed" };
+export type WorkoutActionResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; reason: "invalid" | "not_found" | "failed" }
+  /** Saved from another device since this one last saw it; `latest` is that version. */
+  | { ok: false; reason: "conflict"; latest: WorkoutLog };
 
 async function attempt<T>(run: () => Promise<T>): Promise<WorkoutActionResult<T>> {
   try {
     return { ok: true, value: await run() };
   } catch (error) {
+    if (error instanceof WorkoutConflictError) return { ok: false, reason: "conflict", latest: error.latest };
     if (error instanceof DataError) return { ok: false, reason: error.code === "unavailable" ? "failed" : error.code };
     // memberData() redirects a signed-out visitor; let Next handle that.
     if (error instanceof Error && "digest" in error) throw error;
@@ -38,34 +50,51 @@ function revalidateMemberPages() {
 export async function startWorkoutAction(
   sessionId: string,
   progress: WorkoutProgress,
+  device: string,
 ): Promise<WorkoutActionResult<WorkoutLog>> {
   const { db, userId } = await memberData();
-  const result = await attempt(() => startWorkout(db, userId, sessionId, progress));
+  const result = await attempt(() => startWorkout(db, userId, sessionId, progress, device));
   if (result.ok) revalidateMemberPages();
   return result;
 }
 
+/** The version this device last saw and its own id: see WriteCheck. */
+export type WorkoutWriteCheck = { expectedUpdatedAt: string; device: string };
+
+/**
+ * Saves progress unless another device saved since this one last saw the log.
+ * Returns the new version, or a conflict with the newer log. A missing check
+ * is refused as invalid, never treated as "overwrite".
+ */
 export async function saveWorkoutAction(
   sessionId: string,
   progress: WorkoutProgress,
+  check: WorkoutWriteCheck,
 ): Promise<WorkoutActionResult<string>> {
   const { db, userId } = await memberData();
-  return attempt(() => saveWorkout(db, userId, sessionId, progress));
+  return attempt(() => saveWorkout(db, userId, sessionId, progress, required(check)));
+}
+
+/** From the client, so possibly missing: null fields fail validation. */
+function required(check: WorkoutWriteCheck | undefined) {
+  return { expectedUpdatedAt: check?.expectedUpdatedAt ?? null, device: check?.device ?? null };
 }
 
 /**
  * Finishes the workout. For a quick workout, `name` is the name the member
  * gave it at the finish, and the session records the time actually trained,
- * in the same transaction as the finish.
+ * in the same transaction as the finish. Like a save, it does not overwrite
+ * another device's newer save.
  */
 export async function finishWorkoutAction(
   sessionId: string,
   progress: WorkoutProgress,
   finishedAt: string,
+  check: WorkoutWriteCheck,
   name?: string,
 ): Promise<WorkoutActionResult<WorkoutLog>> {
   const { db, userId } = await memberData();
-  const result = await attempt(() => finishWorkout(db, userId, sessionId, progress, finishedAt, name));
+  const result = await attempt(() => finishWorkout(db, userId, sessionId, progress, finishedAt, name, required(check)));
   if (result.ok) revalidateMemberPages();
   return result;
 }

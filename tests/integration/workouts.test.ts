@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DataError } from "@/lib/data/model";
 import { createAdhocSession, getSession, listSessionsForWeek } from "@/lib/data/sessions";
 import {
+  WorkoutConflictError,
   discardWorkout,
   finishWorkout,
   getWorkoutLog,
@@ -125,5 +126,83 @@ describe.skipIf(!integrationReady)("workout logs (local Supabase)", () => {
     await discardWorkout(a.db, a.id, session.id);
     expect(await getWorkoutLog(a.db, a.id, session.id)).toBeNull();
     expect((await getSession(a.db, a.id, session.id))?.workoutStatus).toBeNull();
+  });
+
+  const PHONE = "0e000000-0000-4000-8000-0000000000a1";
+  const TABLET = "0e000000-0000-4000-8000-0000000000b2";
+
+  it("two devices: a save made on a stale version is refused, not applied over the newer one", async () => {
+    const { session, entries } = await sessionWithLift(a, "IT Two devices");
+    const loaded = await startWorkout(a.db, a.id, session.id, { unit: "kg", entries }, PHONE);
+    expect(loaded.savedBy).toBe(PHONE);
+    const phone = withSets(entries, [{ weight: 60, reps: 8, done: true }]);
+    const tablet = withSets(entries, [{ weight: 70, reps: 6, done: true }]);
+
+    // Both devices opened the workout at the same version. The phone saves first.
+    const phoneVersion = await saveWorkout(a.db, a.id, session.id, { unit: "kg", entries: phone, notes: "" }, {
+      expectedUpdatedAt: loaded.updatedAt,
+      device: PHONE,
+    });
+    expect(phoneVersion).not.toBe(loaded.updatedAt);
+
+    // The tablet's save still carries the version it loaded.
+    const fromTablet = { expectedUpdatedAt: loaded.updatedAt, device: TABLET };
+    const refused = await saveWorkout(a.db, a.id, session.id, { unit: "kg", entries: tablet, notes: "" }, fromTablet).catch(
+      (error: unknown) => error,
+    );
+    expect(refused).toBeInstanceOf(WorkoutConflictError);
+    expect((refused as WorkoutConflictError).latest).toMatchObject({ updatedAt: phoneVersion, savedBy: PHONE, entries: phone });
+    expect((await getWorkoutLog(a.db, a.id, session.id))?.entries).toEqual(phone);
+
+    // Finishing from the stale version is refused the same way.
+    const stale = await finishWorkout(
+      a.db, a.id, session.id, { unit: "kg", entries: tablet, notes: "" }, new Date().toISOString(), undefined, fromTablet,
+    ).catch((error: unknown) => error);
+    expect(stale).toBeInstanceOf(WorkoutConflictError);
+    expect((await getWorkoutLog(a.db, a.id, session.id))?.status).toBe("in_progress");
+
+    // Keeping the tablet's version means saving it on top of the version it was shown.
+    const kept = await saveWorkout(a.db, a.id, session.id, { unit: "kg", entries: tablet, notes: "" }, {
+      expectedUpdatedAt: phoneVersion,
+      device: TABLET,
+    });
+    const finished = await finishWorkout(
+      a.db, a.id, session.id, { unit: "kg", entries: tablet, notes: "Kept" }, new Date().toISOString(), undefined,
+      { expectedUpdatedAt: kept, device: TABLET },
+    );
+    expect(finished).toMatchObject({ status: "completed", notes: "Kept", entries: tablet, savedBy: TABLET });
+  });
+
+  it("a device's own save whose reply was lost is not a conflict", async () => {
+    const { session, entries } = await sessionWithLift(a, "IT Lost reply");
+    const loaded = await startWorkout(a.db, a.id, session.id, { unit: "kg", entries }, PHONE);
+    const check = { expectedUpdatedAt: loaded.updatedAt, device: PHONE };
+    const first = withSets(entries, [{ weight: 60, reps: 8, done: true }]);
+    const more = withSets(entries, [{ weight: 60, reps: 8, done: true }, { weight: 60, reps: 8, done: true }]);
+
+    // The first save reached TrainGrid but the phone never heard back, so it retries from the old version.
+    await saveWorkout(a.db, a.id, session.id, { unit: "kg", entries: first, notes: "" }, check);
+    await saveWorkout(a.db, a.id, session.id, { unit: "kg", entries: more, notes: "" }, check);
+    const finished = await finishWorkout(
+      a.db, a.id, session.id, { unit: "kg", entries: more, notes: "" }, new Date().toISOString(), undefined, check,
+    );
+    expect(finished.entries).toEqual(more);
+  });
+
+  it("a checked save of another member's workout is not found, never a conflict that reveals it", async () => {
+    const { session, entries } = await sessionWithLift(a, "IT Checked other");
+    const loaded = await startWorkout(a.db, a.id, session.id, { unit: "kg", entries }, PHONE);
+    const check = { expectedUpdatedAt: loaded.updatedAt, device: TABLET };
+    await rejects(saveWorkout(b.db, b.id, session.id, { unit: "kg", entries, notes: "" }, check), "not_found");
+    await rejects(
+      finishWorkout(b.db, b.id, session.id, { unit: "kg", entries, notes: "" }, new Date().toISOString(), undefined, check),
+      "not_found",
+    );
+    // Only a version as the server writes it, and a uuid, reach the filter.
+    await rejects(
+      saveWorkout(a.db, a.id, session.id, { unit: "kg", entries, notes: "" }, { ...check, expectedUpdatedAt: 'x",id.neq.0' }),
+      "invalid",
+    );
+    await rejects(saveWorkout(a.db, a.id, session.id, { unit: "kg", entries, notes: "" }, { ...check, device: "phone" }), "invalid");
   });
 });

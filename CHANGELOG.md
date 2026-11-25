@@ -22,6 +22,11 @@ in the app at `/whats-new`.
   “Recovery” and “Progression”. That advice is now in Main’s notes (“Next time: …”), and the
   walk or jog between repetitions is Main’s rest. Sessions you already scheduled keep the steps
   they were copied with.
+- **One workout, two devices**: if you log sets on one device while the same workout is open on
+  another, the second device no longer overwrites the first. It asks which version to keep, and
+  a phone that reopens a workout with sets it never saved asks the same before replacing newer
+  ones. A save that reached TrainGrid when your phone lost its signal is still recognised as its
+  own.
 - **No half-started workouts**: if the connection drops just as you tap **Start a workout**,
   trying again opens the workout that started instead of making a second one, and a failed start
   leaves nothing behind. Finishing a quick workout saves it and its name together, so it is never
@@ -193,6 +198,10 @@ in the app at `/whats-new`.
   `finish_workout()`, security invoker). Needs migration `20261125000000_atomic_quick_workouts`
   **before** this build deploys: without it, `/api/health` reports the schema as behind and
   Start a workout and Finish fail.
+- Workout saves and finishes carry the version the device last saw (`updated_at`) and a random
+  device id (`workout_logs.saved_by`), and are refused rather than applied over another device's
+  newer save. Needs migration `20261126000000_workout_save_conflicts` **before** this build
+  deploys; the previous build keeps working with it.
 
 ## [1.0.0] — 2026-11-18
 

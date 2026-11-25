@@ -184,6 +184,13 @@ finish time within (started, now] and the first finish time on a re-finish, and 
 session records the name and minutes trained in the same transaction. Both run as the caller
 (security invoker) under the tables' own policies.
 
+A workout's progress is one document, so every save and finish says which version it builds on:
+the log's `updated_at` as the device last saw it, and the device's random id (kept in
+`localStorage`, recorded in `workout_logs.saved_by`). The write applies if the log is still at that
+version or this device saved it last (its own save whose reply was lost). Otherwise another device
+saved in between: nothing is written, the newer log comes back, and the workout screen asks the
+member which version to keep. A phone reopening a workout compares its kept copy the same way.
+
 ### Library list
 
 `listLibraryRoutines()` makes **one** request: the member’s visible routines (GLOBAL and their

@@ -87,8 +87,24 @@ export type WorkoutLog = {
   unit: WeightUnit;
   entries: WorkoutEntries;
   notes: string;
+  /** The log's version: its updated_at, sent back with each save. */
   updatedAt: string;
+  /** The device that last saved it (a random id each browser keeps), if any. Not in data exports. */
+  savedBy?: string | null;
 };
+
+/**
+ * Whether version `a` (an updated_at from TrainGrid) is later than `b`. Both
+ * come from the server's clock, so this is safe where the phone's clock is
+ * not; microseconds count, which Date.parse would drop.
+ */
+export function isLaterVersion(a: string, b: string): boolean {
+  const micros = (value: string) => {
+    const fraction = /\.(\d+)/.exec(value)?.[1] ?? "";
+    return Date.parse(value.replace(/\.\d+/, "")) * 1000 + Number(fraction.slice(0, 6).padEnd(6, "0"));
+  };
+  return micros(a) > micros(b);
+}
 
 export const EMPTY_ENTRIES: WorkoutEntries = { version: 1, items: [] };
 
