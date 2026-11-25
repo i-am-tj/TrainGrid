@@ -210,6 +210,12 @@ first visit, a direct line for feedback, and TrainGrid on your phone’s home sc
 
 ### Home
 
+- The schema gate (`npm run release:check` and `/api/health`) also compares the project's applied
+  migrations with the build's, through `release_applied_migrations()` (secret key only). A
+  migration that only changes a function body or a trigger no longer passes unnoticed: on
+  25 November 2026 production reported `schema: ok` while two migrations from #86 were missing.
+  Needs migration `20261127000000_release_migration_history` on production **before** this
+  merges; the live build ignores it.
 - **Your day at a glance**: today’s planned sessions in order, this week’s planned counts from
   Monday to Sunday, quick actions, and your most recent routines. Signing in now lands here.
 - **Loads section by section**: the greeting, titles and shortcuts appear at once; today, the week

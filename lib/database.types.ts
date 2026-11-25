@@ -344,6 +344,9 @@ isOneToOne: false
 "is_member":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"release_applied_migrations":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
 "request_invite":
 { Args: { "p_email": string,"p_ip_hash"?: string,"p_name"?: string,"p_note"?: string }; Returns: string
                            },

@@ -152,8 +152,9 @@ instance (`lib/observability/alerts.ts`).
 
 For uptime, point a monitor (for example UptimeRobot's free plan) at `/api/health`: it answers
 `200 {"supabase":"ok","schema":"ok"}` when the app can reach Supabase and its database has every
-table, column and function this build needs, and `503` when Supabase is unreachable or the schema
-is `"behind"` (a migration was not applied). It reveals nothing else: not which part of the schema is
+table, column, function and migration this build needs, and `503` when Supabase is unreachable or
+the schema is `"behind"` (a migration was not applied). The migration history comes from
+`release_applied_migrations()`, which only the secret key can call. It reveals nothing else: not which part of the schema is
 missing (`npm run release:check` says that, for the owner, with the secret key). The schema is read
 at most once per server instance every five minutes.
 
