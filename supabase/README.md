@@ -28,6 +28,8 @@ stack's publishable and secret keys in `.env.local` and skip otherwise.
 ## Applying migrations to production
 
 Run by the project owner, from a terminal, never by CI and never automatically on merge.
+Apply a PR's migration **before** merging the PR: Vercel deploys every merge to `main`, so the new
+build must find its schema already in place ([docs/RELEASING.md](../docs/RELEASING.md#changes-that-need-a-migration)).
 
 ```bash
 npx supabase login                          # once per machine; opens the browser
