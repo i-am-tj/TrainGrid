@@ -166,6 +166,12 @@ in the app at `/whats-new`.
 - The planner keeps today marked on phones even when it is the day you are looking at.
 - On phones, home puts today’s sessions first and keeps the header compact.
 - Duplicate week is gone from the planner, keeping it to what you can do on every screen.
+- **Clearer ways to start**: Home’s button for training with nothing planned is now **Start an
+  unplanned workout**, and it steps back when today has a planned session or Home suggests your
+  first routine, so the main button is the one for your plan.
+- **Edit links say what they edit**: a session’s **Edit** and **Customize content** are now
+  **Edit schedule & details** (date, time, name, notes) and **Edit exercises**, with matching page
+  headings.
 
 ### Library
 

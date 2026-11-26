@@ -182,7 +182,7 @@ export function WorkoutPlayer({
   const { prime, chime } = useChime();
   const now = useNow(active, rest ? 250 : 1000);
 
-  // This quick workout has opened: Home's next Start a workout is a new one.
+  // This quick workout has opened: Home's next Start an unplanned workout is a new one.
   useEffect(() => {
     if (session.quick) settleQuickStartRequest(session.id);
   }, [session.id, session.quick]);

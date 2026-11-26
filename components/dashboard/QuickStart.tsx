@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 import { Modal } from "@/components/ui/Modal";
 import { quickStartRequestId, readPreference } from "@/components/workout/hooks";
 import { SESSION_TYPES, type SessionType } from "@/lib/domain";
-import { btnPrimary } from "@/lib/ui";
+import { btnPrimary, btnSecondary } from "@/lib/ui";
 import { startQuickWorkoutAction } from "@/lib/workouts/actions";
 import { WEIGHT_UNITS, type WeightUnit } from "@/lib/workouts/model";
 
@@ -17,7 +17,7 @@ const CHOICES: Record<SessionType, { label: string; detail: string }> = {
 };
 
 /**
- * "Start a workout" on Home: pick the type, and the workout starts at once,
+ * "Start an unplanned workout" on Home: pick the type, and the workout starts at once,
  * with nothing planned. Exercises are added during the workout; it is named
  * at the finish, and can then be posted. A plain form, so it works before
  * JavaScript has loaded too (the dialog then simply opens on the next tap).
@@ -27,8 +27,19 @@ const CHOICES: Record<SessionType, { label: string; detail: string }> = {
  * retry after a dropped response) opens the same workout instead of starting
  * a second one.
  */
-export function QuickStart() {
+export function QuickStart({
+  leadsElsewhere,
+}: {
+  /**
+   * Resolves to true when Home already leads with a planned session or the
+   * first routine: the button then steps back to secondary, so the two start
+   * actions don't compete (UI_DESIGN_AUDIT rank 6). Read without suspending,
+   * so the button renders at once and keeps its state.
+   */
+  leadsElsewhere?: Promise<boolean>;
+}) {
   const [open, setOpen] = useState(false);
+  const [prominence, setProminence] = useState<"primary" | "secondary">(leadsElsewhere ? "secondary" : "primary");
   const [unit, setUnit] = useState<WeightUnit>("kg");
   const [requestId, setRequestId] = useState("");
 
@@ -40,18 +51,29 @@ export function QuickStart() {
     setRequestId(quickStartRequestId());
   }, []);
 
+  useEffect(() => {
+    let current = true;
+    leadsElsewhere?.then(
+      (leads) => current && setProminence(leads ? "secondary" : "primary"),
+      () => current && setProminence("primary"),
+    );
+    return () => {
+      current = false;
+    };
+  }, [leadsElsewhere]);
+
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} data-testid="quick-start" className={`${btnPrimary} shrink-0 gap-2`}>
+      <button type="button" onClick={() => setOpen(true)} data-testid="quick-start" data-prominence={prominence} className={`${prominence === "primary" ? btnPrimary : btnSecondary} shrink-0 gap-2`}>
         <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="currentColor">
           <path d="M8 5.5v13l11-6.5-11-6.5z" />
         </svg>
-        Start a workout
+        Start an unplanned workout
       </button>
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="Start a workout now"
+        title="Start an unplanned workout"
         description="Nothing to plan: pick the type, add exercises as you go, and name it when you finish."
         className="max-w-md"
       >

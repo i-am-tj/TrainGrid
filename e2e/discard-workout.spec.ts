@@ -81,7 +81,7 @@ test("a quick workout left running is discarded from Home, and removed entirely"
   await page.goto("/home");
   await hydrated(page);
   await page.getByTestId("quick-start").click();
-  await page.getByRole("dialog", { name: "Start a workout now" }).getByRole("button", { name: /^Lift/ }).click();
+  await page.getByRole("dialog", { name: "Start an unplanned workout" }).getByRole("button", { name: /^Lift/ }).click();
   await page.waitForURL(/\/workout\/[0-9a-f-]{36}$/);
   const sessionId = page.url().split("/").at(-1)!;
 
@@ -105,7 +105,7 @@ test("an empty quick workout offers a way out on its own screen", async ({ page,
   await page.goto("/home");
   await hydrated(page);
   await page.getByTestId("quick-start").click();
-  await page.getByRole("dialog", { name: "Start a workout now" }).getByRole("button", { name: /^Other/ }).click();
+  await page.getByRole("dialog", { name: "Start an unplanned workout" }).getByRole("button", { name: /^Other/ }).click();
   await page.waitForURL(/\/workout\/[0-9a-f-]{36}$/);
   const sessionId = page.url().split("/").at(-1)!;
   await hydrated(page);

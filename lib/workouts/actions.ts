@@ -100,7 +100,7 @@ export async function finishWorkoutAction(
 }
 
 /**
- * "Start a workout" on Home: a quick session for the member's today, with its
+ * "Start an unplanned workout" on Home: a quick session for the member's today, with its
  * workout already started, then straight into the workout screen. Only the
  * type, the weight unit this phone uses and the request id (so a resent
  * form returns the same workout) come from the form.

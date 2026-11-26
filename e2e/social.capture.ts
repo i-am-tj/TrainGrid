@@ -245,9 +245,9 @@ for (const scheme of ["light", "dark"] as const) {
     await page.setViewportSize(PHONE);
     await page.goto("/home");
     await page.getByTestId("quick-start").click();
-    await expect(page.getByRole("dialog", { name: "Start a workout now" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Start an unplanned workout" })).toBeVisible();
     await shot(page, `quick-start-phone-${scheme}`);
-    await page.getByRole("dialog", { name: "Start a workout now" }).getByRole("button", { name: /^Lift/ }).click();
+    await page.getByRole("dialog", { name: "Start an unplanned workout" }).getByRole("button", { name: /^Lift/ }).click();
     await page.waitForURL(/\/workout\//);
     const sessionId = page.url().split("/").at(-1)!;
     await expect(page.getByTestId("add-first-exercise")).toBeVisible();

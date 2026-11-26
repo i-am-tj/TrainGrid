@@ -60,7 +60,7 @@ own. It steps aside once a session is planned, and **×** hides it.
 
 Open the gym, open TrainGrid: **Start workout** on today’s session (on Home or the session page).
 
-**Nothing planned?** Tap **Start a workout** at the top of Home and choose Lift, Run, Plyo or Other.
+**Nothing planned?** Tap **Start an unplanned workout** at the top of Home and choose Lift, Run, Plyo or Other.
 The workout starts at once: tap **Add exercise**, name it, choose how you log it (weight and reps,
 reps, or a tick) and the rest between sets, and add more as you go. When you finish, give the
 workout a name. It becomes today’s session on Home and in the planner; **Discard** removes it

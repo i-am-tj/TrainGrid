@@ -22,7 +22,6 @@ import {
   type DashboardFrame,
 } from "@/lib/dashboard/prepare";
 import { listOwnRoutinesForDashboard } from "@/lib/data/dashboard";
-import type { Db } from "@/lib/data/model";
 import { hasPlannedSession } from "@/lib/data/onboarding";
 import { ONBOARDING_DISMISSED_COOKIE, showFirstSessionInvite } from "@/lib/onboarding/model";
 import type { ScheduledSessionRecord } from "@/lib/data/model";
@@ -79,11 +78,21 @@ export default async function MemberHomePage() {
   // only when this week is empty and the member hasn't hidden it.
   const dismissed = (await cookies()).get(ONBOARDING_DISMISSED_COOKIE)?.value === "1";
   const [latest] = await loadReleases();
+  // Anything this week means a session was planned; otherwise ask once. A
+  // failed read keeps the usual empty state.
+  const firstSession: Promise<boolean> = dismissed
+    ? Promise.resolve(false)
+    : week.then(
+        async (result) =>
+          result.ok &&
+          result.value.length === 0 &&
+          showFirstSessionInvite(await hasPlannedSession(db, userId).catch(() => null), false),
+      );
 
   return (
     <DashboardShell
       frame={frame}
-      headerAction={<QuickStart />}
+      headerAction={<QuickStart leadsElsewhere={leadsElsewhere(today, week, firstSession)} />}
       notice={
         latest && isRecentRelease(latest, today.date) ? (
           <Link
@@ -104,7 +113,7 @@ export default async function MemberHomePage() {
       }
       today={
         <Suspense fallback={<SectionLoader label="Loading today’s sessions…" minHeight="min-h-56" />}>
-          <TodaySlot today={today} frame={frame} week={week} invite={dismissed ? null : { db, userId }} />
+          <TodaySlot today={today} frame={frame} week={week} firstSession={firstSession} />
         </Suspense>
       }
       week={
@@ -123,27 +132,35 @@ export default async function MemberHomePage() {
 
 type WeekRead = Promise<Settled<ScheduledSessionRecord[]>>;
 
+/**
+ * Whether Home already leads with something to do (a session today that
+ * isn't finished, or the first-routine invitation), so its unplanned start
+ * steps back to a secondary button (UI_DESIGN_AUDIT rank 6).
+ */
+async function leadsElsewhere(today: MemberToday, week: WeekRead, firstSession: Promise<boolean>) {
+  const result = await week;
+  const planned =
+    result.ok &&
+    prepareDashboardWeek(today, result.value).todaySessions.some((session) => session.workout !== "completed");
+  return planned || (await firstSession);
+}
+
 async function TodaySlot({
   today,
   frame,
   week,
-  invite,
+  firstSession: invite,
 }: {
   today: MemberToday;
   frame: DashboardFrame;
   week: WeekRead;
-  /** Where to check for a first session; null once the member has hidden the invitation. */
-  invite: { db: Db; userId: string } | null;
+  /** Whether to invite a first session (false once the member has hidden the invitation). */
+  firstSession: Promise<boolean>;
 }) {
   const result = await week;
   if (!result.ok) return <DashboardSectionError message={WEEK_ERROR} />;
   const { todaySessions } = prepareDashboardWeek(today, result.value);
-  // Anything this week means a session was planned; otherwise ask once. A
-  // failed read keeps the usual empty state.
-  const firstSession =
-    invite !== null &&
-    result.value.length === 0 &&
-    showFirstSessionInvite(await hasPlannedSession(invite.db, invite.userId).catch(() => null), false);
+  const firstSession = await invite;
   return (
     <TodaySessionList
       sessions={todaySessions}

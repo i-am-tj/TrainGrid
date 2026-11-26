@@ -21,7 +21,7 @@ test("a quick workout left running can be resumed from its session page, with th
   await page.goto("/home");
   await hydrated(page);
   await page.getByTestId("quick-start").click();
-  await page.getByRole("dialog", { name: "Start a workout now" }).getByRole("button", { name: /^Lift/ }).click();
+  await page.getByRole("dialog", { name: "Start an unplanned workout" }).getByRole("button", { name: /^Lift/ }).click();
   await page.waitForURL(/\/workout\/[0-9a-f-]{36}$/);
   const sessionId = page.url().split("/").at(-1)!;
   await hydrated(page);
