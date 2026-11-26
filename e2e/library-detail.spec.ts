@@ -59,7 +59,7 @@ test("Schedule is the primary action on detail and preselects the routine", asyn
 
   await chooseDate(page, dateThisWeek(3));
   await page.locator('select[name="time"]').selectOption("07:00");
-  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.getByRole("button", { name: "Schedule routine", exact: true }).click();
   await page.waitForURL(/\/week\//);
   await page.getByRole("link", { name: "Lower A, 07:00" }).click();
   await expect(page.getByRole("heading", { name: "Back Squat" })).toBeVisible();

@@ -46,7 +46,7 @@ test("schedule a Library routine for next Monday and find it there after a reloa
   expect(violations).toEqual([]);
 
   await page.locator('select[name="time"]').selectOption("06:30");
-  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.getByRole("button", { name: "Schedule routine", exact: true }).click();
   await page.waitForURL(`/week/${nextWeek}?day=1`);
 
   await page.reload();
@@ -62,8 +62,9 @@ test("move a session across the year boundary with the same date field", async (
   await hydrated(page);
   await chooseDate(page, "2026-12-31");
   await expect(page.getByTestId("date-description")).toContainText("Thursday 31 December 2026");
+  await page.getByText("More options").click();
   await page.getByLabel("Notes").fill("Last one of the year");
-  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.getByRole("button", { name: "Schedule routine", exact: true }).click();
   await page.waitForURL("/week/2026-W53?day=4");
 
   await page.getByRole("link", { name: /^Lower A/ }).first().click();

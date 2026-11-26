@@ -119,7 +119,7 @@ for (const scheme of ["light", "dark"] as const) {
     const routinePath = new URL(routineUrl).pathname;
     const routineId = routinePath.split("/").at(-1)!;
     await page.goto(`/week/2026-W47/add?routine=${routineId}&day=2&time=07:00`);
-    await page.getByRole("button", { name: "Add", exact: true }).click();
+    await page.getByRole("button", { name: "Schedule routine", exact: true }).click();
     await page.waitForURL(/\/week\/2026-W47(?:\?|$)/);
     const sessionPath = (await page
       .getByRole("region", { name: "Weekly calendar time grid" })
