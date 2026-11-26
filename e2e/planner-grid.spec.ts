@@ -85,7 +85,7 @@ test("several untimed sessions stay pinned; an empty week opens at 06:00", async
   const member = await signInAsNewLocalMember(context, baseURL!);
   await openWeek(page);
   // Nothing untimed: the untimed row scrolls away with the hours.
-  await expect(page.getByTestId("planner-pinned").getByRole("link", { name: "+ untimed" })).toHaveCount(0);
+  await expect(page.getByTestId("planner-pinned").getByRole("link", { name: /^Add untimed session / })).toHaveCount(0);
   const sixAm = grid(page).locator('[data-hour="6"]');
   await expect.poll(() => sixAm.evaluate((el) => {
     const region = el.closest('[role="region"]')!;

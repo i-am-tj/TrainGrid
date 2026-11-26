@@ -169,6 +169,9 @@ in the app at `/whats-new`.
 - **Untimed sessions stay in view**: on a computer, the planner pins sessions with no start time
   under the day headings, so they are on screen however far you scroll the hours, and it opens
   earlier than 06:00 when a session this week starts before then.
+- **Faster with a keyboard**: in the computer planner, Tab goes from the calendar to each planned
+  session and then on, instead of through every empty hour. To add a session at a time, use the
+  arrow keys to choose a day and hour, Enter to open it, and Escape to go back to the calendar.
 
 ### Library
 
