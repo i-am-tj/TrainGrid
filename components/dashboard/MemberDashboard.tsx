@@ -110,7 +110,7 @@ export function DashboardShell({
         {headerAction ? (
           // On phones only the main action shows, so today's sessions stay above the fold;
           // the planner is in the menu (and the week card links to it).
-          <div className="flex shrink-0 flex-wrap gap-2">
+          <div className="flex max-w-full flex-wrap gap-2 sm:shrink-0">
             {headerAction}
             <Link href={frame.plannerHref} className={`${btnSecondary} shrink-0 gap-5 max-sm:hidden`}>
               Open weekly planner <span aria-hidden="true">↗</span>

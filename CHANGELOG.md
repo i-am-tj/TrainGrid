@@ -172,6 +172,10 @@ in the app at `/whats-new`.
 - **Routines first on phones**: search stays at the top of the Library, and the equipment and type
   filters fold behind a **Filters** button that shows how many are on, so the first routine is
   higher on the screen. Tablets and computers still show every filter.
+- **Readable at large text sizes**: on a narrow phone with enlarged text, a routine’s name and
+  description keep a readable line and **Schedule** moves below them, instead of squeezing the text
+  to a letter per line. The post visibility choices, **Start a workout** on Home and the admin
+  contact-address notice also fit the screen without sideways scrolling.
 
 ### For maintainers
 
