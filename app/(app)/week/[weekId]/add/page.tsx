@@ -7,6 +7,17 @@ import { memberData } from "@/lib/data/server";
 import { getRequestToday } from "@/lib/today";
 import type { IsoDay } from "@/lib/domain";
 import { isValidTime } from "@/lib/week";
+import { pageMetadata } from "@/lib/page-metadata";
+
+/** "Schedule routine" when opened from a routine's Schedule link. */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ routine?: string; template?: string }>;
+}) {
+  const query = await searchParams;
+  return pageMetadata(query.routine || query.template ? "Schedule routine" : "Add session");
+}
 
 export default async function AddSessionPage({
   params,

@@ -1,5 +1,8 @@
 import { RoutineEditor } from "@/components/library/RoutineEditor";
 import { memberData } from "@/lib/data/server";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("New routine");
 
 export default async function NewRoutinePage() {
   await memberData();

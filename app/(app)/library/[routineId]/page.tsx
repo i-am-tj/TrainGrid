@@ -2,6 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { RoutineDetail } from "@/components/library/RoutineDetail";
 import { findGlobalRoutineIdBySlug, getRoutine } from "@/lib/data/routines";
 import { memberData } from "@/lib/data/server";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Routine");
 
 export default async function RoutinePage({
   params,

@@ -9,6 +9,9 @@ import { getWorkoutLog } from "@/lib/data/workouts";
 import { btnSecondary, TYPE_SHORT } from "@/lib/ui";
 import { datesOfWeek, formatLongDay } from "@/lib/week";
 import { formatDurationWords, formatVolume, summarize, type WorkoutLog } from "@/lib/workouts/model";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Session");
 
 export default async function SessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { db, userId } = await memberData();

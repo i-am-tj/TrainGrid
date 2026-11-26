@@ -5,6 +5,7 @@ import { NavigationLoader } from "@/components/NavigationLoader";
 import { SlowSectionWatcher } from "@/components/SlowSectionWatcher";
 import { SkipLink } from "@/components/ui/SkipLink";
 import { SiteFooter } from "@/components/footer/SiteFooter";
+import { ThemeSync } from "@/components/ThemeSync";
 import { siteMetadataBase } from "@/lib/site";
 import { TIME_ZONE_COOKIE } from "@/lib/time-zone";
 import { getRequestToday } from "@/lib/today";
@@ -131,6 +132,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
       <body className="min-h-dvh flex flex-col">
+        <ThemeSync />
         <SkipLink />
         {/*
           The header and <main id="main-content"> come from the route group

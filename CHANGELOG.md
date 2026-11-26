@@ -169,6 +169,12 @@ in the app at `/whats-new`.
 
 ### Library
 
+- **A missing routine leads back to the Library**: opening a routine that doesn’t exist, or that
+  you can’t open, now offers **Back to Library** instead of the planner, and every “Not found”
+  page keeps your dark or light theme.
+- **Every page has its own title**: the planner, routines and session pages now name the task in
+  the browser tab and history (“Edit exercises · TrainGrid”), without your session or routine
+  names.
 - **Routines first on phones**: search stays at the top of the Library, and the equipment and type
   filters fold behind a **Filters** button that shows how many are on, so the first routine is
   higher on the screen. Tablets and computers still show every filter.
