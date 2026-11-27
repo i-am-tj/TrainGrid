@@ -42,6 +42,22 @@ test("planner, routine and session pages have task-specific titles", async ({ pa
   }
 });
 
+test("Add session's title follows the heading when the linked routine can't be used", async ({ page, browser, context, baseURL }) => {
+  await signInAsNewLocalMember(context, baseURL!);
+  const other = await signInAsNewLocalMember(await browser.newContext({ baseURL }), baseURL!);
+  const theirs = await createLocalRoutineFor(other.userId, "Someone else's routine");
+  for (const [path, title] of [
+    [`/week/2026-W47/add?routine=${MISSING}`, "Add session"],
+    [`/week/2026-W47/add?routine=${theirs}`, "Add session"],
+    ["/week/2026-W47/add?template=no-such-routine", "Add session"],
+    ["/week/2026-W47/add?template=easy-run", "Schedule routine"],
+  ]) {
+    await page.goto(path!);
+    await expect(page.getByRole("heading", { level: 1 }), path).toHaveText(title!);
+    await expect(page, path).toHaveTitle(`${title} · TrainGrid`);
+  }
+});
+
 for (const scheme of ["light", "dark"] as const) {
   test(`a missing routine recovers to the Library in the ${scheme} theme`, async ({ browser, baseURL }) => {
     const context = await browser.newContext({ baseURL, colorScheme: scheme, timezoneId: "UTC" });
