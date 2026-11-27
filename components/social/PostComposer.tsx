@@ -60,6 +60,7 @@ export function PostComposer({
   const captionId = useId();
   const counterId = useId();
   const errorId = useId();
+  const audienceId = useId();
   // A finished workout's real time beats the planned duration (as the database does).
   const durationToShare = workout ? workout.minutes : session.durationMinutes;
   const hasDuration = durationToShare != null;
@@ -174,7 +175,14 @@ export function PostComposer({
 
       </div>
 
-      <section aria-labelledby="preview-title" className="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+      {/* One Tab stop between the form and submit, so keyboard users meet what
+          they are about to share before the publish action (UI_DESIGN_AUDIT
+          rank 5). A region with nothing focusable inside would be skipped. */}
+      <section
+        aria-labelledby="preview-title"
+        tabIndex={0}
+        className="min-w-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-4 focus-visible:ring-offset-background lg:col-start-2 lg:row-span-2 lg:row-start-1"
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="preview-title" className="text-sm font-medium">
             Preview
@@ -213,13 +221,19 @@ export function PostComposer({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
-          <button type="submit" className={btnPrimary} disabled={pending || over} aria-busy={pending}>
+          <button
+            type="submit"
+            className={btnPrimary}
+            disabled={pending || over}
+            aria-busy={pending}
+            aria-describedby={audienceId}
+          >
             {pending ? (editing ? "Saving…" : "Posting…") : editing ? "Save changes" : "Post update"}
           </button>
           <Link href={cancelHref} className={btnSecondary}>
             Cancel
           </Link>
-          <p data-testid="post-audience" className="text-xs leading-5 text-stone-600">
+          <p id={audienceId} data-testid="post-audience" className="text-xs leading-5 text-stone-600">
             {author.visibility === "private" ? "For approved followers" : "For all signed-in members"}
           </p>
         </div>

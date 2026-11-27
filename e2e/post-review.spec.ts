@@ -33,14 +33,29 @@ async function layout(page: Page, submit: string) {
   return { preview, audience, button, caption };
 }
 
-/** Whether the submit button follows the whole preview in document (and so Tab) order. */
-async function submitFollowsPreview(page: Page, submit: string) {
-  return page.getByRole("button", { name: submit, exact: true }).evaluate((button) =>
-    ["post-preview"].every((id) => {
-      const el = document.querySelector(`[data-testid="${id}"]`)!;
-      return Boolean(el.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING);
-    }),
-  );
+/**
+ * Presses Tab from the caption until submit has focus, and returns what was
+ * focused on the way (accessible names; the preview region as "Preview").
+ */
+async function tabToSubmit(page: Page, submit: string) {
+  await page.getByLabel("Caption").focus();
+  const stops: string[] = [];
+  for (let i = 0; i < 12; i++) {
+    await page.keyboard.press("Tab");
+    const name = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement;
+      const labelled = el.getAttribute("aria-labelledby");
+      return (
+        (labelled ? document.getElementById(labelled)?.textContent : null) ??
+        el.getAttribute("aria-label") ??
+        el.innerText ??
+        el.tagName
+      ).trim();
+    });
+    stops.push(name);
+    if (name === submit) return stops;
+  }
+  return stops;
 }
 
 for (const visibility of ["private", "public"] as const) {
@@ -67,7 +82,26 @@ for (const visibility of ["private", "public"] as const) {
       const phone = await layout(page, submit);
       expect(phone.button.y, `${path}: submit after preview`).toBeGreaterThan(phone.preview.y + phone.preview.height);
       expect(Math.abs(phone.audience.y - phone.button.y), `${path}: audience beside submit`).toBeLessThan(phone.button.height);
-      expect(await submitFollowsPreview(page, submit), `${path}: Tab order`).toBe(true);
+
+      // Keyboard: Tab meets the preview, as one stop, right before submit, and
+      // shows it; submit carries the audience as its description.
+      const long = Array.from({ length: 12 }, (_, i) => `Line ${i + 1} of a long caption.`).join("\n");
+      await page.getByLabel("Caption").fill(long);
+      const stops = await tabToSubmit(page, submit);
+      expect(stops.at(-1), `${path}: Tab reaches submit`).toBe(submit);
+      expect(stops.at(-2), `${path}: preview just before submit`).toBe("Preview");
+      expect(stops.filter((s) => s === "Preview"), path).toHaveLength(1);
+      await page.keyboard.press("Shift+Tab");
+      const preview = page.getByRole("region", { name: "Preview" });
+      await expect(preview).toBeFocused();
+      await expect(page.locator("#preview-title")).toBeInViewport();
+      expect(
+        await preview.evaluate((el) => getComputedStyle(el).boxShadow),
+        `${path}: visible focus ring`,
+      ).not.toBe("none");
+      await expect(page.getByRole("button", { name: submit, exact: true })).toHaveAccessibleDescription(
+        AUDIENCE[visibility],
+      );
 
       // Desktop: live preview beside the form, submit under the caption.
       await page.setViewportSize({ width: 1366, height: 900 });
