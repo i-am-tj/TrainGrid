@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ActionSubmit } from "@/components/ui/ActionSubmit";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { WorkoutItemEditor } from "@/components/library/WorkoutItemEditor";
 import { createScheduledSession } from "@/lib/actions";
 import type { RoutineSummary } from "@/lib/data/model";
@@ -11,6 +11,29 @@ import { SESSION_TYPES, SESSION_TYPE_LABELS } from "@/lib/domain";
 import { btnPrimary, btnSecondary, fieldClass } from "@/lib/ui";
 import { TIME_OPTIONS } from "@/lib/week";
 import { DateField } from "./DateField";
+
+/**
+ * Adds a session. Opened from a routine's Schedule link (`initialRoutineId`),
+ * it leads with that routine, the date and the time, then "Schedule routine";
+ * changing the routine, name, duration and notes sit behind More options
+ * (UI_DESIGN_AUDIT rank 7). Opened from the planner, it is the full form:
+ * routine or blank, with a blank session's type and items.
+ */
+/**
+ * Native validation can't show or focus a field inside a closed <details>
+ * (More options): submit is blocked with nothing on screen. When the first
+ * invalid field is in one, open it and focus the field, so the browser's
+ * message appears there and the value can be corrected.
+ */
+function revealInvalid(event: FormEvent<HTMLFormElement>) {
+  const field = event.target;
+  if (!(field instanceof HTMLElement)) return;
+  const first = event.currentTarget.querySelector("input:invalid, select:invalid, textarea:invalid");
+  const details = field.closest("details");
+  if (field !== first || !details || details.open) return;
+  details.open = true;
+  field.focus();
+}
 
 export function AddSessionForm({
   weekId,
@@ -44,15 +67,100 @@ export function AddSessionForm({
 
   const shared = routines.filter((r) => r.scope === "GLOBAL");
   const mine = routines.filter((r) => r.isOwn);
+  // A routine chosen before opening the form (the Library's Schedule).
+  const known = initialRoutineId !== null && selected !== null;
+
+  const routineField = (
+    <label className="block text-sm font-medium">
+      Routine
+      <select
+        className={fieldClass}
+        value={routineId}
+        onChange={(e) => {
+          const next = routines.find((r) => r.id === e.target.value);
+          setRoutineId(e.target.value);
+          if (next) {
+            setName(next.name);
+            setType(next.category);
+          }
+        }}
+      >
+        {mine.length > 0 ? (
+          <optgroup label="My routines">
+            {mine.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </optgroup>
+        ) : null}
+        <optgroup label="TrainGrid library">
+          {shared.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
+            </option>
+          ))}
+        </optgroup>
+      </select>
+    </label>
+  );
+
+  const nameField = (
+    <label className="block text-sm font-medium">
+      Name
+      <input
+        name="name"
+        required
+        maxLength={200}
+        className={fieldClass}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+    </label>
+  );
+
+  const durationField = (
+    <label className="block text-sm font-medium">
+      Duration (minutes, optional)
+      <input
+        name="durationMinutes"
+        type="number"
+        min={1}
+        max={1440}
+        className={fieldClass}
+        placeholder="e.g. 60"
+      />
+    </label>
+  );
+
+  const notesField = (
+    <label className="block text-sm font-medium">
+      Notes
+      <textarea
+        name="notes"
+        maxLength={4000}
+        className={`${fieldClass} min-h-16`}
+      />
+    </label>
+  );
 
   return (
     <form
       action={createScheduledSession}
+      onInvalidCapture={revealInvalid}
       className="ui-panel space-y-5 p-4 sm:p-6"
     >
       <input type="hidden" name="from" value={from} />
       {from === "routine" ? (
         <input type="hidden" name="routineId" value={routineId} />
+      ) : null}
+
+      {known ? (
+        <div data-testid="scheduling-routine" className="rounded-xl border border-line bg-card px-4 py-3">
+          <p className="text-xs font-medium text-stone-600">Routine</p>
+          <p className="mt-0.5 font-semibold [overflow-wrap:anywhere]">{selected.name}</p>
+          <p className="text-xs text-stone-600">{SESSION_TYPE_LABELS[selected.category]}</p>
+        </div>
       ) : null}
 
       <DateField defaultValue={initialDate} today={today} />
@@ -87,120 +195,84 @@ export function AddSessionForm({
         </label>
       </div>
 
-      <label className="block text-sm font-medium">
-        Duration (minutes, optional)
-        <input
-          name="durationMinutes"
-          type="number"
-          min={1}
-          max={1440}
-          className={fieldClass}
-          placeholder="e.g. 60"
-        />
-      </label>
+      {known ? (
+        <details className="group rounded-xl border border-line">
+          <summary className="ui-control flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-4 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 [&::-webkit-details-marker]:hidden">
+            <span>
+              More options
+              <span className="block text-xs font-normal text-stone-600">
+                Change the routine, name, duration or notes
+              </span>
+            </span>
+            <span aria-hidden="true" className="text-stone-600 group-open:rotate-180">
+              ▾
+            </span>
+          </summary>
+          <div className="space-y-5 border-t border-line px-4 py-4">
+            {routineField}
+            {nameField}
+            {durationField}
+            {notesField}
+          </div>
+        </details>
+      ) : (
+        <>
+          {durationField}
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">From</legend>
-        <label className="mr-4 text-sm">
-          <input
-            type="radio"
-            name="fromChoice"
-            checked={from === "routine"}
-            onChange={() => {
-              setFrom("routine");
-              if (selected) {
-                setName(selected.name);
-                setType(selected.category);
-              }
-            }}
-            disabled={routines.length === 0}
-          />{" "}
-          Routine
-        </label>
-        <label className="text-sm">
-          <input
-            type="radio"
-            name="fromChoice"
-            checked={from === "blank"}
-            onChange={() => setFrom("blank")}
-          />{" "}
-          Blank
-        </label>
-      </fieldset>
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">From</legend>
+            <label className="mr-4 text-sm">
+              <input
+                type="radio"
+                name="fromChoice"
+                checked={from === "routine"}
+                onChange={() => {
+                  setFrom("routine");
+                  if (selected) {
+                    setName(selected.name);
+                    setType(selected.category);
+                  }
+                }}
+                disabled={routines.length === 0}
+              />{" "}
+              Routine
+            </label>
+            <label className="text-sm">
+              <input
+                type="radio"
+                name="fromChoice"
+                checked={from === "blank"}
+                onChange={() => setFrom("blank")}
+              />{" "}
+              Blank
+            </label>
+          </fieldset>
 
-      {from === "routine" ? (
-        <label className="block text-sm font-medium">
-          Routine
-          <select
-            className={fieldClass}
-            value={routineId}
-            onChange={(e) => {
-              const next = routines.find((r) => r.id === e.target.value);
-              setRoutineId(e.target.value);
-              if (next) {
-                setName(next.name);
-                setType(next.category);
-              }
-            }}
-          >
-            {mine.length > 0 ? (
-              <optgroup label="My routines">
-                {mine.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
+          {from === "routine" ? routineField : null}
+
+          {nameField}
+
+          {from === "blank" ? (
+            <label className="block text-sm font-medium">
+              Type
+              <select
+                name="type"
+                className={fieldClass}
+                value={type}
+                onChange={(e) => setType(e.target.value as SessionType)}
+              >
+                {SESSION_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {SESSION_TYPE_LABELS[t]}
                   </option>
                 ))}
-              </optgroup>
-            ) : null}
-            <optgroup label="TrainGrid library">
-              {shared.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </optgroup>
-          </select>
-        </label>
-      ) : null}
+              </select>
+            </label>
+          ) : null}
 
-      <label className="block text-sm font-medium">
-        Name
-        <input
-          name="name"
-          required
-          maxLength={200}
-          className={fieldClass}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </label>
-
-      {from === "blank" ? (
-        <label className="block text-sm font-medium">
-          Type
-          <select
-            name="type"
-            className={fieldClass}
-            value={type}
-            onChange={(e) => setType(e.target.value as SessionType)}
-          >
-            {SESSION_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {SESSION_TYPE_LABELS[t]}
-              </option>
-            ))}
-          </select>
-        </label>
-      ) : null}
-
-      <label className="block text-sm font-medium">
-        Notes
-        <textarea
-          name="notes"
-          maxLength={4000}
-          className={`${fieldClass} min-h-16`}
-        />
-      </label>
+          {notesField}
+        </>
+      )}
 
       {from === "blank" ? (
         <div>
@@ -211,11 +283,11 @@ export function AddSessionForm({
 
       <div className="flex gap-2">
         <ActionSubmit
-          label="Add"
-          busy="Adding session…"
+          label={known ? "Schedule routine" : "Add"}
+          busy={known ? "Scheduling…" : "Adding session…"}
           className={btnPrimary}
         />
-        <Link href={`/week/${weekId}`} className={btnSecondary}>
+        <Link href={known ? `/library/${initialRoutineId}` : `/week/${weekId}`} className={btnSecondary}>
           Cancel
         </Link>
       </div>

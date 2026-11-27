@@ -81,7 +81,7 @@ export default async function InvitationsPage() {
           data-testid="contact-email-missing"
           className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900"
         >
-          <span className="font-semibold">No public contact address.</span> Set <code>TRAINGRID_CONTACT_EMAIL</code> so
+          <span className="font-semibold">No public contact address.</span> Set <code className="break-all">TRAINGRID_CONTACT_EMAIL</code> so
           the privacy notice can offer it. Without it, someone whose access you revoke has no way to ask TrainGrid to
           delete their data.
         </p>

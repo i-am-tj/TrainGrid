@@ -14,7 +14,7 @@ export default async function CustomizeSessionPage({ params }: { params: Promise
 
   return (
     <div className="workout-body mx-auto max-w-2xl px-3 py-7 sm:px-4 sm:py-10">
-      <h1 className="text-3xl font-semibold leading-tight tracking-tight">Customize content</h1>
+      <h1 className="text-3xl font-semibold leading-tight tracking-tight">Edit exercises</h1>
       <p className="mt-2 text-sm leading-7 text-stone-600">
         Changes the workout of this session only. Its routine and other sessions are not affected.
       </p>

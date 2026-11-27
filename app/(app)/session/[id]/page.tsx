@@ -78,7 +78,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
           <p className="text-sm leading-6 text-stone-600">
             {log && log.entries.items.length > 0
               ? `Nothing was planned; ${log.entries.items.length === 1 ? "1 exercise was" : `${log.entries.items.length} exercises were`} added during the workout.`
-              : "Nothing planned. Start the workout and add exercises as you go, or use Customize content to plan it."}
+              : "Nothing planned. Start the workout and add exercises as you go, or use Edit exercises to plan it."}
           </p>
         ) : (
           <WorkoutItemsView items={session.items} />
@@ -87,10 +87,10 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
 
       <div className="mt-8 flex flex-wrap gap-2">
         <Link href={`/session/${session.id}/edit`} className={btnSecondary}>
-          Edit
+          Edit schedule &amp; details
         </Link>
         <Link href={`/session/${session.id}/customize`} className={btnSecondary}>
-          Customize content
+          Edit exercises
         </Link>
         <Link href={`/session/${session.id}/post`} className={btnSecondary}>
           Post update

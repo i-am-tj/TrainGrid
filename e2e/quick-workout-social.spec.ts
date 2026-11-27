@@ -3,7 +3,7 @@ import { accessibilityResults } from "../tests/helpers/accessibility";
 import { createLocalSocialProfile, signInAsNewLocalMember } from "./local-supabase";
 
 /**
- * Start a workout straight from Home with nothing planned, add exercises as
+ * Start an unplanned workout straight from Home with nothing planned, add exercises as
  * you go, name it at the finish and post about it; then another member likes
  * and comments. The rules behind each step are also tested in the database
  * (13_reactions_and_quick_workouts.test.sql) and the data layer
@@ -34,11 +34,11 @@ test("start a workout from Home, add exercises, name it at the finish and post i
   const myName = `quick_${uniq()}`;
   await createLocalSocialProfile(me.userId, { username: myName, displayName: "Quick Starter", visibility: "public" });
 
-  // Home → Start a workout → Lift: straight into a running workout.
+  // Home → Start an unplanned workout → Lift: straight into a running workout.
   await page.goto("/home");
   await hydrated(page);
   await page.getByTestId("quick-start").click();
-  const start = page.getByRole("dialog", { name: "Start a workout now" });
+  const start = page.getByRole("dialog", { name: "Start an unplanned workout" });
   await start.getByRole("button", { name: /^Lift/ }).click();
   await page.waitForURL(/\/workout\/[0-9a-f-]{36}$/);
   const sessionId = page.url().split("/").at(-1)!;
@@ -168,7 +168,7 @@ test("a discarded quick workout leaves nothing behind", async ({ page, context, 
   await page.goto("/home");
   await hydrated(page);
   await page.getByTestId("quick-start").click();
-  await page.getByRole("dialog", { name: "Start a workout now" }).getByRole("button", { name: /^Run/ }).click();
+  await page.getByRole("dialog", { name: "Start an unplanned workout" }).getByRole("button", { name: /^Run/ }).click();
   await page.waitForURL(/\/workout\/[0-9a-f-]{36}$/);
   const sessionId = page.url().split("/").at(-1)!;
   await hydrated(page);
@@ -181,7 +181,7 @@ test("a discarded quick workout leaves nothing behind", async ({ page, context, 
   expect((await page.goto(`/session/${sessionId}`))?.status()).toBe(404);
 });
 
-test("Home's Start a workout is reachable and accessible on a phone, light and dark", async ({ page, context, baseURL }) => {
+test("Home's Start an unplanned workout is reachable and accessible on a phone, light and dark", async ({ page, context, baseURL }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await signInAsNewLocalMember(context, baseURL!);
   for (const scheme of ["light", "dark"] as const) {
@@ -192,7 +192,7 @@ test("Home's Start a workout is reachable and accessible on a phone, light and d
     await noOverflow(page);
     await page.getByTestId("quick-start").focus();
     await page.keyboard.press("Enter");
-    const dialog = page.getByRole("dialog", { name: "Start a workout now" });
+    const dialog = page.getByRole("dialog", { name: "Start an unplanned workout" });
     await expect(dialog).toBeVisible();
     const { violations } = await accessibilityResults(page);
     expect(violations, scheme).toEqual([]);

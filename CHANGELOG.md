@@ -58,6 +58,11 @@ in the app at `/whats-new`.
 - **Move a session the same way**: Edit uses the same date field instead of a week code, so
   moving Thursday’s run to next Tuesday, or into January, is one choice.
 - A missing date is explained beside the field, and the rest of the form keeps what you typed.
+- **Schedule a routine in three choices**: **Schedule** from the Library now shows the routine you
+  chose, then the date and time, then **Schedule routine**. Renaming, notes, duration and picking
+  a different routine are under **More options**, and **Cancel** goes back to the routine. **Add
+  session** in the planner keeps the full form, including blank sessions. If a name or duration
+  under a closed **More options** needs fixing, it opens and puts you on that field.
 
 ### Start now, share it, cheer each other on
 
@@ -74,6 +79,10 @@ in the app at `/whats-new`.
   finished workout you can also share the **time trained**, **sets done** and **volume lifted**,
   each only if you tick it. Exercises and individual sets are never shared, and nothing is posted
   unless you post it.
+- **Check before you post**: on a phone, **Post update** and **Save changes** now come after the
+  preview, with who will see the post beside them, so you see exactly what you share before
+  posting. Computers keep the preview beside the caption. With a keyboard, Tab stops on the
+  preview before the button, and screen readers hear who the post is for on the button itself.
 - **Likes and comments**: like any post you can see and join the conversation on its page. Delete
   your own comments, and any comment on your own posts. Only people who can see a post can see or
   add its likes and comments. Your data download now includes the comments you wrote and the posts
@@ -156,6 +165,12 @@ in the app at `/whats-new`.
 
 ### Planner and home
 
+- **Clearer ways to start**: Home’s button for training with nothing planned is now **Start an
+  unplanned workout**, and it steps back when today has a planned session or Home suggests your
+  first routine, so the main button is the one for your plan.
+- **Edit links say what they edit**: a session’s **Edit** and **Customize content** are now
+  **Edit schedule & details** (date, time, name, notes) and **Edit exercises**, with matching page
+  headings.
 - **A simpler first visit**: instead of a three-step checklist, a new member’s Home invites them
   to plan a first session, in Today’s empty space: **Choose a routine** or plan their own. It steps
   aside once any session is planned. Quick actions are gone, since every one of them is already
@@ -166,6 +181,16 @@ in the app at `/whats-new`.
 - The planner keeps today marked on phones even when it is the day you are looking at.
 - On phones, home puts today’s sessions first and keeps the header compact.
 - Duplicate week is gone from the planner, keeping it to what you can do on every screen.
+- **Untimed sessions stay in view**: on a computer, the planner pins sessions with no start time
+  under the day headings, so they are on screen however far you scroll the hours, and it opens
+  earlier than 06:00 when a session this week starts before then. A list too long to pin without
+  covering the hours (a short or landscape window) scrolls with them instead, and the planner
+  opens on it.
+- **Faster with a keyboard**: in the computer planner, Tab goes from the calendar to each planned
+  session and then on, instead of through every empty hour. To add a session at a time, use the
+  arrow keys to choose a day and hour, Enter to open it, and Escape to go back to the calendar.
+  Whatever has focus is scrolled fully into view, clear of the pinned day headings, even in an
+  hour crowded with sessions.
 
 ### Library
 
@@ -178,6 +203,10 @@ in the app at `/whats-new`.
 - **Routines first on phones**: search stays at the top of the Library, and the equipment and type
   filters fold behind a **Filters** button that shows how many are on, so the first routine is
   higher on the screen. Tablets and computers still show every filter.
+- **Readable at large text sizes**: on a narrow phone with enlarged text, a routine’s name and
+  description keep a readable line and **Schedule** moves below them, instead of squeezing the text
+  to a letter per line. The post visibility choices, **Start a workout** on Home and the admin
+  contact-address notice also fit the screen without sideways scrolling.
 
 ### For maintainers
 

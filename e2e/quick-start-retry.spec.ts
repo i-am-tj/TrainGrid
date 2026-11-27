@@ -19,7 +19,7 @@ async function hydrated(page: Page) {
 
 async function startLift(page: Page) {
   await page.getByTestId("quick-start").click();
-  const dialog = page.getByRole("dialog", { name: "Start a workout now" });
+  const dialog = page.getByRole("dialog", { name: "Start an unplanned workout" });
   const requestId = await dialog.locator('input[name="request"]').inputValue();
   await dialog.getByRole("button", { name: /^Lift/ }).click();
   return requestId;
@@ -51,7 +51,7 @@ test("a start whose response is lost, retried from the error page, opens the sam
     .poll(async () => (await readRows("scheduled_sessions", { user_id: userId, origin: "quick" })).length)
     .toBe(1);
 
-  // Try again, then Start a workout again: the same request, the same workout.
+  // Try again, then Start an unplanned workout again: the same request, the same workout.
   await page.getByRole("button", { name: "Try again" }).click();
   await hydrated(page);
   const retry = await startLift(page);
@@ -65,7 +65,7 @@ test("a start whose response is lost, retried from the error page, opens the sam
   await page.goto("/home");
   await hydrated(page);
   await page.getByTestId("quick-start").click();
-  const next = await page.getByRole("dialog", { name: "Start a workout now" }).locator('input[name="request"]').inputValue();
+  const next = await page.getByRole("dialog", { name: "Start an unplanned workout" }).locator('input[name="request"]').inputValue();
   expect(next).toMatch(/^[0-9a-f-]{36}$/);
   expect(next).not.toBe(first);
 });
