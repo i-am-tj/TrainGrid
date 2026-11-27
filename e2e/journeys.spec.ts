@@ -29,7 +29,7 @@ test("Journey 2 — a GLOBAL routine on the calendar, with notes", async ({ page
   await scheduleRoutine(page, "VO2max", "3", "07:00");
   await page.getByRole("link", { name: "VO2max, 07:00" }).click();
   await expect(page.locator("section").first()).toBeVisible();
-  await page.getByRole("link", { name: "Edit" }).click();
+  await page.getByRole("link", { name: "Edit schedule & details" }).click();
   await page.getByLabel("Notes").fill("Track if windy");
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByText("Track if windy")).toBeVisible();
@@ -51,7 +51,7 @@ test("Journey 3 — multi-session day, timed and untimed, then reschedule", asyn
   await expect(page.getByRole("link", { name: "Mobility, no time" }).first()).toBeVisible();
 
   await page.getByRole("link", { name: "Lower B, 08:30" }).click();
-  await page.getByRole("link", { name: "Edit" }).click();
+  await page.getByRole("link", { name: "Edit schedule & details" }).click();
   await chooseDate(page, dateThisWeek(2));
   await page.locator('select[name="time"]').selectOption("18:00");
   await page.getByRole("button", { name: "Save" }).click();
@@ -67,7 +67,7 @@ test("a missing or impossible date is explained beside the field, and nothing ch
   await page.getByRole("link", { name: "Easy Run, 07:00" }).click();
   await page.waitForURL(/\/session\/[0-9a-f-]{36}$/);
   const sessionUrl = page.url();
-  await page.getByRole("link", { name: "Edit" }).click();
+  await page.getByRole("link", { name: "Edit schedule & details" }).click();
   await page.waitForURL(/\/edit$/);
   const date = page.getByLabel("Date", { exact: true });
   await expect(date).toHaveValue(dateThisWeek(2));
@@ -129,7 +129,7 @@ test("D2, D3: editing or deleting a routine never changes a scheduled session", 
 test("D4: customising one session leaves its routine alone", async ({ page }) => {
   await scheduleRoutine(page, "Lower A", "5", "06:00");
   await page.getByRole("link", { name: "Lower A, 06:00" }).click();
-  await page.getByRole("link", { name: "Customize content" }).click();
+  await page.getByRole("link", { name: "Edit exercises" }).click();
   await page.getByRole("textbox", { name: "Instruction" }).first().fill("5 × 3 heavy");
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByText("5 × 3 heavy")).toBeVisible();

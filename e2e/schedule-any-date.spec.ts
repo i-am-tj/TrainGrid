@@ -69,7 +69,7 @@ test("move a session across the year boundary with the same date field", async (
   await page.getByRole("link", { name: /^Lower A/ }).first().click();
   await page.waitForURL(/\/session\/[0-9a-f-]{36}$/);
   const sessionUrl = page.url();
-  await page.getByRole("link", { name: "Edit" }).click();
+  await page.getByRole("link", { name: "Edit schedule & details" }).click();
   await hydrated(page);
   await expect(page.getByLabel("Date", { exact: true })).toHaveValue("2026-12-31");
   await chooseDate(page, "2027-01-04");

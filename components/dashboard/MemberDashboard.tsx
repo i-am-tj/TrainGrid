@@ -90,7 +90,7 @@ export function DashboardShell({
   routines: ReactNode;
   /** A small note above the greeting (what's new). */
   notice?: ReactNode;
-  /** The main action beside the greeting (Start a workout); the planner link follows it. */
+  /** The main action beside the greeting (Start an unplanned workout); the planner link follows it. */
   headerAction?: ReactNode;
 }) {
   return (
