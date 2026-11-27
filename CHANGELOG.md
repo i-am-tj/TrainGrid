@@ -74,6 +74,10 @@ in the app at `/whats-new`.
   finished workout you can also share the **time trained**, **sets done** and **volume lifted**,
   each only if you tick it. Exercises and individual sets are never shared, and nothing is posted
   unless you post it.
+- **Check before you post**: on a phone, **Post update** and **Save changes** now come after the
+  preview, with who will see the post beside them, so you see exactly what you share before
+  posting. Computers keep the preview beside the caption. With a keyboard, Tab stops on the
+  preview before the button, and screen readers hear who the post is for on the button itself.
 - **Likes and comments**: like any post you can see and join the conversation on its page. Delete
   your own comments, and any comment on your own posts. Only people who can see a post can see or
   add its likes and comments. Your data download now includes the comments you wrote and the posts

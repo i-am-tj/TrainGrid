@@ -16,7 +16,9 @@ export type FinishedWorkout = { minutes: number; sets: number; volume: number; u
 
 /**
  * Writes a session update. The preview on the right (below, on phones) is
- * exactly what followers will see: the caption, the session's name,
+ * exactly what followers will see. On phones the submit button comes after
+ * the preview and its audience, in reading and Tab order, so the author
+ * reviews before posting (UI_DESIGN_AUDIT rank 5): the caption, the session's name,
  * category and date, and its duration only when ticked. Start time, notes,
  * exercises and logged sets are never part of a post, and the page says so.
  *
@@ -58,6 +60,7 @@ export function PostComposer({
   const captionId = useId();
   const counterId = useId();
   const errorId = useId();
+  const audienceId = useId();
   // A finished workout's real time beats the planned duration (as the database does).
   const durationToShare = workout ? workout.minutes : session.durationMinutes;
   const hasDuration = durationToShare != null;
@@ -76,7 +79,10 @@ export function PostComposer({
   const over = caption.length > CAPTION_MAX;
 
   return (
-    <form action={action} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8">
+    <form
+      action={action}
+      className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-8"
+    >
       {sessionId ? <input type="hidden" name="sessionId" value={sessionId} /> : null}
       {postId ? <input type="hidden" name="id" value={postId} /> : null}
 
@@ -167,23 +173,16 @@ export function PostComposer({
           </fieldset>
         )}
 
-        {state.status === "error" ? (
-          <p id={errorId} role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {state.message}
-          </p>
-        ) : null}
-
-        <div className="flex flex-wrap gap-2">
-          <button type="submit" className={btnPrimary} disabled={pending || over} aria-busy={pending}>
-            {pending ? (editing ? "Saving…" : "Posting…") : editing ? "Save changes" : "Post update"}
-          </button>
-          <Link href={cancelHref} className={btnSecondary}>
-            Cancel
-          </Link>
-        </div>
       </div>
 
-      <section aria-labelledby="preview-title" className="min-w-0">
+      {/* One Tab stop between the form and submit, so keyboard users meet what
+          they are about to share before the publish action (UI_DESIGN_AUDIT
+          rank 5). A region with nothing focusable inside would be skipped. */}
+      <section
+        aria-labelledby="preview-title"
+        tabIndex={0}
+        className="min-w-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-4 focus-visible:ring-offset-background lg:col-start-2 lg:row-span-2 lg:row-start-1"
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="preview-title" className="text-sm font-medium">
             Preview
@@ -213,6 +212,32 @@ export function PostComposer({
             : "Seen by any signed-in TrainGrid member who visits your profile, and in your followers’ feeds."}
         </p>
       </section>
+
+      <div className="min-w-0 space-y-3 lg:col-start-1 lg:row-start-2 lg:self-start">
+        {state.status === "error" ? (
+          <p id={errorId} role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            {state.message}
+          </p>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="submit"
+            className={btnPrimary}
+            disabled={pending || over}
+            aria-busy={pending}
+            aria-describedby={audienceId}
+          >
+            {pending ? (editing ? "Saving…" : "Posting…") : editing ? "Save changes" : "Post update"}
+          </button>
+          <Link href={cancelHref} className={btnSecondary}>
+            Cancel
+          </Link>
+          <p id={audienceId} data-testid="post-audience" className="text-xs leading-5 text-stone-600">
+            {author.visibility === "private" ? "For approved followers" : "For all signed-in members"}
+          </p>
+        </div>
+      </div>
     </form>
   );
 }
