@@ -174,6 +174,8 @@ in the app at `/whats-new`.
 - **Faster with a keyboard**: in the computer planner, Tab goes from the calendar to each planned
   session and then on, instead of through every empty hour. To add a session at a time, use the
   arrow keys to choose a day and hour, Enter to open it, and Escape to go back to the calendar.
+  Whatever has focus is scrolled fully into view, clear of the pinned day headings, even in an
+  hour crowded with sessions.
 
 ### Library
 

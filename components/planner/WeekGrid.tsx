@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import type { IsoDay, PlannerSession } from "@/lib/domain";
 import {
@@ -55,16 +55,19 @@ function addLinkAt(region: HTMLElement, day: number, row: number) {
 }
 
 /**
- * Scrolls `el` into the grid's view. `inset` is the height of the pinned rows
- * above it (0 when `el` is itself in a pinned row).
+ * Scrolls the focused control `el` fully into the grid's view: below `inset`
+ * (the pinned rows above it, or 0 when `el` is itself in a pinned row) and
+ * above the grid's bottom edge. Measures `el` itself, not its cell: a cell
+ * crowded with sessions can be taller than the grid, its Add link at the
+ * bottom. Something taller than the view keeps its top in view.
  */
 function reveal(region: HTMLElement, el: HTMLElement, inset: number) {
-  const cell = el.closest<HTMLElement>("[data-slot]") ?? el;
   const view = region.getBoundingClientRect();
-  const box = cell.getBoundingClientRect();
-  const top = view.top + inset;
+  const box = el.getBoundingClientRect();
+  const top = view.top + region.clientTop + inset;
+  const bottom = view.top + region.clientTop + region.clientHeight;
   if (box.top < top) region.scrollTop -= top - box.top;
-  else if (box.bottom > view.bottom) region.scrollTop += box.bottom - view.bottom;
+  else if (box.bottom > bottom) region.scrollTop += Math.min(box.bottom - bottom, box.top - top);
 }
 
 export function WeekGrid({
@@ -152,6 +155,23 @@ export function WeekGrid({
       offset - headingsHeight - (hasUntimed ? (untimedRow.current?.offsetHeight ?? 0) : 0);
   }, [weekId, firstHour, hasUntimed, pinUntimed]);
 
+  /** Reveals a control in the grid, allowing for whatever is pinned above it. */
+  function revealInGrid(region: HTMLElement, el: HTMLElement) {
+    const untimed = untimedRow.current;
+    const stuck = untimed?.hasAttribute("data-pinned") && untimed.contains(el);
+    reveal(region, el, stuck ? 0 : pinnedHeight());
+  }
+
+  // Keyboard focus from anywhere (Tab, Shift+Tab, arrows) lands in view: the
+  // browser's own focus scrolling doesn't allow for the sticky rows. Pointer
+  // focus (not :focus-visible) leaves the scroll position alone.
+  function onFocus(event: FocusEvent<HTMLDivElement>) {
+    const region = scroller.current;
+    const el = event.target;
+    if (!region || el === region || !(el instanceof HTMLElement)) return;
+    if (el.matches(":focus-visible")) revealInGrid(region, el);
+  }
+
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const region = scroller.current;
     if (!region || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
@@ -182,9 +202,7 @@ export function WeekGrid({
     if (!link) return;
     event.preventDefault();
     link.focus({ preventScroll: true });
-    const untimed = untimedRow.current;
-    const stuck = untimed?.hasAttribute("data-pinned") && untimed.contains(link);
-    reveal(region, link, stuck ? 0 : pinnedHeight());
+    revealInGrid(region, link);
   }
 
   return (
@@ -196,6 +214,7 @@ export function WeekGrid({
       aria-describedby={hintId}
       tabIndex={0}
       onKeyDown={onKeyDown}
+      onFocus={onFocus}
     >
       <p id={hintId} className="sr-only">
         Tab moves between scheduled sessions. Arrow keys choose a day and time slot, Enter adds a

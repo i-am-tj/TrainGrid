@@ -136,3 +136,90 @@ test("arrows reach an untimed row that scrolls with the hours", async ({ page })
     });
   await expect.poll(uncovered).toBe(true);
 });
+
+/** Whether the focused control is inside the window and not covered (by the pinned rows or anything else). */
+function focusedInView(page: Page) {
+  return expect
+    .poll(() =>
+      page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el || el === document.body) return "nothing focused";
+        const box = el.getBoundingClientRect();
+        const x = box.left + box.width / 2;
+        for (const y of [box.top + 2, box.bottom - 2]) {
+          const hit = document.elementFromPoint(x, y);
+          if (!hit || !el.contains(hit)) return `${el.getAttribute("aria-label")} hidden at y=${Math.round(y)}`;
+        }
+        return "visible";
+      }),
+    )
+    .toBe("visible");
+}
+
+async function planMore(sessions: [string, string | null][]) {
+  for (const [name, time] of sessions) {
+    const { error } = await serviceClient().from("scheduled_sessions").insert({
+      user_id: userId,
+      date: "2026-11-17",
+      start_time: time,
+      name,
+      category: "strength",
+      snapshot: { version: 1, items: [] },
+    });
+    if (error) throw new Error(error.message);
+  }
+}
+
+test("Arrow Up into a crowded hour keeps its Add link in view", async ({ page }) => {
+  // Seven sessions at noon make the 12:00 cell taller than the grid, with its
+  // Add link at the bottom.
+  await planMore([1, 2, 3, 4, 5, 6].map((i) => [`Noon ${i}`, "12:00"] as [string, string]));
+  await page.setViewportSize({ width: 1366, height: 600 });
+  await page.reload();
+  await expect.poll(() => grid(page).evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+
+  const region = grid(page);
+  await region.focus();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  expect(await focusedLabel(page)).toMatch(/, 12:00$/);
+  await page.keyboard.press("ArrowDown");
+  expect(await focusedLabel(page)).toMatch(/ 13:00$/);
+  await focusedInView(page);
+  await page.keyboard.press("ArrowUp");
+  expect(await focusedLabel(page)).toMatch(/^Add session .+ 12:00$/);
+  await focusedInView(page);
+});
+
+test("Tab and Shift+Tab bring a session out from under the pinned rows", async ({ page }) => {
+  await planMore([["Early lift", "06:00"]]);
+  await page.reload();
+  await expect.poll(() => grid(page).evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  const region = grid(page);
+  // Scrolled a little, 06:00 sits under the pinned headings and untimed row.
+  await region.evaluate((el) => {
+    el.scrollTop += 48;
+  });
+
+  await region.focus();
+  await page.keyboard.press("Tab");
+  expect(await focusedLabel(page)).toBe("Evening strength, no time");
+  await focusedInView(page);
+  await page.keyboard.press("Tab");
+  expect(await focusedLabel(page)).toBe("Early lift, 06:00");
+  await focusedInView(page);
+
+  // Back the other way: scroll 12:00 out below, then Shift+Tab from past the grid.
+  await region.evaluate((el) => {
+    el.scrollTop = 0;
+  });
+  await page.keyboard.press("Tab");
+  expect(await focusedLabel(page)).toBe("Lunch run, 12:00");
+  await focusedInView(page);
+  await region.evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+  });
+  await page.keyboard.press("Shift+Tab");
+  expect(await focusedLabel(page)).toBe("Early lift, 06:00");
+  await focusedInView(page);
+});
