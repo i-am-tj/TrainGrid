@@ -6,6 +6,9 @@ import { getWorkoutLog } from "@/lib/data/workouts";
 import { getRequestToday } from "@/lib/today";
 import { datesOfWeek, formatLongDay } from "@/lib/week";
 import { sessionDeletion } from "@/lib/workouts/deletion";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Edit schedule & details");
 
 export default async function EditSessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { db, userId } = await memberData();

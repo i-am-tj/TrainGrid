@@ -12,6 +12,9 @@ import { memberData } from "@/lib/data/server";
 import { getRequestToday } from "@/lib/today";
 import { listSessionsForWeek } from "@/lib/data/sessions";
 import type { IsoDay } from "@/lib/domain";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Weekly planner");
 
 export default async function WeekPage({
   params,

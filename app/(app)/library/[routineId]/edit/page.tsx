@@ -2,6 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { RoutineEditor } from "@/components/library/RoutineEditor";
 import { findGlobalRoutineIdBySlug, getRoutine } from "@/lib/data/routines";
 import { memberData } from "@/lib/data/server";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Edit routine");
 
 export default async function EditRoutinePage({
   params,

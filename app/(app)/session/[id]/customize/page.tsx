@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { CustomizeForm } from "@/components/session/CustomizeForm";
 import { memberData } from "@/lib/data/server";
 import { getSession } from "@/lib/data/sessions";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata("Edit exercises");
 
 export default async function CustomizeSessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { db, userId } = await memberData();
