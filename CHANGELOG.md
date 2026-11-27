@@ -175,7 +175,8 @@ in the app at `/whats-new`.
 - **Readable at large text sizes**: on a narrow phone with enlarged text, a routine’s name and
   description keep a readable line and **Schedule** moves below them, instead of squeezing the text
   to a letter per line. The post visibility choices, **Start a workout** on Home and the admin
-  contact-address notice also fit the screen without sideways scrolling.
+  contact-address notice also fit the screen without sideways scrolling, and the visibility
+  choices wrap between words instead of splitting them (“approv-e”).
 
 ### For maintainers
 

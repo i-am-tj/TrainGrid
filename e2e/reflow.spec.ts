@@ -29,6 +29,27 @@ async function fitsWidth(page: Page) {
   return page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
 }
 
+/** Words inside `selector` that are split across lines (each whole word should render on one line). */
+async function splitWords(page: Page, selector: string) {
+  return page.locator(selector).evaluateAll((roots) => {
+    const split: string[] = [];
+    for (const root of roots) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const text = node.textContent ?? "";
+        for (const match of text.matchAll(/\S+/g)) {
+          const range = document.createRange();
+          range.setStart(node, match.index!);
+          range.setEnd(node, match.index! + match[0].length);
+          const lines = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+          if (lines.size > 1) split.push(match[0]);
+        }
+      }
+    }
+    return split;
+  });
+}
+
 async function widthOf(page: Page, selector: string) {
   return page.locator(selector).first().evaluate((el) => el.getBoundingClientRect().width);
 }
@@ -73,6 +94,8 @@ test("privacy choices, Home action and admin notice stay within 320px", async ({
   await enlargeText(page);
   expect(await fitsWidth(page), "social profile").toBe(true);
   expect(await widthOf(page, "fieldset")).toBeLessThanOrEqual(320);
+  // The privacy choices wrap between words, not inside them ("approv-e").
+  expect(await splitWords(page, "fieldset label")).toEqual([]);
 
   await signInAsLocalAdmin(context, baseURL!);
   await page.goto("/admin/invitations");

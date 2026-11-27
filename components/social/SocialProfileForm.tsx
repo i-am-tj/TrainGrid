@@ -222,8 +222,11 @@ function VisibilityOption({
   detail: string;
 }) {
   return (
+    // The icon sits on the title line, not in a column of its own, and the
+    // padding stops growing past 16px: at 320px with 200% text a column and
+    // rem padding left the description about 76px, splitting words mid-word.
     <label
-      className={`ui-control flex cursor-pointer gap-3 rounded-xl border p-3.5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-stone-900 ${
+      className={`ui-control block min-w-0 cursor-pointer rounded-xl border p-[min(0.875rem,16px)] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-stone-900 ${
         checked ? "border-accent bg-accent/5" : "border-line bg-card hover:bg-stone-50"
       }`}
     >
@@ -235,11 +238,12 @@ function VisibilityOption({
         onChange={() => onChange(value)}
         className="sr-only"
       />
-      <span aria-hidden="true" className={`mt-0.5 ${checked ? "text-accent" : "text-stone-600"}`}>
-        {icon}
-      </span>
-      <span className="min-w-0 [overflow-wrap:anywhere]">
+      {/* break-words: a word is split only when it can't fit on a line at all. */}
+      <span className="block break-words">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold">
+          <span aria-hidden="true" className={`shrink-0 ${checked ? "text-accent" : "text-stone-600"}`}>
+            {icon}
+          </span>
           {title}
           {checked ? (
             <span className="rounded-full bg-accent px-1.5 py-px text-[10px] font-semibold text-white">Selected</span>
