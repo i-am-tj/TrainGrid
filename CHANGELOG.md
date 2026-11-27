@@ -61,7 +61,8 @@ in the app at `/whats-new`.
 - **Schedule a routine in three choices**: **Schedule** from the Library now shows the routine you
   chose, then the date and time, then **Schedule routine**. Renaming, notes, duration and picking
   a different routine are under **More options**, and **Cancel** goes back to the routine. **Add
-  session** in the planner keeps the full form, including blank sessions.
+  session** in the planner keeps the full form, including blank sessions. If a name or duration
+  under a closed **More options** needs fixing, it opens and puts you on that field.
 
 ### Start now, share it, cheer each other on
 

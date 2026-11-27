@@ -88,3 +88,35 @@ test("Add session from the planner keeps the full form, including blank sessions
   const [row] = await readRows("scheduled_sessions", { user_id: userId });
   expect(row).toMatchObject({ name: "Hill sprints" });
 });
+
+for (const { field, bad, good, saved } of [
+  { field: "Name", bad: "", good: "Park run", saved: { name: "Park run" } },
+  { field: "Duration (minutes, optional)", bad: "0", good: "45", saved: { duration_minutes: 45 } },
+] as const) {
+  test(`an invalid ${field} hidden in collapsed More options opens and takes focus`, async ({ page }) => {
+    await openFromLibrary(page);
+    const moreOptions = page.locator("summary", { hasText: "More options" });
+    const input = page.getByLabel(field, { exact: true });
+    const submit = page.getByRole("button", { name: "Schedule routine", exact: true });
+
+    // Collapse → submit: the browser blocks the submit, and the field must be
+    // shown and focused rather than left invalid out of sight.
+    await moreOptions.click();
+    await input.fill(bad);
+    await moreOptions.click();
+    await expect(input).toBeHidden();
+    const formUrl = page.url();
+    await submit.click();
+    await expect(input).toBeVisible();
+    await expect(input).toBeFocused();
+    expect(page.url()).toBe(formUrl);
+    expect(await readRows("scheduled_sessions", { user_id: userId })).toHaveLength(0);
+
+    // Correct → resubmit.
+    await input.fill(good);
+    await submit.click();
+    await page.waitForURL(/\/week\/\d{4}-W\d{2}\?day=\d$/);
+    const [row] = await readRows("scheduled_sessions", { user_id: userId });
+    expect(row).toMatchObject(saved);
+  });
+}

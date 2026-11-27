@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ActionSubmit } from "@/components/ui/ActionSubmit";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { WorkoutItemEditor } from "@/components/library/WorkoutItemEditor";
 import { createScheduledSession } from "@/lib/actions";
 import type { RoutineSummary } from "@/lib/data/model";
@@ -19,6 +19,22 @@ import { DateField } from "./DateField";
  * (UI_DESIGN_AUDIT rank 7). Opened from the planner, it is the full form:
  * routine or blank, with a blank session's type and items.
  */
+/**
+ * Native validation can't show or focus a field inside a closed <details>
+ * (More options): submit is blocked with nothing on screen. When the first
+ * invalid field is in one, open it and focus the field, so the browser's
+ * message appears there and the value can be corrected.
+ */
+function revealInvalid(event: FormEvent<HTMLFormElement>) {
+  const field = event.target;
+  if (!(field instanceof HTMLElement)) return;
+  const first = event.currentTarget.querySelector("input:invalid, select:invalid, textarea:invalid");
+  const details = field.closest("details");
+  if (field !== first || !details || details.open) return;
+  details.open = true;
+  field.focus();
+}
+
 export function AddSessionForm({
   weekId,
   routines,
@@ -131,6 +147,7 @@ export function AddSessionForm({
   return (
     <form
       action={createScheduledSession}
+      onInvalidCapture={revealInvalid}
       className="ui-panel space-y-5 p-4 sm:p-6"
     >
       <input type="hidden" name="from" value={from} />
