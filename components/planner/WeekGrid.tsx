@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { IsoDay, PlannerSession } from "@/lib/domain";
 import {
@@ -17,6 +17,15 @@ import { SessionCard } from "./SessionCard";
 
 const ROW = 56;
 const UNTIMED = 52;
+/** The hour the grid opens at, unless a session this week starts earlier. */
+const START_HOUR = 6;
+const COLUMNS = { gridTemplateColumns: "3.5rem repeat(7, minmax(0, 1fr))" };
+/**
+ * The most of the grid's height the headings and untimed row may hold while
+ * pinned. A longer untimed list (many sessions, or a short landscape window)
+ * scrolls with the hours instead, so it can't cover them.
+ */
+const MAX_PINNED = 0.5;
 
 export function WeekGrid({
   weekId,
@@ -33,13 +42,65 @@ export function WeekGrid({
   todayDay: IsoDay | null;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
+  const headings = useRef<HTMLDivElement>(null);
+  const untimedRow = useRef<HTMLDivElement>(null);
   const dates = datesOfWeek(weekId);
+  // Untimed work is pinned under the day headings, so it is on screen however
+  // far the hours are scrolled (UI_DESIGN_AUDIT rank 2). An empty untimed row
+  // scrolls away with the hours instead of taking space, and so does one too
+  // tall to leave room for the hours (see MAX_PINNED).
+  const hasUntimed = sessions.some((s) => s.time === null);
+  const firstHour = Math.min(
+    START_HOUR,
+    ...sessions.flatMap((s) => (s.time === null ? [] : [hourFromTime(s.time)])),
+  );
+  const [layout, setLayout] = useState({ untimedFits: true, headingsHeight: 0 });
+  const pinUntimed = hasUntimed && layout.untimedFits;
 
+  function measure() {
+    const el = scroller.current;
+    const head = headings.current?.offsetHeight ?? 0;
+    const untimed = untimedRow.current?.offsetHeight ?? 0;
+    return {
+      untimedFits: !el || head + untimed <= el.clientHeight * MAX_PINNED,
+      headingsHeight: head,
+    };
+  }
+
+  useLayoutEffect(() => {
+    const update = () =>
+      setLayout((prev) => {
+        const next = measure();
+        return next.untimedFits === prev.untimedFits &&
+          next.headingsHeight === prev.headingsHeight
+          ? prev
+          : next;
+      });
+    update();
+    const observer = new ResizeObserver(update);
+    for (const el of [scroller.current, headings.current, untimedRow.current])
+      if (el) observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Opens at the first hour, just below the pinned rows; again whenever the
+  // untimed row is pinned or unpinned (the window or the page around the grid
+  // changed size), so an unpinned list is never left scrolled out of sight.
   useEffect(() => {
     const el = scroller.current;
-    if (!el) return;
-    el.scrollTop = UNTIMED + 6 * ROW;
-  }, [weekId]);
+    const row = el?.querySelector<HTMLElement>(`[data-hour="${firstHour}"]`);
+    if (!el || !row) return;
+    const { untimedFits, headingsHeight } = measure();
+    if (hasUntimed && !untimedFits) {
+      // The untimed list leads the scrolling content; open on it.
+      el.scrollTop = 0;
+      return;
+    }
+    const offset =
+      row.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop;
+    el.scrollTop =
+      offset - headingsHeight - (hasUntimed ? (untimedRow.current?.offsetHeight ?? 0) : 0);
+  }, [weekId, firstHour, hasUntimed, pinUntimed]);
 
   return (
     <div
@@ -49,76 +110,108 @@ export function WeekGrid({
       aria-label="Weekly calendar time grid"
       tabIndex={0}
     >
-      <div
-        className="grid min-w-[720px]"
-        style={{ gridTemplateColumns: "3.5rem repeat(7, minmax(0, 1fr))" }}
-      >
-        <div className="sticky top-0 z-20 border-b border-line bg-card" />
-        {dates.map((date, i) => {
-          const heading = formatDayHeading(date);
-          const isToday = i + 1 === todayDay;
-          return (
-            <div
-              key={i}
-              data-today={isToday || undefined}
-              data-date={isToday ? dateOfWeekDay(weekId, todayDay) : undefined}
-              className={`sticky top-0 z-20 border-b border-l border-line px-1 py-2 text-center ${
-                isToday ? "bg-amber-50" : "bg-card"
-              }`}
-            >
-              <div className="text-[11px] font-semibold tracking-wide text-stone-600">
-                {heading.weekday}
-              </div>
-              <div className="text-sm font-semibold">{heading.dayNum}</div>
-            </div>
-          );
-        })}
-
-        <div className="border-b border-line bg-stone-50 px-1 py-1 text-[10px] text-stone-600">
-          —
-        </div>
-        {dates.map((date, i) => {
-          const day = (i + 1) as IsoDay;
-          const untimed = sessions
-            .filter((s) => s.day === day && s.time === null)
-            .sort(compareSessions);
-          const isToday = day === todayDay;
-          return (
-            <div
-              key={`u-${i}`}
-              className={`border-b border-l border-line p-1 ${
-                isToday ? "bg-amber-50/40" : ""
-              }`}
-              style={{ minHeight: UNTIMED }}
-            >
-              <Link
-                prefetch={false}
-                href={`/week/${weekId}/add?day=${day}&untimed=1`}
-                className="mb-1 block text-[10px] text-stone-600 hover:text-stone-700"
+      <div className="min-w-[720px]">
+        <div
+          ref={headings}
+          data-testid="planner-pinned"
+          className="sticky top-0 z-20 grid bg-card"
+          style={COLUMNS}
+        >
+          <div className="border-b border-line" />
+          {dates.map((date, i) => {
+            const heading = formatDayHeading(date);
+            const isToday = i + 1 === todayDay;
+            return (
+              <div
+                key={i}
+                data-today={isToday || undefined}
+                data-date={isToday ? dateOfWeekDay(weekId, todayDay) : undefined}
+                className={`border-b border-l border-line px-1 py-2 text-center ${
+                  isToday ? "bg-amber-50" : ""
+                }`}
               >
-                + untimed
-              </Link>
-              <div className="flex flex-col gap-1">
-                {untimed.map((s) => (
-                  <SessionCard key={s.id} session={s} />
-                ))}
+                <div className="text-[11px] font-semibold tracking-wide text-stone-600">
+                  {heading.weekday}
+                </div>
+                <div className="text-sm font-semibold">{heading.dayNum}</div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
-        {HOURS.map((hour) => (
-          <HourRow
-            key={hour}
-            hour={hour}
-            weekId={weekId}
-            dates={dates}
-            sessions={sessions}
-            todayDay={todayDay}
-          />
-        ))}
+        <div
+          ref={untimedRow}
+          data-testid="planner-untimed"
+          data-pinned={pinUntimed || undefined}
+          className={`grid bg-card ${pinUntimed ? "sticky z-10" : ""}`}
+          style={{ ...COLUMNS, top: pinUntimed ? layout.headingsHeight : undefined }}
+        >
+          <UntimedRow weekId={weekId} dates={dates} sessions={sessions} todayDay={todayDay} />
+        </div>
+
+        <div className="grid" style={COLUMNS}>
+          {HOURS.map((hour) => (
+            <HourRow
+              key={hour}
+              hour={hour}
+              weekId={weekId}
+              dates={dates}
+              sessions={sessions}
+              todayDay={todayDay}
+            />
+          ))}
+        </div>
       </div>
     </div>
+  );
+}
+
+function UntimedRow({
+  weekId,
+  dates,
+  sessions,
+  todayDay,
+}: {
+  weekId: string;
+  dates: Date[];
+  sessions: PlannerSession[];
+  todayDay: IsoDay | null;
+}) {
+  return (
+    <>
+      <div className="border-b border-line bg-stone-50 px-1 py-1 text-[10px] text-stone-600">
+        —
+      </div>
+      {dates.map((date, i) => {
+        const day = (i + 1) as IsoDay;
+        const untimed = sessions
+          .filter((s) => s.day === day && s.time === null)
+          .sort(compareSessions);
+        const isToday = day === todayDay;
+        return (
+          <div
+            key={`u-${i}`}
+            className={`border-b border-l border-line p-1 ${
+              isToday ? "bg-amber-50/40" : ""
+            }`}
+            style={{ minHeight: UNTIMED }}
+          >
+            <Link
+              prefetch={false}
+              href={`/week/${weekId}/add?day=${day}&untimed=1`}
+              className="mb-1 block text-[10px] text-stone-600 hover:text-stone-700"
+            >
+              + untimed
+            </Link>
+            <div className="flex flex-col gap-1">
+              {untimed.map((s) => (
+                <SessionCard key={s.id} session={s} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </>
   );
 }
 
@@ -138,6 +231,7 @@ function HourRow({
   return (
     <>
       <div
+        data-hour={hour}
         className="border-b border-line px-1 py-1 text-[11px] text-stone-600"
         style={{ minHeight: ROW }}
       >

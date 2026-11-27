@@ -166,6 +166,11 @@ in the app at `/whats-new`.
 - The planner keeps today marked on phones even when it is the day you are looking at.
 - On phones, home puts today’s sessions first and keeps the header compact.
 - Duplicate week is gone from the planner, keeping it to what you can do on every screen.
+- **Untimed sessions stay in view**: on a computer, the planner pins sessions with no start time
+  under the day headings, so they are on screen however far you scroll the hours, and it opens
+  earlier than 06:00 when a session this week starts before then. A list too long to pin without
+  covering the hours (a short or landscape window) scrolls with them instead, and the planner
+  opens on it.
 
 ### Library
 
