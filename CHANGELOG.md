@@ -58,6 +58,11 @@ in the app at `/whats-new`.
 - **Move a session the same way**: Edit uses the same date field instead of a week code, so
   moving Thursday’s run to next Tuesday, or into January, is one choice.
 - A missing date is explained beside the field, and the rest of the form keeps what you typed.
+- **Schedule a routine in three choices**: **Schedule** from the Library now shows the routine you
+  chose, then the date and time, then **Schedule routine**. Renaming, notes, duration and picking
+  a different routine are under **More options**, and **Cancel** goes back to the routine. **Add
+  session** in the planner keeps the full form, including blank sessions. If a name or duration
+  under a closed **More options** needs fixing, it opens and puts you on that field.
 
 ### Start now, share it, cheer each other on
 

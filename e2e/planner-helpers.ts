@@ -67,6 +67,6 @@ export async function scheduleRoutine(page: Page, routineName: string, day: stri
   await page.waitForURL(/\/add/);
   await chooseDate(page, date ?? dateThisWeek(day));
   await page.locator('select[name="time"]').selectOption(time);
-  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.getByRole("button", { name: "Schedule routine", exact: true }).click();
   await page.waitForURL(/\/week\//);
 }

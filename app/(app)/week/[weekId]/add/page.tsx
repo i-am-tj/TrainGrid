@@ -58,10 +58,13 @@ export default async function AddSessionPage({
 
   return (
     <div className="workout-body mx-auto max-w-2xl px-3 py-7 sm:px-4 sm:py-10">
-      <h1 className="text-3xl font-semibold leading-tight tracking-tight">Add session</h1>
+      <h1 className="text-3xl font-semibold leading-tight tracking-tight">
+        {initialRoutineId ? "Schedule routine" : "Add session"}
+      </h1>
       <p className="mt-2 text-sm leading-7 text-stone-600">
-        Put a routine or a one-off session on any day. A routine is copied into the session, so
-        later changes to the routine do not affect it.
+        {initialRoutineId
+          ? "Choose the day and time. The routine is copied into the session, so later changes to the routine do not affect it."
+          : "Put a routine or a one-off session on any day. A routine is copied into the session, so later changes to the routine do not affect it."}
       </p>
       <div className="mt-6">
         <AddSessionForm
