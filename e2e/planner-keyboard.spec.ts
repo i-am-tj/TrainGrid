@@ -12,11 +12,14 @@ import {
  * leaves slot selection.
  */
 
+let userId: string;
+
 test.beforeEach(async ({ baseURL, page, context }) => {
   test.skip((await supabaseState(baseURL!)) !== "ok", "Local Supabase stack is not running");
   test.skip(!hasLocalSecretKey(), "Local Supabase secret key is not configured");
   await page.setViewportSize({ width: 1366, height: 900 });
   const member = await signInAsNewLocalMember(context, baseURL!);
+  userId = member.userId;
   for (const [name, time] of [
     ["Evening strength", null],
     ["Lunch run", "12:00"],
@@ -94,4 +97,42 @@ test("arrow keys choose a slot, Enter adds there and Escape returns to the grid"
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("Enter");
   await page.waitForURL(/\/week\/2026-W47\/add\?day=1&time=12:00$/);
+});
+
+test("arrows reach an untimed row that scrolls with the hours", async ({ page }) => {
+  // A long untimed list in a short landscape window is not pinned (see
+  // planner-grid.spec.ts), so reaching it scrolls it back below the headings.
+  for (const name of ["Mobility", "Core", "Stretch", "Balance"]) {
+    const { error } = await serviceClient().from("scheduled_sessions").insert({
+      user_id: userId,
+      date: "2026-11-17",
+      start_time: null,
+      name,
+      category: "strength",
+      snapshot: { version: 1, items: [] },
+    });
+    if (error) throw new Error(error.message);
+  }
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.reload();
+  await expect(page.getByTestId("planner-untimed")).not.toHaveAttribute("data-pinned");
+
+  const region = grid(page);
+  await region.focus();
+  // The list fills the view, so the first arrow enters at 00:00, just below it.
+  await page.keyboard.press("ArrowDown");
+  expect(await focusedLabel(page)).toMatch(/ 00:00$/);
+  for (let i = 0; i < 10; i++) await page.keyboard.press("ArrowDown");
+  await expect.poll(() => region.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  for (let i = 0; i < 11; i++) await page.keyboard.press("ArrowUp");
+  expect(await focusedLabel(page)).toMatch(/^Add untimed session /);
+  // On screen and not under the pinned headings.
+  const uncovered = () =>
+    page.evaluate(() => {
+      const el = document.activeElement!;
+      const box = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+      return hit !== null && el.contains(hit);
+    });
+  await expect.poll(uncovered).toBe(true);
 });

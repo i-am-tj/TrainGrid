@@ -85,7 +85,7 @@ test("several untimed sessions stay pinned; an empty week opens at 06:00", async
   const member = await signInAsNewLocalMember(context, baseURL!);
   await openWeek(page);
   // Nothing untimed: the untimed row scrolls away with the hours.
-  await expect(page.getByTestId("planner-pinned").getByRole("link", { name: /^Add untimed session / })).toHaveCount(0);
+  await expect(page.getByTestId("planner-untimed")).not.toHaveAttribute("data-pinned");
   const sixAm = grid(page).locator('[data-hour="6"]');
   await expect.poll(() => sixAm.evaluate((el) => {
     const region = el.closest('[role="region"]')!;
@@ -99,6 +99,39 @@ test("several untimed sessions stay pinned; an empty week opens at 06:00", async
   await openWeek(page);
   for (const name of ["Mobility", "Core", "Stretch"])
     expect(await visibleInGrid(page, `${name}, no time`), name).toBe(true);
+});
+
+test("a long untimed list in a landscape window scrolls with the hours", async ({ page, context, baseURL }) => {
+  const member = await signInAsNewLocalMember(context, baseURL!);
+  for (const name of ["Mobility", "Core", "Stretch", "Balance", "Recovery walk"])
+    await plan(member.userId, name, "2026-11-18", null);
+  await plan(member.userId, "Evening ride", "2026-11-18", "18:00");
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto("/week/2026-W47");
+  await expect(grid(page)).toBeVisible();
+
+  // Pinning this list would cover the hours, so only the day headings stay put
+  // and the list opens at the top of the scrolling grid.
+  await expect(page.getByTestId("planner-untimed")).not.toHaveAttribute("data-pinned");
+  const untimed = page.getByTestId("planner-untimed").getByRole("link", { name: /, no time$/ });
+  await expect(untimed).toHaveCount(5);
+  const first = (await untimed.first().getAttribute("aria-label"))!;
+  const last = (await untimed.last().getAttribute("aria-label"))!;
+  expect(await visibleInGrid(page, first), first).toBe(true);
+
+  for (const name of [last, "Evening ride, 18:00"]) {
+    await grid(page).getByRole("link", { name, exact: true }).scrollIntoViewIfNeeded();
+    expect(await visibleInGrid(page, name), name).toBe(true);
+  }
+  // Day headings stay pinned while the hours scroll.
+  await expect.poll(() => page.getByTestId("planner-pinned").evaluate((el) => {
+    const region = el.closest('[role="region"]')!;
+    return Math.abs(el.getBoundingClientRect().top - region.getBoundingClientRect().top) <= 2;
+  })).toBe(true);
+
+  // Back at desktop size there is room again, so the list is pinned.
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await expect(page.getByTestId("planner-untimed")).toHaveAttribute("data-pinned");
 });
 
 test("a session before 06:00 is visible on entry", async ({ page, context, baseURL }) => {

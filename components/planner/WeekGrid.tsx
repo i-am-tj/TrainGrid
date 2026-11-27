@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type KeyboardEvent } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
 import type { IsoDay, PlannerSession } from "@/lib/domain";
 import {
@@ -20,6 +20,12 @@ const UNTIMED = 52;
 /** The hour the grid opens at, unless a session this week starts earlier. */
 const START_HOUR = 6;
 const COLUMNS = { gridTemplateColumns: "3.5rem repeat(7, minmax(0, 1fr))" };
+/**
+ * The most of the grid's height the headings and untimed row may hold while
+ * pinned. A longer untimed list (many sessions, or a short landscape window)
+ * scrolls with the hours instead, so it can't cover them.
+ */
+const MAX_PINNED = 0.5;
 /** The untimed row's index in slot navigation, above hour 0. */
 const UNTIMED_ROW = -1;
 
@@ -48,13 +54,15 @@ function addLinkAt(region: HTMLElement, day: number, row: number) {
   return region.querySelector<HTMLElement>(`[data-slot="${day}:${row}"] [data-add]`);
 }
 
-/** Scrolls `el` into the grid's view, below the pinned headings. */
-function reveal(region: HTMLElement, pinned: HTMLElement | null, el: HTMLElement) {
+/**
+ * Scrolls `el` into the grid's view. `inset` is the height of the pinned rows
+ * above it (0 when `el` is itself in a pinned row).
+ */
+function reveal(region: HTMLElement, el: HTMLElement, inset: number) {
   const cell = el.closest<HTMLElement>("[data-slot]") ?? el;
   const view = region.getBoundingClientRect();
   const box = cell.getBoundingClientRect();
-  const inPinned = pinned?.contains(cell) ?? false;
-  const top = view.top + (inPinned ? 0 : (pinned?.offsetHeight ?? 0));
+  const top = view.top + inset;
   if (box.top < top) region.scrollTop -= top - box.top;
   else if (box.bottom > view.bottom) region.scrollTop += box.bottom - view.bottom;
 }
@@ -74,26 +82,75 @@ export function WeekGrid({
   todayDay: IsoDay | null;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
-  const pinned = useRef<HTMLDivElement>(null);
+  const headings = useRef<HTMLDivElement>(null);
+  const untimedRow = useRef<HTMLDivElement>(null);
   const dates = datesOfWeek(weekId);
   const hintId = useId();
   // Untimed work is pinned under the day headings, so it is on screen however
-  // far the hours are scrolled; an empty untimed row scrolls away with the
-  // hours instead of taking space (UI_DESIGN_AUDIT rank 2).
+  // far the hours are scrolled (UI_DESIGN_AUDIT rank 2). An empty untimed row
+  // scrolls away with the hours instead of taking space, and so does one too
+  // tall to leave room for the hours (see MAX_PINNED).
   const hasUntimed = sessions.some((s) => s.time === null);
   const firstHour = Math.min(
     START_HOUR,
     ...sessions.flatMap((s) => (s.time === null ? [] : [hourFromTime(s.time)])),
   );
+  const [layout, setLayout] = useState({ untimedFits: true, headingsHeight: 0 });
+  const pinUntimed = hasUntimed && layout.untimedFits;
 
+  function measure() {
+    const el = scroller.current;
+    const head = headings.current?.offsetHeight ?? 0;
+    const untimed = untimedRow.current?.offsetHeight ?? 0;
+    return {
+      untimedFits: !el || head + untimed <= el.clientHeight * MAX_PINNED,
+      headingsHeight: head,
+    };
+  }
+
+  useLayoutEffect(() => {
+    const update = () =>
+      setLayout((prev) => {
+        const next = measure();
+        return next.untimedFits === prev.untimedFits &&
+          next.headingsHeight === prev.headingsHeight
+          ? prev
+          : next;
+      });
+    update();
+    const observer = new ResizeObserver(update);
+    for (const el of [scroller.current, headings.current, untimedRow.current])
+      if (el) observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  /** The height of the rows pinned at the top of the grid right now. */
+  function pinnedHeight() {
+    const untimed = untimedRow.current;
+    return (
+      (headings.current?.offsetHeight ?? 0) +
+      (untimed?.hasAttribute("data-pinned") ? untimed.offsetHeight : 0)
+    );
+  }
+
+  // Opens at the first hour, just below the pinned rows; again whenever the
+  // untimed row is pinned or unpinned (the window or the page around the grid
+  // changed size), so an unpinned list is never left scrolled out of sight.
   useEffect(() => {
     const el = scroller.current;
     const row = el?.querySelector<HTMLElement>(`[data-hour="${firstHour}"]`);
     if (!el || !row) return;
+    const { untimedFits, headingsHeight } = measure();
+    if (hasUntimed && !untimedFits) {
+      // The untimed list leads the scrolling content; open on it.
+      el.scrollTop = 0;
+      return;
+    }
     const offset =
       row.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop;
-    el.scrollTop = offset - (pinned.current?.offsetHeight ?? 0);
-  }, [weekId, firstHour]);
+    el.scrollTop =
+      offset - headingsHeight - (hasUntimed ? (untimedRow.current?.offsetHeight ?? 0) : 0);
+  }, [weekId, firstHour, hasUntimed, pinUntimed]);
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const region = scroller.current;
@@ -114,7 +171,7 @@ export function WeekGrid({
       ];
     } else if (event.target === region) {
       // Entering slot selection: today's column (else Monday), at the first hour in view.
-      const top = region.getBoundingClientRect().top + (pinned.current?.offsetHeight ?? 0);
+      const top = region.getBoundingClientRect().top + pinnedHeight();
       const hour = HOURS.find((h) => {
         const label = region.querySelector(`[data-hour="${h}"]`);
         return label !== null && label.getBoundingClientRect().bottom > top + 1;
@@ -125,17 +182,10 @@ export function WeekGrid({
     if (!link) return;
     event.preventDefault();
     link.focus({ preventScroll: true });
-    reveal(region, pinned.current, link);
+    const untimed = untimedRow.current;
+    const stuck = untimed?.hasAttribute("data-pinned") && untimed.contains(link);
+    reveal(region, link, stuck ? 0 : pinnedHeight());
   }
-
-  const untimedRow = (
-    <UntimedRow
-      weekId={weekId}
-      dates={dates}
-      sessions={sessions}
-      todayDay={todayDay}
-    />
-  );
 
   return (
     <div
@@ -153,7 +203,7 @@ export function WeekGrid({
       </p>
       <div className="min-w-[720px]">
         <div
-          ref={pinned}
+          ref={headings}
           data-testid="planner-pinned"
           className="sticky top-0 z-20 grid bg-card"
           style={COLUMNS}
@@ -178,11 +228,19 @@ export function WeekGrid({
               </div>
             );
           })}
-          {hasUntimed ? untimedRow : null}
+        </div>
+
+        <div
+          ref={untimedRow}
+          data-testid="planner-untimed"
+          data-pinned={pinUntimed || undefined}
+          className={`grid bg-card ${pinUntimed ? "sticky z-10" : ""}`}
+          style={{ ...COLUMNS, top: pinUntimed ? layout.headingsHeight : undefined }}
+        >
+          <UntimedRow weekId={weekId} dates={dates} sessions={sessions} todayDay={todayDay} />
         </div>
 
         <div className="grid" style={COLUMNS}>
-          {hasUntimed ? null : untimedRow}
           {HOURS.map((hour) => (
             <HourRow
               key={hour}
