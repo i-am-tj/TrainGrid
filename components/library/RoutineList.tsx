@@ -250,10 +250,13 @@ function RoutineGroups({ routines }: { routines: LibraryRoutine[] }) {
                   key={r.id}
                   className="library-routine-row flex min-w-0 flex-wrap items-center justify-between gap-3 p-4 sm:px-5"
                 >
+                  {/* A real basis (not flex-1's 0%) so the text keeps a readable
+                      line and Schedule wraps below it when the row is too narrow,
+                      as at 320px with enlarged text (UI_DESIGN_AUDIT rank 1). */}
                   <Link
                     href={`/library/${r.id}`}
                     prefetch={false}
-                    className="min-w-0 flex-1"
+                    className="min-w-0 flex-[1_1_12rem]"
                   >
                     <div className="font-medium leading-7 [overflow-wrap:anywhere]">
                       {r.name}

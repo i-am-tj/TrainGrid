@@ -60,7 +60,7 @@ export function SocialProfileForm({
     <form action={action} noValidate aria-describedby={state.status === "error" ? ids.error : undefined} className="space-y-6">
       <input type="hidden" name="next" value={next} />
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <SocialAvatar displayName={displayName || "?"} username={normalised || "?"} avatarUrl={useAvatar ? identityAvatarUrl : null} size="lg" />
         <div className="min-w-0">
           <p className="text-sm font-medium">Profile picture</p>
@@ -110,7 +110,7 @@ export function SocialProfileForm({
             className={`${fieldClass} mt-0 pl-7`}
           />
         </div>
-        <p id={ids.usernameHint} className={`mt-1.5 text-xs leading-5 ${showProblem ? "text-red-800" : "text-stone-600"}`}>
+        <p id={ids.usernameHint} className={`mt-1.5 text-xs leading-5 [overflow-wrap:anywhere] ${showProblem ? "text-red-800" : "text-stone-600"}`}>
           {showProblem
             ? problem
             : `3–${USERNAME_MAX} letters, numbers or underscores. Your profile lives at /people/${normalised || "username"}.`}
@@ -153,8 +153,10 @@ export function SocialProfileForm({
         </p>
       </div>
 
-      <fieldset>
-        <legend className="text-sm font-medium">Who can see your posts</legend>
+      {/* min-w-0: a fieldset is otherwise as wide as its widest content and
+          overflows a narrow screen with enlarged text. */}
+      <fieldset className="min-w-0">
+        <legend className="max-w-full text-sm font-medium">Who can see your posts</legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <VisibilityOption
             value="private"
@@ -236,8 +238,8 @@ function VisibilityOption({
       <span aria-hidden="true" className={`mt-0.5 ${checked ? "text-accent" : "text-stone-600"}`}>
         {icon}
       </span>
-      <span className="min-w-0">
-        <span className="flex items-center gap-2 text-sm font-semibold">
+      <span className="min-w-0 [overflow-wrap:anywhere]">
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold">
           {title}
           {checked ? (
             <span className="rounded-full bg-accent px-1.5 py-px text-[10px] font-semibold text-white">Selected</span>

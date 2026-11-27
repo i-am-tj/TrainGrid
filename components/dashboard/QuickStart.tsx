@@ -64,8 +64,8 @@ export function QuickStart({
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} data-testid="quick-start" data-prominence={prominence} className={`${prominence === "primary" ? btnPrimary : btnSecondary} shrink-0 gap-2`}>
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="currentColor">
+      <button type="button" onClick={() => setOpen(true)} data-testid="quick-start" data-prominence={prominence} className={`${prominence === "primary" ? btnPrimary : btnSecondary} max-w-full gap-2 text-left sm:shrink-0`}>
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4 shrink-0" fill="currentColor">
           <path d="M8 5.5v13l11-6.5-11-6.5z" />
         </svg>
         Start an unplanned workout

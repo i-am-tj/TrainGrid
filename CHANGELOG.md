@@ -172,12 +172,26 @@ in the app at `/whats-new`.
 - The planner keeps today marked on phones even when it is the day you are looking at.
 - On phones, home puts today’s sessions first and keeps the header compact.
 - Duplicate week is gone from the planner, keeping it to what you can do on every screen.
+- **Untimed sessions stay in view**: on a computer, the planner pins sessions with no start time
+  under the day headings, so they are on screen however far you scroll the hours, and it opens
+  earlier than 06:00 when a session this week starts before then. A list too long to pin without
+  covering the hours (a short or landscape window) scrolls with them instead, and the planner
+  opens on it.
+- **Faster with a keyboard**: in the computer planner, Tab goes from the calendar to each planned
+  session and then on, instead of through every empty hour. To add a session at a time, use the
+  arrow keys to choose a day and hour, Enter to open it, and Escape to go back to the calendar.
+  Whatever has focus is scrolled fully into view, clear of the pinned day headings, even in an
+  hour crowded with sessions.
 
 ### Library
 
 - **Routines first on phones**: search stays at the top of the Library, and the equipment and type
   filters fold behind a **Filters** button that shows how many are on, so the first routine is
   higher on the screen. Tablets and computers still show every filter.
+- **Readable at large text sizes**: on a narrow phone with enlarged text, a routine’s name and
+  description keep a readable line and **Schedule** moves below them, instead of squeezing the text
+  to a letter per line. The post visibility choices, **Start a workout** on Home and the admin
+  contact-address notice also fit the screen without sideways scrolling.
 
 ### For maintainers
 
